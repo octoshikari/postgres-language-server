@@ -19,6 +19,10 @@ pub(super) fn emit_string_literal(e: &mut EventEmitter, n: &String) {
 
 pub(super) fn emit_string_identifier(e: &mut EventEmitter, n: &String) {
     e.group_start(GroupKind::String);
-    e.token(TokenKind::IDENT(format!("\"{}\"", n.sval.clone())));
+    emit_identifier(e, &n.sval);
     e.group_end();
+}
+
+pub(super) fn emit_identifier(e: &mut EventEmitter, n: &str) {
+    e.token(TokenKind::IDENT(format!("\"{}\"", n)));
 }

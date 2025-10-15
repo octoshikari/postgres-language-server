@@ -14,7 +14,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
         e.indent_start();
         e.line(LineType::SoftOrSpace);
 
-        emit_comma_separated_list(e, &n.target_list);
+        emit_comma_separated_list(e, &n.target_list, super::emit_node);
 
         e.indent_end();
     }
@@ -26,7 +26,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 
         e.indent_start();
 
-        emit_comma_separated_list(e, &n.from_clause);
+        emit_comma_separated_list(e, &n.from_clause, super::emit_node);
 
         e.indent_end();
     }

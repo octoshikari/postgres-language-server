@@ -1,3 +1,12 @@
+macro_rules! assert_node_variant {
+    ($variant:ident, $expr:expr) => {
+        match $expr.node.as_ref() {
+            Some(pgt_query::NodeEnum::$variant(inner)) => inner,
+            other => panic!("Expected {}, got {:?}", stringify!($variant), other),
+        }
+    };
+}
+
 mod a_const;
 mod a_expr;
 mod a_star;
@@ -26,7 +35,7 @@ use integer::emit_integer;
 use range_var::emit_range_var;
 use res_target::emit_res_target;
 use select_stmt::emit_select_stmt;
-use string::{emit_string, emit_string_identifier, emit_string_literal};
+use string::{emit_identifier, emit_string, emit_string_identifier, emit_string_literal};
 use update_stmt::emit_update_stmt;
 
 use crate::emitter::EventEmitter;

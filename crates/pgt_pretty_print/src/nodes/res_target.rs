@@ -3,26 +3,62 @@ use pgt_query::protobuf::ResTarget;
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
 
+use super::emit_identifier;
 use super::emit_node;
 
 pub(super) fn emit_res_target(e: &mut EventEmitter, n: &ResTarget) {
     e.group_start(GroupKind::ResTarget);
 
+    if let Some(ref val) = n.val {
+        emit_node(val, e);
+    } else {
+        return;
+    }
+
+    emit_column_name_with_indirection(e, n);
+
     if !n.name.is_empty() {
-        e.token(TokenKind::IDENT(n.name.clone()));
-        for i in &n.indirection {
-            if !matches!(i.node, Some(pgt_query::protobuf::node::Node::AIndices(_))) {
-                e.token(TokenKind::DOT);
-            }
-            emit_node(i, e);
-        }
+        e.space();
+        e.token(TokenKind::AS_KW);
+        e.space();
+        emit_identifier(e, &n.name);
+    }
+
+    e.group_end();
+}
+
+pub(super) fn emit_set_clause(e: &mut EventEmitter, n: &ResTarget) {
+    e.group_start(GroupKind::ResTarget);
+
+    if n.name.is_empty() {
+        return;
+    }
+
+    emit_column_name_with_indirection(e, n);
+
+    if let Some(ref val) = n.val {
         e.space();
         e.token(TokenKind::IDENT("=".to_string()));
         e.space();
-    }
-    if let Some(ref val) = n.val {
         emit_node(val, e);
     }
 
     e.group_end();
+}
+
+pub(super) fn emit_column_name_with_indirection(e: &mut EventEmitter, n: &ResTarget) {
+    if n.name.is_empty() {
+        return;
+    }
+
+    e.token(TokenKind::IDENT(n.name.clone()));
+
+    for i in &n.indirection {
+        match &i.node {
+            // Field selection
+            Some(pgt_query::NodeEnum::String(n)) => super::emit_string_identifier(e, n),
+            Some(n) => super::emit_node_enum(n, e),
+            None => {}
+        }
+    }
 }
