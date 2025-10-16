@@ -34,6 +34,8 @@ fn test_single(fixture: Fixture<&str>) {
     let parsed = pgt_query::parse(content).expect("Failed to parse SQL");
     let mut ast = parsed.into_root().expect("No root node found");
 
+    println!("Parsed AST: {:#?}", ast);
+
     let mut emitter = EventEmitter::new();
     emit_node_enum(&ast, &mut emitter);
 
@@ -109,6 +111,8 @@ fn test_multi(fixture: Fixture<&str>) {
 
         let parsed = pgt_query::parse(trimmed).expect("Failed to parse SQL");
         let mut ast = parsed.into_root().expect("No root node found");
+
+        println!("Parsed AST: {:#?}", ast);
 
         let mut emitter = EventEmitter::new();
         emit_node_enum(&ast, &mut emitter);
