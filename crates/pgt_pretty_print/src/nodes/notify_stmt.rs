@@ -5,6 +5,8 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
 };
 
+use super::string::emit_single_quoted_str;
+
 pub(super) fn emit_notify_stmt(e: &mut EventEmitter, n: &NotifyStmt) {
     e.group_start(GroupKind::NotifyStmt);
 
@@ -20,7 +22,7 @@ pub(super) fn emit_notify_stmt(e: &mut EventEmitter, n: &NotifyStmt) {
         e.space();
         e.token(TokenKind::COMMA);
         e.space();
-        e.token(TokenKind::IDENT(format!("'{}'", n.payload)));
+        emit_single_quoted_str(e, &n.payload);
     }
 
     e.token(TokenKind::SEMICOLON);

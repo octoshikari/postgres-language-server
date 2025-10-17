@@ -1,4 +1,7 @@
-use super::node_list::emit_comma_separated_list;
+use super::{
+    node_list::emit_comma_separated_list,
+    string::{emit_identifier_maybe_quoted, emit_keyword, emit_single_quoted_str},
+};
 use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
@@ -10,9 +13,9 @@ pub(super) fn emit_alter_subscription_stmt(e: &mut EventEmitter, n: &AlterSubscr
 
     e.token(TokenKind::ALTER_KW);
     e.space();
-    e.token(TokenKind::IDENT("SUBSCRIPTION".to_string()));
+    emit_keyword(e, "SUBSCRIPTION");
     e.space();
-    e.token(TokenKind::IDENT(n.subname.clone()));
+    emit_identifier_maybe_quoted(e, &n.subname);
 
     e.space();
 
@@ -22,41 +25,41 @@ pub(super) fn emit_alter_subscription_stmt(e: &mut EventEmitter, n: &AlterSubscr
             // OPTIONS - handled via options field below
         }
         2 => {
-            e.token(TokenKind::IDENT("CONNECTION".to_string()));
+            emit_keyword(e, "CONNECTION");
             e.space();
-            e.token(TokenKind::IDENT(format!("'{}'", n.conninfo)));
+            emit_single_quoted_str(e, &n.conninfo);
         }
         3 => {
             e.token(TokenKind::SET_KW);
             e.space();
-            e.token(TokenKind::IDENT("PUBLICATION".to_string()));
+            emit_keyword(e, "PUBLICATION");
             e.space();
             emit_comma_separated_list(e, &n.publication, super::emit_node);
         }
         4 => {
-            e.token(TokenKind::IDENT("ADD".to_string()));
+            emit_keyword(e, "ADD");
             e.space();
-            e.token(TokenKind::IDENT("PUBLICATION".to_string()));
+            emit_keyword(e, "PUBLICATION");
             e.space();
             emit_comma_separated_list(e, &n.publication, super::emit_node);
         }
         5 => {
             e.token(TokenKind::DROP_KW);
             e.space();
-            e.token(TokenKind::IDENT("PUBLICATION".to_string()));
+            emit_keyword(e, "PUBLICATION");
             e.space();
             emit_comma_separated_list(e, &n.publication, super::emit_node);
         }
         6 => {
-            e.token(TokenKind::IDENT("REFRESH".to_string()));
+            emit_keyword(e, "REFRESH");
             e.space();
-            e.token(TokenKind::IDENT("PUBLICATION".to_string()));
+            emit_keyword(e, "PUBLICATION");
         }
         7 => {
-            e.token(TokenKind::IDENT("ENABLE".to_string()));
+            emit_keyword(e, "ENABLE");
         }
         8 => {
-            e.token(TokenKind::IDENT("SKIP".to_string()));
+            emit_keyword(e, "SKIP");
         }
         _ => {}
     }

@@ -3,13 +3,14 @@ use crate::emitter::{EventEmitter, GroupKind};
 use pgt_query::protobuf::AlterEnumStmt;
 
 use super::node_list::emit_dot_separated_list;
+use super::string::{emit_keyword, emit_single_quoted_str};
 
 pub(super) fn emit_alter_enum_stmt(e: &mut EventEmitter, n: &AlterEnumStmt) {
     e.group_start(GroupKind::AlterEnumStmt);
 
     e.token(TokenKind::ALTER_KW);
     e.space();
-    e.token(TokenKind::IDENT("TYPE".to_string()));
+    emit_keyword(e, "TYPE");
     e.space();
 
     // Enum type name (qualified)
@@ -22,20 +23,20 @@ pub(super) fn emit_alter_enum_stmt(e: &mut EventEmitter, n: &AlterEnumStmt) {
     // Check if this is ADD VALUE or RENAME VALUE
     if !n.old_val.is_empty() {
         // RENAME VALUE old TO new
-        e.token(TokenKind::IDENT("RENAME".to_string()));
+        emit_keyword(e, "RENAME");
         e.space();
-        e.token(TokenKind::IDENT("VALUE".to_string()));
+        emit_keyword(e, "VALUE");
         e.space();
-        e.token(TokenKind::IDENT(format!("'{}'", n.old_val)));
+        emit_single_quoted_str(e, &n.old_val);
         e.space();
         e.token(TokenKind::TO_KW);
         e.space();
-        e.token(TokenKind::IDENT(format!("'{}'", n.new_val)));
+        emit_single_quoted_str(e, &n.new_val);
     } else {
         // ADD VALUE [ IF NOT EXISTS ] new_value [ BEFORE old_value | AFTER old_value ]
         e.token(TokenKind::ADD_KW);
         e.space();
-        e.token(TokenKind::IDENT("VALUE".to_string()));
+        emit_keyword(e, "VALUE");
 
         if n.skip_if_new_val_exists {
             e.space();
@@ -48,19 +49,19 @@ pub(super) fn emit_alter_enum_stmt(e: &mut EventEmitter, n: &AlterEnumStmt) {
 
         if !n.new_val.is_empty() {
             e.space();
-            e.token(TokenKind::IDENT(format!("'{}'", n.new_val)));
+            emit_single_quoted_str(e, &n.new_val);
         }
 
         // Optional BEFORE/AFTER clause
         if !n.new_val_neighbor.is_empty() {
             e.space();
             if n.new_val_is_after {
-                e.token(TokenKind::IDENT("AFTER".to_string()));
+                emit_keyword(e, "AFTER");
             } else {
-                e.token(TokenKind::IDENT("BEFORE".to_string()));
+                emit_keyword(e, "BEFORE");
             }
             e.space();
-            e.token(TokenKind::IDENT(format!("'{}'", n.new_val_neighbor)));
+            emit_single_quoted_str(e, &n.new_val_neighbor);
         }
     }
 

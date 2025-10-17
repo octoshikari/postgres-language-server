@@ -5,27 +5,29 @@ use crate::{
 };
 use pgt_query::{NodeEnum, protobuf::CreateSubscriptionStmt};
 
+use super::string::{emit_identifier_maybe_quoted, emit_keyword, emit_single_quoted_str};
+
 pub(super) fn emit_create_subscription_stmt(e: &mut EventEmitter, n: &CreateSubscriptionStmt) {
     e.group_start(GroupKind::CreateSubscriptionStmt);
 
     e.token(TokenKind::CREATE_KW);
     e.space();
-    e.token(TokenKind::IDENT("SUBSCRIPTION".to_string()));
+    emit_keyword(e, "SUBSCRIPTION");
     e.space();
-    e.token(TokenKind::IDENT(n.subname.clone()));
+    emit_identifier_maybe_quoted(e, &n.subname);
 
     e.space();
-    e.token(TokenKind::IDENT("CONNECTION".to_string()));
+    emit_keyword(e, "CONNECTION");
     e.space();
     // Emit connection string as string literal
-    e.token(TokenKind::IDENT(format!("'{}'", n.conninfo)));
+    emit_single_quoted_str(e, &n.conninfo);
 
     e.space();
-    e.token(TokenKind::IDENT("PUBLICATION".to_string()));
+    emit_keyword(e, "PUBLICATION");
     e.space();
     emit_comma_separated_list(e, &n.publication, |node, e| {
         if let Some(NodeEnum::String(s)) = &node.node {
-            e.token(TokenKind::IDENT(s.sval.clone()));
+            emit_identifier_maybe_quoted(e, &s.sval);
         }
     });
 

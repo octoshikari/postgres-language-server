@@ -6,6 +6,8 @@ use crate::{
     nodes::node_list::emit_comma_separated_list,
 };
 
+use super::string::{emit_identifier_maybe_quoted, emit_single_quoted_str};
+
 pub(super) fn emit_transaction_stmt(e: &mut EventEmitter, n: &TransactionStmt) {
     e.group_start(GroupKind::TransactionStmt);
 
@@ -44,7 +46,7 @@ pub(super) fn emit_transaction_stmt(e: &mut EventEmitter, n: &TransactionStmt) {
             e.token(TokenKind::SAVEPOINT_KW);
             if !n.savepoint_name.is_empty() {
                 e.space();
-                e.token(TokenKind::IDENT(n.savepoint_name.clone()));
+                emit_identifier_maybe_quoted(e, &n.savepoint_name);
             }
         }
         TransactionStmtKind::TransStmtRelease => {
@@ -53,7 +55,7 @@ pub(super) fn emit_transaction_stmt(e: &mut EventEmitter, n: &TransactionStmt) {
                 e.space();
                 e.token(TokenKind::SAVEPOINT_KW);
                 e.space();
-                e.token(TokenKind::IDENT(n.savepoint_name.clone()));
+                emit_identifier_maybe_quoted(e, &n.savepoint_name);
             }
         }
         TransactionStmtKind::TransStmtRollbackTo => {
@@ -64,7 +66,7 @@ pub(super) fn emit_transaction_stmt(e: &mut EventEmitter, n: &TransactionStmt) {
                 e.space();
                 e.token(TokenKind::SAVEPOINT_KW);
                 e.space();
-                e.token(TokenKind::IDENT(n.savepoint_name.clone()));
+                emit_identifier_maybe_quoted(e, &n.savepoint_name);
             }
         }
         TransactionStmtKind::TransStmtPrepare => {
@@ -73,7 +75,7 @@ pub(super) fn emit_transaction_stmt(e: &mut EventEmitter, n: &TransactionStmt) {
             e.token(TokenKind::TRANSACTION_KW);
             if !n.gid.is_empty() {
                 e.space();
-                e.token(TokenKind::IDENT(format!("'{}'", n.gid)));
+                emit_single_quoted_str(e, &n.gid);
             }
         }
         TransactionStmtKind::TransStmtCommitPrepared => {
@@ -82,7 +84,7 @@ pub(super) fn emit_transaction_stmt(e: &mut EventEmitter, n: &TransactionStmt) {
             e.token(TokenKind::PREPARED_KW);
             if !n.gid.is_empty() {
                 e.space();
-                e.token(TokenKind::IDENT(format!("'{}'", n.gid)));
+                emit_single_quoted_str(e, &n.gid);
             }
         }
         TransactionStmtKind::TransStmtRollbackPrepared => {
@@ -91,7 +93,7 @@ pub(super) fn emit_transaction_stmt(e: &mut EventEmitter, n: &TransactionStmt) {
             e.token(TokenKind::PREPARED_KW);
             if !n.gid.is_empty() {
                 e.space();
-                e.token(TokenKind::IDENT(format!("'{}'", n.gid)));
+                emit_single_quoted_str(e, &n.gid);
             }
         }
         TransactionStmtKind::Undefined => {}

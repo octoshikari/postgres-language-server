@@ -5,6 +5,8 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
 };
 
+use super::string::emit_single_quoted_str;
+
 pub(super) fn emit_load_stmt(e: &mut EventEmitter, n: &LoadStmt) {
     e.group_start(GroupKind::LoadStmt);
 
@@ -12,7 +14,7 @@ pub(super) fn emit_load_stmt(e: &mut EventEmitter, n: &LoadStmt) {
 
     if !n.filename.is_empty() {
         e.space();
-        e.token(TokenKind::IDENT(format!("'{}'", n.filename)));
+        emit_single_quoted_str(e, &n.filename);
     }
 
     e.token(TokenKind::SEMICOLON);

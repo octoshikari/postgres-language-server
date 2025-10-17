@@ -2,33 +2,36 @@ use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind, LineType};
 use pgt_query::protobuf::AlterForeignServerStmt;
 
-use super::node_list::emit_comma_separated_list;
+use super::{
+    node_list::emit_comma_separated_list,
+    string::{emit_identifier_maybe_quoted, emit_keyword, emit_single_quoted_str},
+};
 
 pub(super) fn emit_alter_foreign_server_stmt(e: &mut EventEmitter, n: &AlterForeignServerStmt) {
     e.group_start(GroupKind::AlterForeignServerStmt);
 
     e.token(TokenKind::ALTER_KW);
     e.space();
-    e.token(TokenKind::IDENT("SERVER".to_string()));
+    emit_keyword(e, "SERVER");
     e.space();
 
     if !n.servername.is_empty() {
-        e.token(TokenKind::IDENT(n.servername.clone()));
+        emit_identifier_maybe_quoted(e, &n.servername);
     }
 
     if n.has_version && !n.version.is_empty() {
         e.line(LineType::SoftOrSpace);
         e.indent_start();
-        e.token(TokenKind::IDENT("VERSION".to_string()));
+        emit_keyword(e, "VERSION");
         e.space();
-        e.token(TokenKind::IDENT(format!("'{}'", n.version)));
+        emit_single_quoted_str(e, &n.version);
         e.indent_end();
     }
 
     if !n.options.is_empty() {
         e.line(LineType::SoftOrSpace);
         e.indent_start();
-        e.token(TokenKind::IDENT("OPTIONS".to_string()));
+        emit_keyword(e, "OPTIONS");
         e.space();
         e.token(TokenKind::L_PAREN);
         emit_comma_separated_list(e, &n.options, |n, e| {

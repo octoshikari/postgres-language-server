@@ -156,10 +156,10 @@ quick-modify:
 show-logs:
     tail -f $(ls $PGT_LOG_PATH/server.log.* | sort -t- -k2,2 -k3,3 -k4,4 | tail -n 1)
 
-# Run a claude agent with the given agentic prompt file.
+# Run a codex agent with the given agentic prompt file.
 # Commented out by default to avoid accidental usage that may incur costs.
 agentic name:
-    unset ANTHROPIC_API_KEY && claude --dangerously-skip-permissions -p "please read agentic/{{name}}.md and follow the instructions closely while completing the described task."
+    codex --yolo "please read agentic/{{name}}.md and follow the instructions closely while completing the described task."
 
 agentic-loop name:
     #!/usr/bin/env bash

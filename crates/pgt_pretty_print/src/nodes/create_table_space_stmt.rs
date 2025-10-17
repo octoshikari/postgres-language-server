@@ -5,6 +5,8 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
 };
 
+use super::string::{emit_identifier_maybe_quoted, emit_keyword, emit_single_quoted_str};
+
 pub(super) fn emit_create_table_space_stmt(e: &mut EventEmitter, n: &CreateTableSpaceStmt) {
     e.group_start(GroupKind::CreateTableSpaceStmt);
 
@@ -14,24 +16,22 @@ pub(super) fn emit_create_table_space_stmt(e: &mut EventEmitter, n: &CreateTable
 
     if !n.tablespacename.is_empty() {
         e.space();
-        e.token(TokenKind::IDENT(n.tablespacename.clone()));
+        emit_identifier_maybe_quoted(e, &n.tablespacename);
     }
 
     // OWNER
     if let Some(ref owner) = n.owner {
         e.space();
-        e.token(TokenKind::IDENT("OWNER".to_string()));
+        emit_keyword(e, "OWNER");
         e.space();
         super::emit_role_spec(e, owner);
     }
 
     // LOCATION (always required in CREATE TABLESPACE, even if empty string)
     e.space();
-    e.token(TokenKind::IDENT("LOCATION".to_string()));
+    emit_keyword(e, "LOCATION");
     e.space();
-    // Emit location as a string literal with proper escaping
-    let escaped_location = n.location.replace('\'', "''");
-    e.token(TokenKind::IDENT(format!("'{}'", escaped_location)));
+    emit_single_quoted_str(e, &n.location);
 
     // WITH options
     if !n.options.is_empty() {

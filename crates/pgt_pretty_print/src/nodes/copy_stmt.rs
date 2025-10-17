@@ -1,4 +1,7 @@
-use super::node_list::emit_comma_separated_list;
+use super::{
+    node_list::emit_comma_separated_list,
+    string::{emit_keyword, emit_single_quoted_str},
+};
 use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
@@ -56,14 +59,14 @@ pub(super) fn emit_copy_stmt(e: &mut EventEmitter, n: &CopyStmt) {
 
     // PROGRAM or filename
     if n.is_program {
-        e.token(TokenKind::IDENT("PROGRAM".to_string()));
+        emit_keyword(e, "PROGRAM");
         e.space();
     }
 
     if !n.filename.is_empty() {
-        e.token(TokenKind::IDENT(format!("'{}'", n.filename)));
+        emit_single_quoted_str(e, &n.filename);
     } else {
-        e.token(TokenKind::IDENT("STDOUT".to_string()));
+        emit_keyword(e, "STDOUT");
     }
 
     // Options

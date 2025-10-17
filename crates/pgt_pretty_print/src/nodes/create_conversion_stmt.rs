@@ -1,4 +1,7 @@
-use super::node_list::emit_dot_separated_list;
+use super::{
+    node_list::emit_dot_separated_list,
+    string::{emit_keyword, emit_single_quoted_str},
+};
 use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
@@ -16,7 +19,7 @@ pub(super) fn emit_create_conversion_stmt(e: &mut EventEmitter, n: &CreateConver
         e.space();
     }
 
-    e.token(TokenKind::IDENT("CONVERSION".to_string()));
+    emit_keyword(e, "CONVERSION");
     e.space();
 
     // Conversion name
@@ -25,11 +28,11 @@ pub(super) fn emit_create_conversion_stmt(e: &mut EventEmitter, n: &CreateConver
     e.space();
     e.token(TokenKind::FOR_KW);
     e.space();
-    e.token(TokenKind::IDENT(format!("'{}'", n.for_encoding_name)));
+    emit_single_quoted_str(e, &n.for_encoding_name);
     e.space();
     e.token(TokenKind::TO_KW);
     e.space();
-    e.token(TokenKind::IDENT(format!("'{}'", n.to_encoding_name)));
+    emit_single_quoted_str(e, &n.to_encoding_name);
     e.space();
     e.token(TokenKind::FROM_KW);
     e.space();
