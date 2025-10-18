@@ -19,6 +19,20 @@ pub(super) fn emit_view_stmt(e: &mut EventEmitter, n: &ViewStmt) {
         e.token(TokenKind::REPLACE_KW);
     }
 
+    if let Some(ref view) = n.view {
+        match view.relpersistence.as_str() {
+            "t" => {
+                e.space();
+                e.token(TokenKind::TEMPORARY_KW);
+            }
+            "u" => {
+                e.space();
+                e.token(TokenKind::UNLOGGED_KW);
+            }
+            _ => {}
+        }
+    }
+
     e.space();
     e.token(TokenKind::VIEW_KW);
 
@@ -31,7 +45,19 @@ pub(super) fn emit_view_stmt(e: &mut EventEmitter, n: &ViewStmt) {
     if !n.aliases.is_empty() {
         e.space();
         e.token(TokenKind::L_PAREN);
-        emit_comma_separated_list(e, &n.aliases, super::emit_node);
+        emit_comma_separated_list(e, &n.aliases, |alias_node, emitter| {
+            let alias = assert_node_variant!(String, alias_node);
+            super::string::emit_identifier_maybe_quoted(emitter, &alias.sval);
+        });
+        e.token(TokenKind::R_PAREN);
+    }
+
+    if !n.options.is_empty() {
+        e.space();
+        e.token(TokenKind::WITH_KW);
+        e.space();
+        e.token(TokenKind::L_PAREN);
+        emit_comma_separated_list(e, &n.options, super::emit_node);
         e.token(TokenKind::R_PAREN);
     }
 
@@ -40,7 +66,12 @@ pub(super) fn emit_view_stmt(e: &mut EventEmitter, n: &ViewStmt) {
         e.space();
         e.token(TokenKind::AS_KW);
         e.line(LineType::SoftOrSpace);
-        super::emit_node(query, e);
+
+        if let Some(pgt_query::NodeEnum::SelectStmt(stmt)) = query.node.as_ref() {
+            super::emit_select_stmt_no_semicolon(e, stmt);
+        } else {
+            super::emit_node(query, e);
+        }
     }
 
     // WITH CHECK OPTION

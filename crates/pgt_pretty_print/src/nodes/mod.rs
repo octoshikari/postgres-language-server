@@ -144,6 +144,7 @@ mod list;
 mod listen_stmt;
 mod load_stmt;
 mod lock_stmt;
+mod locking_clause;
 mod merge_stmt;
 mod min_max_expr;
 mod named_arg_expr;
@@ -337,6 +338,7 @@ use list::emit_list;
 use listen_stmt::emit_listen_stmt;
 use load_stmt::emit_load_stmt;
 use lock_stmt::emit_lock_stmt;
+use locking_clause::emit_locking_clause;
 use merge_stmt::emit_merge_stmt;
 use min_max_expr::emit_min_max_expr;
 use named_arg_expr::emit_named_arg_expr;
@@ -566,6 +568,7 @@ pub fn emit_node_enum(node: &NodeEnum, e: &mut EventEmitter) {
         NodeEnum::ListenStmt(n) => emit_listen_stmt(e, n),
         NodeEnum::UnlistenStmt(n) => emit_unlisten_stmt(e, n),
         NodeEnum::LockStmt(n) => emit_lock_stmt(e, n),
+        NodeEnum::LockingClause(n) => emit_locking_clause(e, n),
         NodeEnum::RelabelType(n) => emit_relabel_type(e, n),
         NodeEnum::ReindexStmt(n) => emit_reindex_stmt(e, n),
         NodeEnum::RenameStmt(n) => emit_rename_stmt(e, n),

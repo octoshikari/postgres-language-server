@@ -24,7 +24,7 @@ pub(super) fn emit_type_name(e: &mut EventEmitter, n: &TypeName) {
         e.space();
     }
 
-    let name_parts = collect_name_parts(&n);
+    let name_parts = collect_name_parts(n);
 
     if n.pct_type {
         emit_pct_type(e, &name_parts);
@@ -172,10 +172,8 @@ fn is_pg_catalog(value: &str) -> bool {
 }
 
 fn emit_type_modifiers(e: &mut EventEmitter, n: &TypeName, name_parts: &[String]) {
-    if is_interval_type(name_parts) {
-        if emit_interval_type_modifiers(e, n) {
-            return;
-        }
+    if is_interval_type(name_parts) && emit_interval_type_modifiers(e, n) {
+        return;
     }
 
     if !n.typmods.is_empty() {

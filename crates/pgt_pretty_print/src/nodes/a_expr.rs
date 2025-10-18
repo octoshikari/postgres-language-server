@@ -226,7 +226,6 @@ fn emit_aexpr_in(e: &mut EventEmitter, n: &AExpr) {
                 e.token(TokenKind::L_PAREN);
                 super::emit_node(rexpr, e);
                 e.token(TokenKind::R_PAREN);
-                return;
             }
         }
     }
@@ -319,7 +318,7 @@ fn emit_aexpr_between(e: &mut EventEmitter, n: &AExpr) {
     // rexpr is a List node with two elements, but we need "expr AND expr" not "expr, expr"
     if let Some(ref rexpr) = n.rexpr {
         if let Some(pgt_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
-            if list.items.len() >= 1 {
+            if !list.items.is_empty() {
                 super::emit_node(&list.items[0], e);
             }
             if list.items.len() >= 2 {
@@ -349,7 +348,7 @@ fn emit_aexpr_not_between(e: &mut EventEmitter, n: &AExpr) {
     // rexpr is a List node with two elements, but we need "expr AND expr" not "expr, expr"
     if let Some(ref rexpr) = n.rexpr {
         if let Some(pgt_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
-            if list.items.len() >= 1 {
+            if !list.items.is_empty() {
                 super::emit_node(&list.items[0], e);
             }
             if list.items.len() >= 2 {
@@ -379,7 +378,7 @@ fn emit_aexpr_between_sym(e: &mut EventEmitter, n: &AExpr) {
     // rexpr is a List node with two elements, but we need "expr AND expr" not "expr, expr"
     if let Some(ref rexpr) = n.rexpr {
         if let Some(pgt_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
-            if list.items.len() >= 1 {
+            if !list.items.is_empty() {
                 super::emit_node(&list.items[0], e);
             }
             if list.items.len() >= 2 {
@@ -411,7 +410,7 @@ fn emit_aexpr_not_between_sym(e: &mut EventEmitter, n: &AExpr) {
     // rexpr is a List node with two elements, but we need "expr AND expr" not "expr, expr"
     if let Some(ref rexpr) = n.rexpr {
         if let Some(pgt_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
-            if list.items.len() >= 1 {
+            if !list.items.is_empty() {
                 super::emit_node(&list.items[0], e);
             }
             if list.items.len() >= 2 {
@@ -459,7 +458,7 @@ fn emit_simple_operator(e: &mut EventEmitter, op: &str) {
     e.token(TokenKind::IDENT(op.to_string()));
 }
 
-fn extract_simple_operator<'a>(name: &'a [Node]) -> Option<&'a str> {
+fn extract_simple_operator(name: &[Node]) -> Option<&str> {
     if name.len() != 1 {
         return None;
     }

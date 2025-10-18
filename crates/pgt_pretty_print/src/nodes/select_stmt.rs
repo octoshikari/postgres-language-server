@@ -1,9 +1,14 @@
-use pgt_query::protobuf::SelectStmt;
+use pgt_query::{
+    Node,
+    protobuf::{LimitOption, SelectStmt, SetOperation},
+};
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind, LineType};
 
-use super::node_list::emit_comma_separated_list;
+use super::{
+    node_list::emit_comma_separated_list, string::emit_keyword, window_def::emit_window_definition,
+};
 
 pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
     emit_select_stmt_impl(e, n, true);
@@ -23,40 +28,44 @@ fn emit_select_stmt_impl(e: &mut EventEmitter, n: &SelectStmt, with_semicolon: b
     }
 
     // Check if this is a set operation (UNION/INTERSECT/EXCEPT)
-    // SetOperation: Undefined = 0, SetopNone = 1, SetopUnion = 2, SetopIntersect = 3, SetopExcept = 4
-    if n.op > 1 {
-        // Emit left operand
-        if let Some(ref larg) = n.larg {
-            emit_select_stmt_no_semicolon(e, larg);
-        }
+    match n.op() {
+        SetOperation::SetopUnion | SetOperation::SetopIntersect | SetOperation::SetopExcept => {
+            // Emit left operand
+            if let Some(ref larg) = n.larg {
+                emit_select_stmt_no_semicolon(e, larg);
+            }
 
-        // Emit set operation keyword
-        e.line(LineType::SoftOrSpace);
-        match n.op {
-            2 => e.token(TokenKind::UNION_KW),     // SetopUnion
-            3 => e.token(TokenKind::INTERSECT_KW), // SetopIntersect
-            4 => e.token(TokenKind::EXCEPT_KW),    // SetopExcept
-            _ => {}
-        }
+            // Emit set operation keyword
+            e.line(LineType::SoftOrSpace);
+            match n.op() {
+                SetOperation::SetopUnion => e.token(TokenKind::UNION_KW),
+                SetOperation::SetopIntersect => e.token(TokenKind::INTERSECT_KW),
+                SetOperation::SetopExcept => e.token(TokenKind::EXCEPT_KW),
+                _ => unreachable!(),
+            }
 
-        // Emit ALL keyword if present
-        if n.all {
-            e.space();
-            e.token(TokenKind::ALL_KW);
-        }
+            // Emit ALL keyword if present
+            if n.all {
+                e.space();
+                e.token(TokenKind::ALL_KW);
+            }
 
-        // Emit right operand
-        e.line(LineType::SoftOrSpace);
-        if let Some(ref rarg) = n.rarg {
-            emit_select_stmt_no_semicolon(e, rarg);
-        }
+            // Emit right operand
+            e.line(LineType::SoftOrSpace);
+            if let Some(ref rarg) = n.rarg {
+                emit_select_stmt_no_semicolon(e, rarg);
+            }
 
-        if with_semicolon {
-            e.token(TokenKind::SEMICOLON);
-        }
+            if with_semicolon {
+                e.token(TokenKind::SEMICOLON);
+            }
 
-        e.group_end();
-        return;
+            e.group_end();
+            return;
+        }
+        SetOperation::SetopNone | SetOperation::Undefined => {
+            // Not a set operation, continue with regular SELECT
+        }
     }
 
     // Check if this is a VALUES clause (used in INSERT statements)
@@ -76,6 +85,10 @@ fn emit_select_stmt_impl(e: &mut EventEmitter, n: &SelectStmt, with_semicolon: b
         }
     } else {
         e.token(TokenKind::SELECT_KW);
+
+        if !n.distinct_clause.is_empty() {
+            emit_distinct_clause(e, &n.distinct_clause);
+        }
 
         if !n.target_list.is_empty() {
             e.indent_start();
@@ -135,6 +148,27 @@ fn emit_select_stmt_impl(e: &mut EventEmitter, n: &SelectStmt, with_semicolon: b
             super::emit_node(having_clause, e);
         }
 
+        // Emit WINDOW clause if present
+        if !n.window_clause.is_empty() {
+            e.line(LineType::SoftOrSpace);
+            e.token(TokenKind::WINDOW_KW);
+            e.line(LineType::SoftOrSpace);
+            e.indent_start();
+            for (idx, window) in n.window_clause.iter().enumerate() {
+                if idx > 0 {
+                    e.token(TokenKind::COMMA);
+                    e.line(LineType::SoftOrSpace);
+                }
+
+                if let Some(pgt_query::NodeEnum::WindowDef(window_def)) = window.node.as_ref() {
+                    emit_window_definition(e, window_def);
+                } else {
+                    super::emit_node(window, e);
+                }
+            }
+            e.indent_end();
+        }
+
         // Emit ORDER BY clause if present
         if !n.sort_clause.is_empty() {
             e.line(LineType::SoftOrSpace);
@@ -147,20 +181,58 @@ fn emit_select_stmt_impl(e: &mut EventEmitter, n: &SelectStmt, with_semicolon: b
             e.indent_end();
         }
 
-        // Emit LIMIT clause if present
-        if let Some(ref limit_count) = n.limit_count {
-            e.line(LineType::SoftOrSpace);
-            e.token(TokenKind::LIMIT_KW);
-            e.space();
-            super::emit_node(limit_count, e);
+        match n.limit_option() {
+            LimitOption::WithTies => {
+                if let Some(ref limit_offset) = n.limit_offset {
+                    e.line(LineType::SoftOrSpace);
+                    e.token(TokenKind::OFFSET_KW);
+                    e.space();
+                    super::emit_node(limit_offset, e);
+                    e.space();
+                    e.token(TokenKind::ROWS_KW);
+                }
+
+                if let Some(ref limit_count) = n.limit_count {
+                    e.line(LineType::SoftOrSpace);
+                    e.token(TokenKind::FETCH_KW);
+                    e.space();
+                    e.token(TokenKind::FIRST_KW);
+                    e.space();
+                    super::emit_node(limit_count, e);
+                    e.space();
+                    e.token(TokenKind::ROWS_KW);
+                    e.space();
+                    e.token(TokenKind::WITH_KW);
+                    e.space();
+                    emit_keyword(e, "TIES");
+                }
+            }
+            _ => {
+                if let Some(ref limit_count) = n.limit_count {
+                    e.line(LineType::SoftOrSpace);
+                    e.token(TokenKind::LIMIT_KW);
+                    e.space();
+                    super::emit_node(limit_count, e);
+                }
+
+                if let Some(ref limit_offset) = n.limit_offset {
+                    e.line(LineType::SoftOrSpace);
+                    e.token(TokenKind::OFFSET_KW);
+                    e.space();
+                    super::emit_node(limit_offset, e);
+                }
+            }
         }
 
-        // Emit OFFSET clause if present
-        if let Some(ref limit_offset) = n.limit_offset {
-            e.line(LineType::SoftOrSpace);
-            e.token(TokenKind::OFFSET_KW);
-            e.space();
-            super::emit_node(limit_offset, e);
+        if !n.locking_clause.is_empty() {
+            for locking in &n.locking_clause {
+                if let Some(pgt_query::NodeEnum::LockingClause(locking_clause)) =
+                    locking.node.as_ref()
+                {
+                    e.line(LineType::SoftOrSpace);
+                    super::emit_locking_clause(e, locking_clause);
+                }
+            }
         }
 
         if with_semicolon {
@@ -169,4 +241,33 @@ fn emit_select_stmt_impl(e: &mut EventEmitter, n: &SelectStmt, with_semicolon: b
     }
 
     e.group_end();
+}
+
+fn emit_distinct_clause(e: &mut EventEmitter, clause: &[Node]) {
+    e.space();
+    e.token(TokenKind::DISTINCT_KW);
+
+    let distinct_exprs: Vec<&Node> = clause.iter().filter(|node| node.node.is_some()).collect();
+
+    if distinct_exprs.is_empty() {
+        return;
+    }
+
+    e.space();
+    e.token(TokenKind::ON_KW);
+    e.space();
+    e.token(TokenKind::L_PAREN);
+    e.indent_start();
+    e.line(LineType::SoftOrSpace);
+
+    for (idx, node) in distinct_exprs.iter().enumerate() {
+        if idx > 0 {
+            e.token(TokenKind::COMMA);
+            e.line(LineType::SoftOrSpace);
+        }
+        super::emit_node(node, e);
+    }
+
+    e.indent_end();
+    e.token(TokenKind::R_PAREN);
 }

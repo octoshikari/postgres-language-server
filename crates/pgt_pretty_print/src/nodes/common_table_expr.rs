@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CommonTableExpr;
+use pgt_query::protobuf::{CommonTableExpr, CteMaterialize};
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
@@ -26,21 +26,19 @@ pub(super) fn emit_common_table_expr(e: &mut EventEmitter, n: &CommonTableExpr) 
     e.space();
 
     // Materialization hint (PostgreSQL 12+)
-    match n.ctematerialized {
-        1 => {
-            // CTEMaterializeAlways
+    match n.ctematerialized() {
+        CteMaterialize::Always => {
             e.token(TokenKind::IDENT("MATERIALIZED".to_string()));
             e.space();
         }
-        2 => {
-            // CTEMaterializeNever
+        CteMaterialize::Never => {
             e.token(TokenKind::NOT_KW);
             e.space();
             e.token(TokenKind::IDENT("MATERIALIZED".to_string()));
             e.space();
         }
-        _ => {
-            // CTEMaterializeDefault or Undefined - no hint
+        CteMaterialize::Default | CteMaterialize::CtematerializeUndefined => {
+            // CTEMaterializeDefault/Undefined: omit hint to preserve planner choice
         }
     }
 

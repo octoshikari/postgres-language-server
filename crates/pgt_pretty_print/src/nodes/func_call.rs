@@ -1,6 +1,6 @@
 use crate::{
     TokenKind,
-    emitter::{EventEmitter, GroupKind},
+    emitter::{EventEmitter, GroupKind, LineType},
     nodes::node_list::emit_comma_separated_list,
 };
 use pgt_query::protobuf::FuncCall;
@@ -98,7 +98,7 @@ pub(super) fn emit_func_call(e: &mut EventEmitter, n: &FuncCall) {
 
     // Handle OVER clause (window functions)
     if let Some(ref over) = n.over {
-        e.space();
+        e.line(LineType::SoftOrSpace);
         e.token(TokenKind::OVER_KW);
         e.space();
         super::emit_window_def(e, over);
@@ -144,55 +144,57 @@ fn emit_standard_function(e: &mut EventEmitter, n: &FuncCall) {
 
 // EXTRACT(field FROM source)
 fn emit_extract_function(e: &mut EventEmitter, n: &FuncCall) {
+    assert!(
+        n.args.len() == 2,
+        "EXTRACT function expects 2 arguments, got {}",
+        n.args.len()
+    );
+
     e.token(TokenKind::L_PAREN);
 
-    if n.args.len() >= 1 {
-        // First arg is the field (epoch, year, month, etc.)
-        super::emit_node(&n.args[0], e);
+    // First arg is the field (epoch, year, month, etc.)
+    super::emit_node(&n.args[0], e);
 
-        if n.args.len() >= 2 {
-            e.space();
-            e.token(TokenKind::FROM_KW);
-            e.space();
-            // Second arg is the source expression
-            super::emit_node(&n.args[1], e);
-        }
-    }
+    e.space();
+    e.token(TokenKind::FROM_KW);
+    e.space();
+    // Second arg is the source expression
+    super::emit_node(&n.args[1], e);
 
     e.token(TokenKind::R_PAREN);
 }
 
 // OVERLAY(string PLACING newstring FROM start [FOR length])
 fn emit_overlay_function(e: &mut EventEmitter, n: &FuncCall) {
+    assert!(
+        n.args.len() == 3 || n.args.len() == 4,
+        "OVERLAY function expects 3 or 4 arguments, got {}",
+        n.args.len()
+    );
+
     e.token(TokenKind::L_PAREN);
 
-    if !n.args.is_empty() {
-        // First arg: string
-        super::emit_node(&n.args[0], e);
+    // First arg: string
+    super::emit_node(&n.args[0], e);
 
-        if n.args.len() >= 2 {
-            e.space();
-            e.token(TokenKind::IDENT("PLACING".to_string()));
-            e.space();
-            // Second arg: newstring
-            super::emit_node(&n.args[1], e);
-        }
+    e.space();
+    e.token(TokenKind::IDENT("PLACING".to_string()));
+    e.space();
+    // Second arg: newstring
+    super::emit_node(&n.args[1], e);
 
-        if n.args.len() >= 3 {
-            e.space();
-            e.token(TokenKind::FROM_KW);
-            e.space();
-            // Third arg: start position
-            super::emit_node(&n.args[2], e);
-        }
+    e.space();
+    e.token(TokenKind::FROM_KW);
+    e.space();
+    // Third arg: start position
+    super::emit_node(&n.args[2], e);
 
-        if n.args.len() >= 4 {
-            e.space();
-            e.token(TokenKind::FOR_KW);
-            e.space();
-            // Fourth arg: length
-            super::emit_node(&n.args[3], e);
-        }
+    if n.args.len() == 4 {
+        e.space();
+        e.token(TokenKind::FOR_KW);
+        e.space();
+        // Fourth arg: length
+        super::emit_node(&n.args[3], e);
     }
 
     e.token(TokenKind::R_PAREN);
@@ -200,47 +202,51 @@ fn emit_overlay_function(e: &mut EventEmitter, n: &FuncCall) {
 
 // POSITION(substring IN string)
 fn emit_position_function(e: &mut EventEmitter, n: &FuncCall) {
+    assert!(
+        n.args.len() == 2,
+        "POSITION function expects 2 arguments, got {}",
+        n.args.len()
+    );
+
     e.token(TokenKind::L_PAREN);
 
-    if n.args.len() >= 1 {
-        // First arg: substring
-        super::emit_node(&n.args[0], e);
+    // First arg: substring
+    super::emit_node(&n.args[0], e);
 
-        if n.args.len() >= 2 {
-            e.space();
-            e.token(TokenKind::IN_KW);
-            e.space();
-            // Second arg: string
-            super::emit_node(&n.args[1], e);
-        }
-    }
+    e.space();
+    e.token(TokenKind::IN_KW);
+    e.space();
+    // Second arg: string
+    super::emit_node(&n.args[1], e);
 
     e.token(TokenKind::R_PAREN);
 }
 
 // SUBSTRING(string FROM start [FOR length])
 fn emit_substring_function(e: &mut EventEmitter, n: &FuncCall) {
+    assert!(
+        n.args.len() == 2 || n.args.len() == 3,
+        "SUBSTRING function expects 2 or 3 arguments, got {}",
+        n.args.len()
+    );
+
     e.token(TokenKind::L_PAREN);
 
-    if !n.args.is_empty() {
-        // First arg: string
-        super::emit_node(&n.args[0], e);
+    // First arg: string
+    super::emit_node(&n.args[0], e);
 
-        if n.args.len() >= 2 {
-            e.space();
-            e.token(TokenKind::FROM_KW);
-            e.space();
-            // Second arg: start position
-            super::emit_node(&n.args[1], e);
-        }
+    e.space();
+    e.token(TokenKind::FROM_KW);
+    e.space();
+    // Second arg: start position
+    super::emit_node(&n.args[1], e);
 
-        if n.args.len() >= 3 {
-            e.space();
-            e.token(TokenKind::FOR_KW);
-            e.space();
-            // Third arg: length
-            super::emit_node(&n.args[2], e);
-        }
+    if n.args.len() == 3 {
+        e.space();
+        e.token(TokenKind::FOR_KW);
+        e.space();
+        // Third arg: length
+        super::emit_node(&n.args[2], e);
     }
 
     e.token(TokenKind::R_PAREN);
@@ -248,33 +254,38 @@ fn emit_substring_function(e: &mut EventEmitter, n: &FuncCall) {
 
 // TRIM([LEADING|TRAILING|BOTH [chars] FROM] string)
 fn emit_trim_function(e: &mut EventEmitter, n: &FuncCall) {
+    assert!(
+        !n.args.is_empty() && n.args.len() <= 3,
+        "TRIM function expects 1-3 arguments, got {}",
+        n.args.len()
+    );
+
     e.token(TokenKind::L_PAREN);
 
-    if !n.args.is_empty() {
-        if n.args.len() == 1 {
-            // Simple TRIM(string)
-            super::emit_node(&n.args[0], e);
-        } else if n.args.len() == 2 {
-            // TRIM(chars FROM string) or TRIM(LEADING/TRAILING/BOTH string)
-            // Second arg is the string, first arg is chars or mode
-            super::emit_node(&n.args[0], e);
-            e.space();
-            e.token(TokenKind::FROM_KW);
-            e.space();
-            super::emit_node(&n.args[1], e);
-        } else if n.args.len() >= 3 {
-            // TRIM(LEADING/TRAILING/BOTH chars FROM string)
-            // First arg: mode (LEADING/TRAILING/BOTH)
-            super::emit_node(&n.args[0], e);
-            e.space();
-            // Second arg: chars
-            super::emit_node(&n.args[1], e);
-            e.space();
-            e.token(TokenKind::FROM_KW);
-            e.space();
-            // Third arg: string
-            super::emit_node(&n.args[2], e);
-        }
+    if n.args.len() == 1 {
+        // Simple TRIM(string)
+        super::emit_node(&n.args[0], e);
+    } else if n.args.len() == 2 {
+        // TRIM(chars FROM string) or TRIM(LEADING/TRAILING/BOTH string)
+        // Second arg is the string, first arg is chars or mode
+        super::emit_node(&n.args[0], e);
+        e.space();
+        e.token(TokenKind::FROM_KW);
+        e.space();
+        super::emit_node(&n.args[1], e);
+    } else {
+        // n.args.len() == 3
+        // TRIM(LEADING/TRAILING/BOTH chars FROM string)
+        // First arg: mode (LEADING/TRAILING/BOTH)
+        super::emit_node(&n.args[0], e);
+        e.space();
+        // Second arg: chars
+        super::emit_node(&n.args[1], e);
+        e.space();
+        e.token(TokenKind::FROM_KW);
+        e.space();
+        // Third arg: string
+        super::emit_node(&n.args[2], e);
     }
 
     e.token(TokenKind::R_PAREN);
@@ -283,36 +294,37 @@ fn emit_trim_function(e: &mut EventEmitter, n: &FuncCall) {
 // NORMALIZE(string [, form])
 // The form argument (NFC/NFD/NFKC/NFKD) is an identifier, not a string
 fn emit_normalize_function(e: &mut EventEmitter, n: &FuncCall) {
+    assert!(
+        !n.args.is_empty() && n.args.len() <= 2,
+        "NORMALIZE function expects 1 or 2 arguments, got {}",
+        n.args.len()
+    );
+
     e.token(TokenKind::L_PAREN);
 
-    if !n.args.is_empty() {
-        // First arg: string to normalize
-        super::emit_node(&n.args[0], e);
+    // First arg: string to normalize
+    super::emit_node(&n.args[0], e);
 
-        if n.args.len() >= 2 {
-            e.token(TokenKind::COMMA);
-            e.space();
-            // Second arg: normalization form (NFC/NFD/NFKC/NFKD)
-            // This should be emitted as an identifier, not a string literal
-            // The form is stored as an AConst node with a string value
-            if let Some(pgt_query::NodeEnum::AConst(a_const)) = &n.args[1].node {
-                if let Some(pgt_query::protobuf::a_const::Val::Sval(s)) = &a_const.val {
-                    // Only emit as identifier if it's a known normalization form
-                    match s.sval.as_str() {
-                        "NFC" | "NFD" | "NFKC" | "NFKD" => {
-                            e.token(TokenKind::IDENT(s.sval.clone()));
-                        }
-                        _ => {
-                            // Not a known form, emit as string literal
-                            super::emit_node(&n.args[1], e);
-                        }
-                    }
-                } else {
+    if n.args.len() == 2 {
+        e.token(TokenKind::COMMA);
+        e.space();
+        // Second arg: normalization form (NFC/NFD/NFKC/NFKD)
+        // This should be emitted as an identifier, not a string literal
+        // The form is stored as an AConst node with a string value
+        let a_const = assert_node_variant!(AConst, &n.args[1]);
+        if let Some(pgt_query::protobuf::a_const::Val::Sval(s)) = &a_const.val {
+            // Only emit as identifier if it's a known normalization form
+            match s.sval.as_str() {
+                "NFC" | "NFD" | "NFKC" | "NFKD" => {
+                    e.token(TokenKind::IDENT(s.sval.clone()));
+                }
+                _ => {
+                    // Not a known form, emit as string literal
                     super::emit_node(&n.args[1], e);
                 }
-            } else {
-                super::emit_node(&n.args[1], e);
             }
+        } else {
+            super::emit_node(&n.args[1], e);
         }
     }
 

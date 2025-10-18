@@ -701,7 +701,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 }
 ```
 
-### Completed Nodes (179/270) - Last Updated 2025-10-17 Session 41
+### Completed Nodes (180/270) - Last Updated 2025-10-18 Session 49
 - [x] AArrayExpr (array literals ARRAY[...])
 - [x] AConst (with all variants: Integer, Float, Boolean, String, BitString)
 - [x] AExpr (partial - basic binary operators)
@@ -837,6 +837,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] ListenStmt (LISTEN channel)
 - [x] LoadStmt (LOAD 'library')
 - [x] LockStmt (LOCK TABLE with lock modes)
+- [x] LockingClause (SELECT ... FOR UPDATE/SHARE with OF targets and NOWAIT/SKIP LOCKED)
 - [x] MergeStmt (MERGE INTO with WHEN MATCHED/NOT MATCHED clauses, supports UPDATE/INSERT/DELETE/DO NOTHING, WITH clause supported)
 - [x] MinMaxExpr (GREATEST/LEAST functions)
 - [x] NamedArgExpr (named arguments: name := value)
@@ -867,7 +868,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] RuleStmt (CREATE RULE ... AS ON ... TO ... DO ...)
 - [x] ScalarArrayOpExpr (expr op ANY/ALL (array) constructs, converts to IN clause format)
 - [x] SecLabelStmt (SECURITY LABEL FOR provider ON object_type object IS 'label')
-- [x] SelectStmt (partial - basic SELECT FROM WHERE, VALUES clause support for INSERT, WITH clause support)
+- [x] SelectStmt (partial - SELECT with DISTINCT/DISTINCT ON, WINDOW clause definitions, LIMIT/OFFSET and FETCH WITH TIES, DML locking; VALUES for INSERT, WITH clause support)
 - [x] SetOperationStmt (UNION/INTERSECT/EXCEPT with ALL support)
 - [x] SetToDefault (DEFAULT keyword)
 - [x] SortBy (ORDER BY expressions with ASC/DESC, NULLS FIRST/LAST, USING operator)
@@ -884,7 +885,8 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] VacuumStmt (partial - VACUUM/ANALYZE, basic implementation)
 - [x] VariableSetStmt (partial - SET variable = value, TODO: RESET, other variants)
 - [x] VariableShowStmt (SHOW variable)
-- [x] ViewStmt (CREATE [OR REPLACE] VIEW ... AS ... [WITH CHECK OPTION])
+- [x] ViewStmt (CREATE [OR REPLACE] [TEMP] VIEW ... WITH (options) AS ... [WITH CHECK OPTION])
+- [x] WindowDef (window specifications with frame clauses, offsets, and exclusion handling)
 - [x] WithClause (WITH [RECURSIVE] for Common Table Expressions)
 - [x] XmlExpr (XMLELEMENT, XMLCONCAT, XMLCOMMENT, XMLFOREST, XMLPI, XMLROOT functions)
 - [x] XmlSerialize (XMLSERIALIZE(DOCUMENT/CONTENT expr AS type))
@@ -894,17 +896,42 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 Keep this section focused on durable guidance. When you add new insights, summarise them as short bullets and retire items that stop being relevant.
 
 ### Durable Guidance
+
+**Enum Handling**:
+- **Always use direct enum methods** instead of `TryFrom<i32>`: Call `n.field()` to get the typed enum rather than `TryFrom::try_from(n.field).ok()`. This eliminates fallible conversions and makes code cleaner.
+- **Match on enums exhaustively**: Use proper enum variants in match statements instead of raw integer comparisons. Example: `match n.op() { SetOperation::SetopUnion => ... }` not `match n.op { 2 => ... }`.
+- **Assert on unexpected enum values** instead of silently ignoring them. Use `assert!(false, "unexpected {}: {:?}", enum_name, value)` to fail fast on malformed ASTs.
+
+**Assertions and Validation**:
+- **Add strict assertions for expected argument counts** in special SQL functions (EXTRACT, OVERLAY, POSITION, etc.). Example: `assert!(n.args.len() == 2, "EXTRACT expects 2 arguments, got {}", n.args.len())`.
+- Use `assert_node_variant!` instead of `if let Some(NodeEnum::...)` when you expect a specific type to catch bugs early.
+- For `DefElem`-driven nodes, extract all fields first, then validate with assertions rather than silently falling through.
+
+**Code Quality**:
+- **Run `cargo clippy -p pgt_pretty_print` regularly** and fix warnings. Use `--fix --allow-dirty` to auto-fix most style issues.
+- Avoid `TryFrom` patterns when the protobuf node provides direct accessor methods.
+- Replace `if` chains with `match` for cleaner enum handling.
+
+**String and Identifier Handling**:
 - Reuse the helpers in `src/nodes/string.rs` for identifiers, keywords, and literals—avoid ad-hoc `TokenKind::IDENT` strings or manual quoting.
-- When normalising nodes like `ScalarArrayOpExpr`, assert the expected shape and consult metadata (`opno`, flags) before rewriting syntax.
-- For `DefElem`-driven nodes (for example `DoStmt`), validate the argument type and route all quoting through the shared helpers so output stays consistent.
 - Treat reserved keywords separately when deciding to quote identifiers; unreserved keywords like `name` can safely remain bare while true reserved words must stay quoted.
+
+**Type Normalization**:
 - Normalize TypeName built-ins by mapping `pg_catalog` identifiers to canonical SQL keywords while leaving user-defined schemas untouched.
 - Decode INTERVAL typmods by interpreting the range bitmask in `typmods[0]` before emitting optional second precision so layouts like `INTERVAL DAY TO SECOND(3)` stay canonical.
+
+**Layout and Formatting**:
 - Insert a `LineType::SoftOrSpace` breakpoint between join inputs and their qualifiers so long `ON` predicates can wrap without violating the target width while short joins stay single-line.
 - Render symbolic operator names (composed purely of punctuation) without quoting and force a space before parentheses so DROP/ALTER statements remain parseable.
-- Respect `CoercionForm` when emitting row constructors; implicit casts must stay bare tuples or the planner-visible `row_format` flag changes.
-- Decode prost enums with `TryFrom<i32>` so invalid action codes surface via debug assertions instead of collapsing into deprecated helpers.
 - Drop `LineType::SoftOrSpace` before optional DML clauses so compact statements stay single-line while long lists can wrap cleanly.
+- Drop `LineType::SoftOrSpace` before `OVER` clauses and each window spec segment so inline window functions can wrap without blowing per-line limits while still re-parsing to the same AST.
+
+**Node-Specific Patterns**:
+- Respect `CoercionForm` when emitting row constructors; implicit casts must stay bare tuples or the planner-visible `row_format` flag changes.
+- When emitting CTE materialization hints, match on `CteMaterialize::Always`/`::Never` to emit the hint; default CTEs should not emit any materialization keyword.
+- Map `SelectStmt::limit_option` to `FETCH ... WITH TIES` when it resolves to `LimitOption::WithTies` so the re-parsed AST retains the original limit semantics.
+- When wrapping a `SelectStmt` inside outer statements (e.g. VIEW, COPY), emit it via `emit_select_stmt_no_semicolon` so trailing clauses can follow before the final semicolon.
+- Decode window frame bitmasks to render RANGE/ROWS/GROUPS with the correct UNBOUNDED/CURRENT/OFFSET bounds and guard PRECEDING/FOLLOWING against missing offsets.
 
 ### Logging Future Work
 - Capture new learnings as concise bullets here and keep detailed session history in commit messages or external notes.
@@ -956,9 +983,10 @@ just ready
 
 ## Next Steps
 
-1. Capture targeted fixtures for INSERT/UPDATE/DELETE RETURNING + CTE cases before broad snapshot review so DML regressions stay isolated.
+1. Fold the new INSERT/UPDATE/DELETE WITH ... RETURNING fixtures into routine CI runs so regressions surface early.
 2. Spot-check MergeStmt WHEN clause formatting and add focused tests around mixed UPDATE/INSERT/DELETE branches if gaps appear.
 3. Audit existing TypeCast/TypeName snapshots for INTERVAL usages to confirm the new typmod decoding matches legacy expectations before broader review.
+4. Once the outstanding snapshot churn is cleared, re-run `cargo test -p pgt_pretty_print test_multi__window_60 -- --show-output` to confirm the refreshed ViewStmt emitter no longer diff's the window fixture.
 
 ## Summary: Key Points
 
@@ -1094,11 +1122,9 @@ cargo insta review
 
 ## 📝 Session Summaries
 
-This section tracks work sessions on the pretty printer. Add new entries at the top (most recent first).
+**Session history has been moved to [session_log.md](./session_log.md)** for easier maintenance.
 
-### Session Summary Template
-
-Use this template to document each work session:
+To add a new session entry, update [session_log.md](./session_log.md) using this template:
 
 ```markdown
 ---
@@ -1121,164 +1147,110 @@ Use this template to document each work session:
 ```
 
 **Instructions**:
-1. Add new session summaries at the TOP of this section (most recent first)
+1. Add new session summaries at the TOP of session_log.md (most recent first)
 2. Keep summaries concise - focus on what changed and why
 3. Reference specific files and line numbers when useful
-4. Move durable insights up to "Durable Guidance" section
-5. Archive old sessions after ~10 entries to keep this section manageable
+4. Move durable insights up to "Durable Guidance" section in this file
 
-### Session History
 
----
-**Date**: 2025-10-17 (Session 45)
-**Nodes Implemented/Fixed**: TypeName (INTERVAL typmods)
-**Progress**: 179/270 → 179/270
-**Tests**: cargo test -p pgt_pretty_print test_single__type_name_interval_0_60 -- --show-output
-**Key Changes**:
-- Decoded INTERVAL typmods in `emit_type_name` so range masks render as `YEAR`, `DAY TO SECOND`, and other canonical phrases.
-- Guarded the fallback path once the mask is recognised to keep raw typmod integers from leaking into formatted output.
-- Added a focused single-statement fixture covering INTERVAL combinations and captured the snapshot.
+## Notes
 
-**Learnings**:
-- Interval masks reuse the `dt.h` bit positions; interpreting `typmods[0]` restores the `*_TO_*` wording before we emit precision.
-- Precision arrives as `typmods[1]` only when present, and skipping the full-precision sentinel avoids redundant parentheses.
+- The pretty printer is **structure-preserving**: it should not change the AST
+- The formatter is **line-length-aware**: it respects `max_line_length` when possible
+- String literals and JSON content may exceed line length (allowed by tests)
+- The renderer uses a **greedy algorithm**: tries single-line first, then breaks
+- Groups enable **local layout decisions**: inner groups can break independently
 
-**Next Steps**:
-- Spot-check CAST/DEFAULT expressions that use INTERVAL typmods so the new layout does not introduce regressions in outstanding snapshots.
-- Fold any incidental diffs from the updated TypeName logic into the planned snapshot review batch to keep `.snap.new` files organised.
----
----
-**Date**: 2025-10-18 (Session 44)
-**Nodes Implemented/Fixed**: TypeName (built-in normalization)
-**Progress**: 179/270 → 179/270
-**Tests**: cargo test -p pgt_pretty_print test_single__create_table_simple_0_60; cargo test -p pgt_pretty_print test_single__type_cast_0_60
-**Key Changes**:
-- Normalized built-in TypeName variants to emit canonical SQL keywords and drop redundant `pg_catalog` qualifiers while preserving user schemas.
-- Added `%TYPE` emission support and a shared helper for dot-separated identifiers to keep quoting consistent.
+## Quick Reference: Adding a New Node
 
-**Learnings**:
-- Restrict builtin normalization to known schema-qualified names so `public.int4` stays explicit while `pg_catalog.int4` becomes `INT`.
+Follow these steps to implement a new AST node:
 
-**Next Steps**:
-- Backfill INTERVAL typmod decoding so duration precision formatting resumes matching legacy snapshots.
-- Re-run multi snapshot review after interval handling to confirm no remaining TypeName regressions.
----
----
-**Date**: 2025-10-17 (Session 43)
-**Nodes Implemented/Fixed**: DeleteStmt; UpdateStmt; MergeStmt (WITH clause)
-**Progress**: 179/270 → 179/270
-**Tests**: cargo check -p pgt_pretty_print
-**Key Changes**:
-- Wired DeleteStmt to emit WITH, USING, WHERE, and RETURNING clauses using shared list helpers and soft-or-space breakpoints.
-- Extended UpdateStmt with WITH, FROM, and RETURNING coverage so multi-table updates share the INSERT layout strategy.
-- Enabled MergeStmt to surface leading WITH clauses via `emit_with_clause`, clearing the lingering TODO for CTEs.
+### 1. Create the file
 
-**Learnings**:
-- Soft-or-space breakpoints keep DML clauses compact when short but gracefully wrap once USING/FROM lists grow.
-- Reusing the generic comma-separated list helper prevents spacing drift between RETURNING lists across INSERT/UPDATE/DELETE.
+```bash
+# Create new file in src/nodes/
+touch src/nodes/<node_name>.rs
+```
 
-**Next Steps**:
-- Capture targeted fixtures for DELETE/UPDATE WITH + RETURNING combinations before sweeping snapshot review.
-- Spot-check MergeStmt WHEN clause layout against the new DML output to ensure group boundaries stay consistent.
----
----
-**Date**: 2025-10-17 (Session 42)
-**Nodes Implemented/Fixed**: InsertStmt (WITH, OVERRIDING, RETURNING)
-**Progress**: 179/270 → 179/270
-**Tests**: cargo check -p pgt_pretty_print
-**Key Changes**:
-- Added WITH clause emission so CTE-backed INSERTs preserve their leading WITH groups.
-- Decoded `OverridingKind` to emit OVERRIDING SYSTEM/USER VALUE tokens in the right slot.
-- Emitted RETURNING lists with soft line breaks for consistency with UPDATE/MERGE output.
+### 2. Implement the emit function
 
-**Learnings**:
-- Insert's `override` flag maps cleanly through `OverridingKind::try_from`, keeping unexpected planner values obvious via debug assertions.
+```rust
+// src/nodes/<node_name>.rs
+use pgt_query::protobuf::<NodeType>;
+use crate::{TokenKind, emitter::{EventEmitter, GroupKind}};
 
-**Next Steps**:
-- Mirror the RETURNING/CTE handling in `UpdateStmt` and `DeleteStmt` to close out shared DML gaps.
-- Audit `MergeStmt` to wire up its pending WITH clause now that the helper path is proven.
----
----
-**Date**: 2025-10-17 (Session 41)
-**Nodes Implemented/Fixed**: InferClause; OnConflictClause
-**Progress**: 177/270 → 179/270
-**Tests**: cargo check -p pgt_pretty_print
-**Key Changes**:
-- Added a dedicated `emit_infer_clause` so ON CONFLICT targets handle both column lists and constraint references with shared WHERE emission.
-- Reworked `emit_on_conflict_clause` to use keyword token kinds, reuse `emit_set_clause`, and guard action decoding via `TryFrom`.
-- Registered the new node in `mod.rs` so InsertStmt dispatch no longer falls through to the global `todo!` on ON CONFLICT inputs.
+pub(super) fn emit_<node_name>(e: &mut EventEmitter, n: &<NodeType>) {
+    e.group_start(GroupKind::<NodeName>);
 
-**Learnings**:
-- Prost enums expose fallible `TryFrom<i32>` which keeps us off deprecated helpers and makes unexpected planner values obvious.
+    // Emit tokens, spaces, and child nodes
+    e.token(TokenKind::KEYWORD_KW);
+    e.space();
+    // ... implement based on Go SqlString() method
 
-**Next Steps**:
-- Finish the remaining `InsertStmt` TODOs (RETURNING clause, WITH support) now that ON CONFLICT formatting is wired up.
-- Add targeted fixtures covering `ON CONSTRAINT` usage and partial index predicates to exercise the new emitters.
----
----
-**Date**: 2025-10-17 (Session 40)
-**Nodes Implemented/Fixed**: CoerceToDomain; CoerceToDomainValue; FieldSelect; FieldStore
-**Progress**: 173/270 → 177/270
-**Tests**: `cargo test -p pgt_pretty_print` (expected snapshot churn; 146/270 passing)
-**Key Changes**:
-- Added pass-through emitters for CoerceToDomain, FieldSelect, and FieldStore so wrapper nodes no longer trigger dispatcher `todo!` panics.
-- Emitted the VALUE keyword for CoerceToDomainValue to unblock domain constraint formatting.
-- Registered the new emitters in `src/nodes/mod.rs` so the dispatcher recognises them.
+    e.group_end();
+}
+```
 
-**Learnings**:
-- Wrapper nodes that only exist to enforce domain semantics should defer to their inner expressions to preserve layout and avoid redundant tokens.
+### 3. Register in mod.rs
 
-**Next Steps**:
-- Resume TypeName normalisation work to stabilise built-in type output before snapshot review.
-- Audit remaining wrapper-style nodes (e.g. SubscriptingRef assignment) that still fall through to `todo!`.
----
----
-**Date**: 2025-10-17 (Session 39)
-**Nodes Implemented/Fixed**: ArrayCoerceExpr; CoerceViaIo; ConvertRowtypeExpr; RelabelType; RowCompareExpr; RowExpr implicit tuples
-**Progress**: 168/270 → 173/270
-**Tests**: 1 targeted (row_compare_expr) passes; bulk snapshot review still outstanding
-**Key Changes**:
-- Added pass-through emitters for CoerceViaIo, ArrayCoerceExpr, ConvertRowtypeExpr, and RelabelType so implicit casts defer to their inner node
-- Implemented RowCompareExpr formatting with tuple grouping and operator tokens
-- Updated RowExpr to respect implicit tuple form and surface optional column aliases without forcing ROW keyword
+```rust
+// src/nodes/mod.rs
 
-**Learnings**:
-- Use `CoercionForm::CoerceImplicitCast` to decide when a row constructor should omit the `ROW` keyword to preserve the original AST shape
-- RowCompareExpr carries row-wise operator metadata; mapping that enum directly to tokens keeps comparisons symmetric
+// Add module declaration
+mod <node_name>;
 
-**Next Steps**:
-- Normalize TypeName output for built-in catalog types so snapshots stop oscillating between schema-qualified and canonical names
-- Implement remaining coercion wrappers (CoerceToDomain, FieldSelect/FieldStore) that still fall through to `todo!`
----
----
-**Date**: 2025-10-17 (Session 38)
-**Nodes Implemented/Fixed**: JoinExpr (line breaking); ObjectWithArgs (operator spacing)
-**Progress**: 168/270 → 168/270
-**Tests**: 0 passed (was 0) — `test_multi__alter_operator_60` now requires snapshot review
-**Key Changes**:
-- Added soft breaks around join keywords and qualifiers so ON clauses respect the 60-column limit without forcing ragged joins
-- Emitted symbolic operator names without quoting and forced a separating space before argument lists to keep DROP/ALTER syntax parseable
+// Add import
+use <node_name>::emit_<node_name>;
 
-**Learnings**:
-- Soft lines before join segments give the renderer flexibility to fall back to multi-line layouts when predicates are long
-- Operator names composed purely of punctuation must stay bare and include an explicit space before parentheses
+// Add to dispatch in emit_node_enum()
+pub fn emit_node_enum(node: &NodeEnum, e: &mut EventEmitter) {
+    match &node {
+        // ... existing cases
+        NodeEnum::<NodeName>(n) => emit_<node_name>(e, n),
+        // ...
+    }
+}
+```
 
-**Next Steps**:
-- Review `tests__alter_operator_60.snap.new` via `cargo insta review`
-- Spot-check other join-heavy statements for consistent wrapping before re-running broader suites
----
----
-**Date**: 2025-10-17 (Session 37)
-**Nodes Implemented/Fixed**: AlterOperatorStmt; AExpr operator forms; DefineStmt (operator support)
-**Progress**: 167/270 → 168/270
-**Tests**: 0 passed (was 0) — `test_multi__alter_operator_60` still fails on legacy long lines
-**Key Changes**:
-- Added explicit operator emitters for CREATE/ALTER OPERATOR and extended AExpr handling for qualified operators and NOT variants
-- Relaxed identifier quoting using a reserved keyword allowlist and preserved schema-aware type names while improving function parameter layout
-**Learnings**:
-- Operator names need bespoke rendering (no quoting, optional schema qualifiers) and SET option payloads mix lists, typenames, and sentinel NONE values
-- Reserved keywords are the inflection point for quoting; unreserved keywords like `name` should remain bare to match snapshot expectations
-**Next Steps**:
-- Address remaining line-length regressions in legacy SELECT formatting before re-running the multi-suite
-- Expand AlterOperatorStmt to cover MERGES/HASHES boolean toggles without string fallbacks once layout is sorted
----
+### 4. Test
+
+```bash
+# Run tests to see if it works
+cargo test -p pgt_pretty_print
+
+# Review snapshot output
+cargo insta review
+```
+
+### 5. Iterate
+
+- Check Go implementation in `parser/ast/*.go` for reference
+- Adjust groups, spaces, and line breaks based on test output
+- Ensure AST equality check passes (tests validate this automatically)
+
+## Files You'll Work With
+
+**Primary files** (where you implement):
+- `src/nodes/mod.rs` - Register new nodes here
+- `src/nodes/<node_name>.rs` - Implement each node here
+- `src/nodes/node_list.rs` - Helper functions (read-only, may add helpers)
+- `src/nodes/string.rs` - String/identifier helpers (read-only)
+
+**Reference files** (read for examples):
+- `src/nodes/select_stmt.rs` - Complex statement example
+- `src/nodes/update_stmt.rs` - Example with `assert_node_variant!`
+- `src/nodes/res_target.rs` - Example with multiple emit functions
+- `src/nodes/range_var.rs` - Simple node example
+- `src/nodes/column_ref.rs` - List helper example
+
+**Go reference files** (read for SQL logic):
+- `parser/ast/statements.go` - Main SQL statements
+- `parser/ast/expressions.go` - Expression nodes
+- `parser/ast/ddl_statements.go` - DDL statements
+- Other `parser/ast/*.go` files as needed
+
+**DO NOT MODIFY**:
+- `src/renderer.rs` - Layout engine (already complete)
+- `src/emitter.rs` - Event emitter (already complete)
+- `src/codegen/` - Code generation (already complete)
+- `tests/tests.rs` - Test infrastructure (already complete)

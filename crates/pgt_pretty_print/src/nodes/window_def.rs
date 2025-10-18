@@ -1,24 +1,77 @@
-use crate::{TokenKind, emitter::EventEmitter, nodes::node_list::emit_comma_separated_list};
-use pgt_query::protobuf::WindowDef;
+use crate::nodes::node_list::emit_comma_separated_list;
+use crate::nodes::string::{emit_identifier_maybe_quoted, emit_keyword};
+use crate::{
+    TokenKind,
+    emitter::{EventEmitter, LineType},
+};
+use pgt_query::protobuf::{Node, WindowDef};
+
+const FRAMEOPTION_NONDEFAULT: i32 = 0x00001;
+const FRAMEOPTION_RANGE: i32 = 0x00002;
+const FRAMEOPTION_ROWS: i32 = 0x00004;
+const FRAMEOPTION_GROUPS: i32 = 0x00008;
+const FRAMEOPTION_BETWEEN: i32 = 0x00010;
+const FRAMEOPTION_START_UNBOUNDED_PRECEDING: i32 = 0x00020;
+const FRAMEOPTION_END_UNBOUNDED_PRECEDING: i32 = 0x00040;
+const FRAMEOPTION_START_UNBOUNDED_FOLLOWING: i32 = 0x00080;
+const FRAMEOPTION_END_UNBOUNDED_FOLLOWING: i32 = 0x00100;
+const FRAMEOPTION_START_CURRENT_ROW: i32 = 0x00200;
+const FRAMEOPTION_END_CURRENT_ROW: i32 = 0x00400;
+const FRAMEOPTION_START_OFFSET_PRECEDING: i32 = 0x00800;
+const FRAMEOPTION_END_OFFSET_PRECEDING: i32 = 0x01000;
+const FRAMEOPTION_START_OFFSET_FOLLOWING: i32 = 0x02000;
+const FRAMEOPTION_END_OFFSET_FOLLOWING: i32 = 0x04000;
+const FRAMEOPTION_EXCLUDE_CURRENT_ROW: i32 = 0x08000;
+const FRAMEOPTION_EXCLUDE_GROUP: i32 = 0x10000;
+const FRAMEOPTION_EXCLUDE_TIES: i32 = 0x20000;
+const FRAMEOPTION_EXCLUSION_MASK: i32 =
+    FRAMEOPTION_EXCLUDE_CURRENT_ROW | FRAMEOPTION_EXCLUDE_GROUP | FRAMEOPTION_EXCLUDE_TIES;
+
+#[derive(Copy, Clone)]
+enum FrameBoundSide {
+    Start,
+    End,
+}
 
 // WindowDef is not a NodeEnum type, so we don't use pub(super)
 // It's a helper structure used within FuncCall and SelectStmt
 pub fn emit_window_def(e: &mut EventEmitter, n: &WindowDef) {
-    // WindowDef is a helper structure, so we don't use group_start/group_end
-    // It's emitted within the parent's group (FuncCall or SelectStmt)
-
-    // If refname is set, this is a reference to a named window
-    if !n.refname.is_empty() {
-        e.token(TokenKind::IDENT(n.refname.clone()));
+    // Simple reference to a named window
+    if n.refname.is_empty()
+        && n.partition_clause.is_empty()
+        && n.order_clause.is_empty()
+        && n.start_offset.is_none()
+        && n.end_offset.is_none()
+        && !n.name.is_empty()
+    {
+        emit_identifier_maybe_quoted(e, &n.name);
         return;
     }
 
+    emit_window_spec(e, n);
+}
+
+pub fn emit_window_definition(e: &mut EventEmitter, n: &WindowDef) {
+    emit_identifier_maybe_quoted(e, &n.name);
+    e.space();
+    e.token(TokenKind::AS_KW);
+    e.space();
+    emit_window_spec(e, n);
+}
+
+fn emit_window_spec(e: &mut EventEmitter, n: &WindowDef) {
     e.token(TokenKind::L_PAREN);
 
-    let mut needs_space = false;
+    let mut has_content = false;
 
-    // PARTITION BY clause
+    if !n.refname.is_empty() {
+        e.line(LineType::SoftOrSpace);
+        emit_identifier_maybe_quoted(e, &n.refname);
+        has_content = true;
+    }
+
     if !n.partition_clause.is_empty() {
+        e.line(LineType::SoftOrSpace);
         e.token(TokenKind::PARTITION_KW);
         e.space();
         e.token(TokenKind::BY_KW);
@@ -26,14 +79,11 @@ pub fn emit_window_def(e: &mut EventEmitter, n: &WindowDef) {
         emit_comma_separated_list(e, &n.partition_clause, |node, emitter| {
             super::emit_node(node, emitter)
         });
-        needs_space = true;
+        has_content = true;
     }
 
-    // ORDER BY clause
     if !n.order_clause.is_empty() {
-        if needs_space {
-            e.space();
-        }
+        e.line(LineType::SoftOrSpace);
         e.token(TokenKind::ORDER_KW);
         e.space();
         e.token(TokenKind::BY_KW);
@@ -41,15 +91,154 @@ pub fn emit_window_def(e: &mut EventEmitter, n: &WindowDef) {
         emit_comma_separated_list(e, &n.order_clause, |node, emitter| {
             super::emit_node(node, emitter)
         });
+        has_content = true;
     }
 
-    // Frame clause (ROWS/RANGE/GROUPS)
-    // frame_options is a bitmap that encodes the frame clause
-    // This is complex - implementing basic support
-    // TODO: Full frame clause implementation with start_offset and end_offset
-    // For now, we skip frame clause emission if frame_options != 0
-    // The default frame options (1058 = RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
-    // are implicit and don't need to be emitted
+    if emit_frame_clause(e, n) {
+        has_content = true;
+    }
+
+    if !has_content {
+        // Preserve empty parentheses for OVER ()
+        e.token(TokenKind::R_PAREN);
+        return;
+    }
 
     e.token(TokenKind::R_PAREN);
+}
+
+fn emit_frame_clause(e: &mut EventEmitter, n: &WindowDef) -> bool {
+    let options = n.frame_options;
+
+    if options & FRAMEOPTION_NONDEFAULT == 0 {
+        return false;
+    }
+
+    e.line(LineType::SoftOrSpace);
+
+    emit_frame_mode(e, options);
+    e.space();
+
+    if options & FRAMEOPTION_BETWEEN != 0 {
+        e.token(TokenKind::BETWEEN_KW);
+        e.line(LineType::SoftOrSpace);
+        emit_frame_bound(e, options, n.start_offset.as_deref(), FrameBoundSide::Start);
+        e.line(LineType::SoftOrSpace);
+        e.token(TokenKind::AND_KW);
+        e.line(LineType::SoftOrSpace);
+        emit_frame_bound(e, options, n.end_offset.as_deref(), FrameBoundSide::End);
+    } else {
+        e.line(LineType::SoftOrSpace);
+        emit_frame_bound(e, options, n.start_offset.as_deref(), FrameBoundSide::Start);
+    }
+
+    if options & FRAMEOPTION_EXCLUSION_MASK != 0 {
+        e.line(LineType::SoftOrSpace);
+        emit_frame_exclusion(e, options);
+    }
+
+    true
+}
+
+fn emit_frame_mode(e: &mut EventEmitter, options: i32) {
+    if options & FRAMEOPTION_RANGE != 0 {
+        e.token(TokenKind::RANGE_KW);
+    } else if options & FRAMEOPTION_ROWS != 0 {
+        e.token(TokenKind::ROWS_KW);
+    } else if options & FRAMEOPTION_GROUPS != 0 {
+        emit_keyword(e, "GROUPS");
+    } else {
+        e.token(TokenKind::RANGE_KW);
+    }
+}
+
+fn emit_frame_bound(
+    e: &mut EventEmitter,
+    options: i32,
+    offset: Option<&Node>,
+    side: FrameBoundSide,
+) {
+    match side {
+        FrameBoundSide::Start => {
+            if options & FRAMEOPTION_START_UNBOUNDED_PRECEDING != 0 {
+                emit_keyword(e, "UNBOUNDED");
+                e.space();
+                emit_keyword(e, "PRECEDING");
+            } else if options & FRAMEOPTION_START_UNBOUNDED_FOLLOWING != 0 {
+                debug_assert!(false, "window frame start cannot be UNBOUNDED FOLLOWING");
+                emit_keyword(e, "UNBOUNDED");
+                e.space();
+                emit_keyword(e, "FOLLOWING");
+            } else if options & FRAMEOPTION_START_CURRENT_ROW != 0 {
+                e.token(TokenKind::CURRENT_KW);
+                e.space();
+                e.token(TokenKind::ROW_KW);
+            } else if options & FRAMEOPTION_START_OFFSET_PRECEDING != 0 {
+                let offset_node =
+                    offset.expect("FRAMEOPTION_START_OFFSET_PRECEDING requires start_offset");
+                super::emit_node(offset_node, e);
+                e.space();
+                emit_keyword(e, "PRECEDING");
+            } else if options & FRAMEOPTION_START_OFFSET_FOLLOWING != 0 {
+                let offset_node =
+                    offset.expect("FRAMEOPTION_START_OFFSET_FOLLOWING requires start_offset");
+                super::emit_node(offset_node, e);
+                e.space();
+                emit_keyword(e, "FOLLOWING");
+            } else {
+                debug_assert!(false, "unhandled window frame start options: {options:#x}");
+                emit_keyword(e, "CURRENT");
+                e.space();
+                emit_keyword(e, "ROW");
+            }
+        }
+        FrameBoundSide::End => {
+            if options & FRAMEOPTION_END_UNBOUNDED_PRECEDING != 0 {
+                debug_assert!(false, "window frame end cannot be UNBOUNDED PRECEDING");
+                emit_keyword(e, "UNBOUNDED");
+                e.space();
+                emit_keyword(e, "PRECEDING");
+            } else if options & FRAMEOPTION_END_UNBOUNDED_FOLLOWING != 0 {
+                emit_keyword(e, "UNBOUNDED");
+                e.space();
+                emit_keyword(e, "FOLLOWING");
+            } else if options & FRAMEOPTION_END_CURRENT_ROW != 0 {
+                e.token(TokenKind::CURRENT_KW);
+                e.space();
+                e.token(TokenKind::ROW_KW);
+            } else if options & FRAMEOPTION_END_OFFSET_PRECEDING != 0 {
+                let offset_node =
+                    offset.expect("FRAMEOPTION_END_OFFSET_PRECEDING requires end_offset");
+                super::emit_node(offset_node, e);
+                e.space();
+                emit_keyword(e, "PRECEDING");
+            } else if options & FRAMEOPTION_END_OFFSET_FOLLOWING != 0 {
+                let offset_node =
+                    offset.expect("FRAMEOPTION_END_OFFSET_FOLLOWING requires end_offset");
+                super::emit_node(offset_node, e);
+                e.space();
+                emit_keyword(e, "FOLLOWING");
+            } else {
+                debug_assert!(false, "unhandled window frame end options: {options:#x}");
+                emit_keyword(e, "CURRENT");
+                e.space();
+                emit_keyword(e, "ROW");
+            }
+        }
+    }
+}
+
+fn emit_frame_exclusion(e: &mut EventEmitter, options: i32) {
+    e.token(TokenKind::EXCLUDE_KW);
+    e.space();
+
+    if options & FRAMEOPTION_EXCLUDE_CURRENT_ROW != 0 {
+        e.token(TokenKind::CURRENT_KW);
+        e.space();
+        e.token(TokenKind::ROW_KW);
+    } else if options & FRAMEOPTION_EXCLUDE_GROUP != 0 {
+        e.token(TokenKind::GROUP_KW);
+    } else if options & FRAMEOPTION_EXCLUDE_TIES != 0 {
+        emit_keyword(e, "TIES");
+    }
 }

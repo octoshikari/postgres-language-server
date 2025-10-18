@@ -1,4 +1,4 @@
-use pgt_query::protobuf::SetOperationStmt;
+use pgt_query::protobuf::{SetOperation, SetOperationStmt};
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind, LineType};
@@ -14,33 +14,30 @@ pub(super) fn emit_set_operation_stmt(e: &mut EventEmitter, n: &SetOperationStmt
     // Emit set operation keyword (UNION, INTERSECT, EXCEPT)
     e.line(LineType::Hard);
 
-    match n.op {
-        2 => {
-            // UNION
+    match n.op() {
+        SetOperation::SetopUnion => {
             e.token(TokenKind::UNION_KW);
             if n.all {
                 e.space();
                 e.token(TokenKind::ALL_KW);
             }
         }
-        3 => {
-            // INTERSECT
+        SetOperation::SetopIntersect => {
             e.token(TokenKind::INTERSECT_KW);
             if n.all {
                 e.space();
                 e.token(TokenKind::ALL_KW);
             }
         }
-        4 => {
-            // EXCEPT
+        SetOperation::SetopExcept => {
             e.token(TokenKind::EXCEPT_KW);
             if n.all {
                 e.space();
                 e.token(TokenKind::ALL_KW);
             }
         }
-        _ => {
-            // Undefined or SETOP_NONE - shouldn't happen in valid SQL
+        SetOperation::SetopNone | SetOperation::Undefined => {
+            assert!(false, "unexpected SetOperation: {:?}", n.op());
         }
     }
 

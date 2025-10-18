@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use pgt_query::protobuf::{OnConflictAction, OnConflictClause};
 
 use crate::{
@@ -25,12 +23,12 @@ pub(super) fn emit_on_conflict_clause(e: &mut EventEmitter, n: &OnConflictClause
     e.space();
     e.token(TokenKind::DO_KW);
 
-    match OnConflictAction::try_from(n.action).ok() {
-        Some(OnConflictAction::OnconflictNothing) => {
+    match n.action() {
+        OnConflictAction::OnconflictNothing => {
             e.space();
             e.token(TokenKind::NOTHING_KW);
         }
-        Some(OnConflictAction::OnconflictUpdate) => {
+        OnConflictAction::OnconflictUpdate => {
             e.space();
             e.token(TokenKind::UPDATE_KW);
             e.space();
@@ -50,16 +48,8 @@ pub(super) fn emit_on_conflict_clause(e: &mut EventEmitter, n: &OnConflictClause
                 super::emit_node(where_clause, e);
             }
         }
-        other => {
-            debug_assert!(
-                matches!(
-                    other,
-                    None | Some(OnConflictAction::OnconflictNone)
-                        | Some(OnConflictAction::Undefined)
-                ),
-                "unexpected OnConflictAction {:?}",
-                other
-            );
+        OnConflictAction::OnconflictNone | OnConflictAction::Undefined => {
+            assert!(false, "unexpected OnConflictAction: {:?}", n.action());
         }
     }
 
