@@ -1,4 +1,5 @@
 use pgt_query::protobuf::{AExpr, AExprKind};
+use pgt_query::{Node, NodeEnum};
 
 use crate::{
     TokenKind,
@@ -31,20 +32,62 @@ pub(super) fn emit_a_expr(e: &mut EventEmitter, n: &AExpr) {
 
 // Basic binary operator: left op right
 fn emit_aexpr_op(e: &mut EventEmitter, n: &AExpr) {
-    if let Some(ref lexpr) = n.lexpr {
-        super::emit_node(lexpr, e);
-    }
-
-    if !n.name.is_empty() {
-        e.space();
-        for name in &n.name {
-            super::emit_node(name, e);
+    if n.name.is_empty() {
+        if let Some(ref lexpr) = n.lexpr {
+            super::emit_node(lexpr, e);
         }
-        e.space();
+        if let Some(ref rexpr) = n.rexpr {
+            if n.lexpr.is_some() {
+                e.space();
+            }
+            super::emit_node(rexpr, e);
+        }
+        return;
     }
 
-    if let Some(ref rexpr) = n.rexpr {
-        super::emit_node(rexpr, e);
+    let lexpr = n.lexpr.as_ref();
+    let rexpr = n.rexpr.as_ref();
+
+    match (lexpr, rexpr) {
+        (Some(lexpr), Some(rexpr)) => {
+            super::emit_node(lexpr, e);
+            e.space();
+            emit_operator(e, &n.name);
+            e.space();
+            super::emit_node(rexpr, e);
+        }
+        (None, Some(rexpr)) => {
+            if let Some(op) = extract_simple_operator(&n.name) {
+                if op.eq_ignore_ascii_case("not") {
+                    e.token(TokenKind::NOT_KW);
+                    e.space();
+                    super::emit_node(rexpr, e);
+                } else {
+                    emit_simple_operator(e, op);
+                    if operator_needs_space(op) {
+                        e.space();
+                    }
+                    super::emit_node(rexpr, e);
+                }
+            } else {
+                emit_operator(e, &n.name);
+                e.space();
+                super::emit_node(rexpr, e);
+            }
+        }
+        (Some(lexpr), None) => {
+            super::emit_node(lexpr, e);
+            if let Some(op) = extract_simple_operator(&n.name) {
+                if operator_needs_space(op) {
+                    e.space();
+                }
+                emit_simple_operator(e, op);
+            } else {
+                e.space();
+                emit_operator(e, &n.name);
+            }
+        }
+        (None, None) => {}
     }
 }
 
@@ -56,8 +99,10 @@ fn emit_aexpr_op_any(e: &mut EventEmitter, n: &AExpr) {
     }
 
     if !n.name.is_empty() {
-        for name in &n.name {
-            super::emit_node(name, e);
+        if let Some(op) = extract_simple_operator(&n.name) {
+            emit_simple_operator(e, op);
+        } else {
+            emit_operator(e, &n.name);
         }
         e.space();
     }
@@ -78,8 +123,10 @@ fn emit_aexpr_op_all(e: &mut EventEmitter, n: &AExpr) {
     }
 
     if !n.name.is_empty() {
-        for name in &n.name {
-            super::emit_node(name, e);
+        if let Some(op) = extract_simple_operator(&n.name) {
+            emit_simple_operator(e, op);
+        } else {
+            emit_operator(e, &n.name);
         }
         e.space();
     }
@@ -158,22 +205,46 @@ fn emit_aexpr_in(e: &mut EventEmitter, n: &AExpr) {
         e.space();
     }
 
+    let is_not = extract_simple_operator(&n.name)
+        .map(|op| op == "<>")
+        .unwrap_or(false);
+
+    if is_not {
+        e.token(TokenKind::NOT_KW);
+        e.space();
+    }
+
     e.token(TokenKind::IN_KW);
     e.space();
 
     // The rexpr is typically a List node, which emits comma-separated items
     // We need to wrap it in parentheses for IN clause
-    e.token(TokenKind::L_PAREN);
     if let Some(ref rexpr) = n.rexpr {
-        super::emit_node(rexpr, e);
+        match rexpr.node.as_ref() {
+            Some(NodeEnum::SubLink(_)) => super::emit_node(rexpr, e),
+            _ => {
+                e.token(TokenKind::L_PAREN);
+                super::emit_node(rexpr, e);
+                e.token(TokenKind::R_PAREN);
+                return;
+            }
+        }
     }
-    e.token(TokenKind::R_PAREN);
 }
 
 // expr LIKE pattern [ESCAPE escape]
 fn emit_aexpr_like(e: &mut EventEmitter, n: &AExpr) {
     if let Some(ref lexpr) = n.lexpr {
         super::emit_node(lexpr, e);
+        e.space();
+    }
+
+    let is_not = extract_simple_operator(&n.name)
+        .map(|op| op == "!~~")
+        .unwrap_or(false);
+
+    if is_not {
+        e.token(TokenKind::NOT_KW);
         e.space();
     }
 
@@ -192,6 +263,15 @@ fn emit_aexpr_ilike(e: &mut EventEmitter, n: &AExpr) {
         e.space();
     }
 
+    let is_not = extract_simple_operator(&n.name)
+        .map(|op| op == "!~~*")
+        .unwrap_or(false);
+
+    if is_not {
+        e.token(TokenKind::NOT_KW);
+        e.space();
+    }
+
     e.token(TokenKind::ILIKE_KW);
     e.space();
 
@@ -204,6 +284,15 @@ fn emit_aexpr_ilike(e: &mut EventEmitter, n: &AExpr) {
 fn emit_aexpr_similar(e: &mut EventEmitter, n: &AExpr) {
     if let Some(ref lexpr) = n.lexpr {
         super::emit_node(lexpr, e);
+        e.space();
+    }
+
+    let is_not = extract_simple_operator(&n.name)
+        .map(|op| op == "!~")
+        .unwrap_or(false);
+
+    if is_not {
+        e.token(TokenKind::NOT_KW);
         e.space();
     }
 
@@ -335,4 +424,52 @@ fn emit_aexpr_not_between_sym(e: &mut EventEmitter, n: &AExpr) {
             super::emit_node(rexpr, e);
         }
     }
+}
+
+fn emit_operator(e: &mut EventEmitter, name: &[Node]) {
+    if name.len() > 1 {
+        emit_qualified_operator(e, name);
+    } else if let Some(first) = name.first() {
+        emit_operator_part(e, first);
+    }
+}
+
+fn emit_qualified_operator(e: &mut EventEmitter, name: &[Node]) {
+    e.token(TokenKind::OPERATOR_KW);
+    e.token(TokenKind::L_PAREN);
+
+    for (idx, part) in name.iter().enumerate() {
+        if idx > 0 {
+            e.token(TokenKind::DOT);
+        }
+        emit_operator_part(e, part);
+    }
+
+    e.token(TokenKind::R_PAREN);
+}
+
+fn emit_operator_part(e: &mut EventEmitter, node: &Node) {
+    match node.node.as_ref() {
+        Some(NodeEnum::String(s)) => e.token(TokenKind::IDENT(s.sval.clone())),
+        _ => super::emit_node(node, e),
+    }
+}
+
+fn emit_simple_operator(e: &mut EventEmitter, op: &str) {
+    e.token(TokenKind::IDENT(op.to_string()));
+}
+
+fn extract_simple_operator<'a>(name: &'a [Node]) -> Option<&'a str> {
+    if name.len() != 1 {
+        return None;
+    }
+
+    match name[0].node.as_ref() {
+        Some(NodeEnum::String(s)) => Some(&s.sval),
+        _ => None,
+    }
+}
+
+fn operator_needs_space(op: &str) -> bool {
+    op.chars().any(|c| c.is_alphabetic())
 }

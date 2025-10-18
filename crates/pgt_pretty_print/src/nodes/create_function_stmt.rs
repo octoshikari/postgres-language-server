@@ -34,11 +34,15 @@ pub(super) fn emit_create_function_stmt(e: &mut EventEmitter, n: &CreateFunction
     // Parameters
     e.token(TokenKind::L_PAREN);
     if !n.parameters.is_empty() {
+        e.indent_start();
+        e.line(LineType::SoftOrSpace);
         emit_comma_separated_list(e, &n.parameters, |param, e| {
             if let Some(pgt_query::NodeEnum::FunctionParameter(fp)) = &param.node {
                 emit_function_parameter(e, fp);
             }
         });
+        e.indent_end();
+        e.line(LineType::Soft);
     }
     e.token(TokenKind::R_PAREN);
 

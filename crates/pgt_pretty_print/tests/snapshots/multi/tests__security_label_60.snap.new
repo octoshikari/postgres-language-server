@@ -15,15 +15,15 @@ CREATE USER regress_seclabel_user1 CREATEROLE;
 
 CREATE USER regress_seclabel_user2;
 
-CREATE TABLE seclabel_tbl1 ( a INT, b TEXT );
+CREATE TABLE seclabel_tbl1 ( a pg_catalog.int4, b text );
 
-CREATE TABLE seclabel_tbl2 ( x INT, y TEXT );
+CREATE TABLE seclabel_tbl2 ( x pg_catalog.int4, y text );
 
 CREATE VIEW seclabel_view1 AS SELECT * FROM seclabel_tbl2;;
 
-CREATE FUNCTION seclabel_four() RETURNS INT AS 'SELECT 4' LANGUAGE "sql";
+CREATE FUNCTION seclabel_four() RETURNS pg_catalog.int4 AS 'SELECT 4' LANGUAGE "sql";
 
-CREATE DOMAIN seclabel_domain AS TEXT;
+CREATE DOMAIN seclabel_domain AS text;
 
 ALTER TABLE seclabel_tbl1 OWNER TO regress_seclabel_user1;
 

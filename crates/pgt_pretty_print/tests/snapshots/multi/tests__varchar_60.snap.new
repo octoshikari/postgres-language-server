@@ -3,7 +3,9 @@ source: crates/pgt_pretty_print/tests/tests.rs
 assertion_line: 174
 input_file: crates/pgt_pretty_print/tests/data/multi/varchar_60.sql
 ---
-CREATE TEMPORARY TABLE varchar_tbl ( f1 VARCHAR(1) );
+CREATE TEMPORARY TABLE varchar_tbl (
+  f1 pg_catalog.varchar(1)
+);
 
 INSERT INTO varchar_tbl (f1) VALUES ('a');
 

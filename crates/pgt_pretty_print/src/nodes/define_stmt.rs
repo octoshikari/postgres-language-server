@@ -1,5 +1,7 @@
-use pgt_query::protobuf::{DefineStmt, Node, ObjectType};
+use pgt_query::NodeEnum;
+use pgt_query::protobuf::{DefElem, DefineStmt, List, Node, ObjectType};
 
+use super::string::emit_identifier_maybe_quoted;
 use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
@@ -103,9 +105,15 @@ pub(super) fn emit_define_stmt(e: &mut EventEmitter, n: &DefineStmt) {
         e.token(TokenKind::EXISTS_KW);
     }
 
+    let is_operator = kind == ObjectType::ObjectOperator;
+
     if !n.defnames.is_empty() {
         e.space();
-        emit_dot_separated_list(e, &n.defnames);
+        if is_operator {
+            emit_operator_name(e, &n.defnames);
+        } else {
+            emit_dot_separated_list(e, &n.defnames);
+        }
     }
 
     // TODO: Args (for operators/functions) - need parentheses
@@ -116,10 +124,20 @@ pub(super) fn emit_define_stmt(e: &mut EventEmitter, n: &DefineStmt) {
         e.token(TokenKind::R_PAREN);
     }
 
-    // Definition options (WITH clause or parenthesized list)
-    // Special case for COLLATION with FROM clause
-    if kind == ObjectType::ObjectCollation && !n.definition.is_empty() {
-        // For collations, emit FROM clause specially
+    if is_operator {
+        if !n.definition.is_empty() {
+            e.space();
+            e.token(TokenKind::L_PAREN);
+            emit_comma_separated_list(e, &n.definition, |node, emitter| {
+                if let Some(NodeEnum::DefElem(def)) = node.node.as_ref() {
+                    emit_operator_def_elem(emitter, def);
+                } else {
+                    super::emit_node(node, emitter);
+                }
+            });
+            e.token(TokenKind::R_PAREN);
+        }
+    } else if kind == ObjectType::ObjectCollation && !n.definition.is_empty() {
         emit_collation_definition(e, &n.definition);
     } else if !n.definition.is_empty() {
         e.space();
@@ -130,4 +148,55 @@ pub(super) fn emit_define_stmt(e: &mut EventEmitter, n: &DefineStmt) {
 
     e.token(TokenKind::SEMICOLON);
     e.group_end();
+}
+
+fn emit_operator_name(e: &mut EventEmitter, defnames: &[Node]) {
+    for (idx, node) in defnames.iter().enumerate() {
+        if idx > 0 {
+            e.token(TokenKind::DOT);
+        }
+
+        match node.node.as_ref() {
+            Some(NodeEnum::String(s)) => {
+                if idx == defnames.len() - 1 {
+                    e.token(TokenKind::IDENT(s.sval.clone()));
+                } else {
+                    emit_identifier_maybe_quoted(e, &s.sval);
+                }
+            }
+            _ => super::emit_node(node, e),
+        }
+    }
+}
+
+fn emit_operator_def_elem(e: &mut EventEmitter, def: &DefElem) {
+    let name = def.defname.to_ascii_uppercase();
+    e.token(TokenKind::IDENT(name));
+
+    if let Some(ref arg) = def.arg {
+        e.space();
+        e.token(TokenKind::IDENT("=".to_string()));
+        e.space();
+        emit_operator_def_arg(e, arg);
+    }
+}
+
+fn emit_operator_def_arg(e: &mut EventEmitter, arg: &Node) {
+    match arg.node.as_ref() {
+        Some(NodeEnum::List(list)) => emit_operator_list(e, list),
+        _ => super::emit_node(arg, e),
+    }
+}
+
+fn emit_operator_list(e: &mut EventEmitter, list: &List) {
+    for (idx, item) in list.items.iter().enumerate() {
+        if idx > 0 {
+            e.token(TokenKind::DOT);
+        }
+
+        match item.node.as_ref() {
+            Some(NodeEnum::String(s)) => e.token(TokenKind::IDENT(s.sval.clone())),
+            _ => super::emit_node(item, e),
+        }
+    }
 }

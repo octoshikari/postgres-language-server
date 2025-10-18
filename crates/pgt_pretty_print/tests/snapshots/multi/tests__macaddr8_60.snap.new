@@ -46,7 +46,10 @@ SELECT CAST('08:00:2b:01.02:03:04:05' AS macaddr8);
 SELECT
   macaddr8_set7bit(CAST('00:08:2b:01:02:03' AS macaddr8));
 
-CREATE TABLE macaddr8_data ( a INT, b macaddr8 );
+CREATE TABLE macaddr8_data (
+  a pg_catalog.int4,
+  b macaddr8
+);
 
 INSERT INTO macaddr8_data VALUES (1, '08:00:2b:01:02:03');
 
@@ -200,7 +203,7 @@ FROM
   macaddr8_data
 WHERE a = 15;
 
-SELECT  ~ b FROM macaddr8_data;
+SELECT ~b FROM macaddr8_data;
 
 SELECT b & '00:00:00:ff:ff:ff' FROM macaddr8_data;
 

@@ -31,6 +31,7 @@ mod alter_function_stmt;
 mod alter_object_depends_stmt;
 mod alter_object_schema_stmt;
 mod alter_op_family_stmt;
+mod alter_operator_stmt;
 mod alter_owner_stmt;
 mod alter_policy_stmt;
 mod alter_publication_stmt;
@@ -46,6 +47,7 @@ mod alter_tablespace_options_stmt;
 mod alter_ts_configuration_stmt;
 mod alter_ts_dictionary_stmt;
 mod alter_user_mapping_stmt;
+mod array_coerce_expr;
 mod bitstring;
 mod bool_expr;
 mod boolean;
@@ -57,6 +59,9 @@ mod checkpoint_stmt;
 mod close_portal_stmt;
 mod cluster_stmt;
 mod coalesce_expr;
+mod coerce_to_domain;
+mod coerce_to_domain_value;
+mod coerce_via_io;
 mod collate_clause;
 mod column_def;
 mod column_ref;
@@ -65,6 +70,7 @@ mod common_table_expr;
 mod composite_type_stmt;
 mod constraint;
 mod constraints_set_stmt;
+mod convert_rowtype_expr;
 mod copy_stmt;
 mod create_am_stmt;
 mod create_cast_stmt;
@@ -114,6 +120,8 @@ mod dropdb_stmt;
 mod execute_stmt;
 mod explain_stmt;
 mod fetch_stmt;
+mod field_select;
+mod field_store;
 mod float;
 mod func_call;
 mod grant_role_stmt;
@@ -123,6 +131,7 @@ mod grouping_set;
 mod import_foreign_schema_stmt;
 mod index_elem;
 mod index_stmt;
+mod infer_clause;
 mod insert_stmt;
 mod integer;
 mod join_expr;
@@ -157,10 +166,12 @@ mod range_var;
 mod reassign_owned_stmt;
 mod refresh_matview_stmt;
 mod reindex_stmt;
+mod relabel_type;
 mod rename_stmt;
 mod replica_identity_stmt;
 mod res_target;
 mod role_spec;
+mod row_compare_expr;
 mod row_expr;
 mod rule_stmt;
 mod scalar_array_op_expr;
@@ -213,6 +224,7 @@ use alter_function_stmt::emit_alter_function_stmt;
 use alter_object_depends_stmt::emit_alter_object_depends_stmt;
 use alter_object_schema_stmt::emit_alter_object_schema_stmt;
 use alter_op_family_stmt::emit_alter_op_family_stmt;
+use alter_operator_stmt::emit_alter_operator_stmt;
 use alter_owner_stmt::emit_alter_owner_stmt;
 use alter_policy_stmt::emit_alter_policy_stmt;
 use alter_publication_stmt::emit_alter_publication_stmt;
@@ -228,6 +240,7 @@ use alter_tablespace_options_stmt::emit_alter_tablespace_options_stmt;
 use alter_ts_configuration_stmt::emit_alter_ts_configuration_stmt;
 use alter_ts_dictionary_stmt::emit_alter_ts_dictionary_stmt;
 use alter_user_mapping_stmt::emit_alter_user_mapping_stmt;
+use array_coerce_expr::emit_array_coerce_expr;
 use bitstring::emit_bitstring;
 use bool_expr::emit_bool_expr;
 use boolean::emit_boolean;
@@ -239,6 +252,9 @@ use checkpoint_stmt::emit_checkpoint_stmt;
 use close_portal_stmt::emit_close_portal_stmt;
 use cluster_stmt::emit_cluster_stmt;
 use coalesce_expr::emit_coalesce_expr;
+use coerce_to_domain::emit_coerce_to_domain;
+use coerce_to_domain_value::emit_coerce_to_domain_value;
+use coerce_via_io::emit_coerce_via_io;
 use collate_clause::emit_collate_clause;
 use column_def::emit_column_def;
 use column_ref::emit_column_ref;
@@ -247,6 +263,7 @@ use common_table_expr::emit_common_table_expr;
 use composite_type_stmt::emit_composite_type_stmt;
 use constraint::emit_constraint;
 use constraints_set_stmt::emit_constraints_set_stmt;
+use convert_rowtype_expr::emit_convert_rowtype_expr;
 use copy_stmt::emit_copy_stmt;
 use create_am_stmt::emit_create_am_stmt;
 use create_cast_stmt::emit_create_cast_stmt;
@@ -296,6 +313,8 @@ use dropdb_stmt::emit_dropdb_stmt;
 use execute_stmt::emit_execute_stmt;
 use explain_stmt::emit_explain_stmt;
 use fetch_stmt::emit_fetch_stmt;
+use field_select::emit_field_select;
+use field_store::emit_field_store;
 use float::emit_float;
 use func_call::emit_func_call;
 use grant_role_stmt::emit_grant_role_stmt;
@@ -305,6 +324,7 @@ use grouping_set::emit_grouping_set;
 use import_foreign_schema_stmt::emit_import_foreign_schema_stmt;
 use index_elem::emit_index_elem;
 use index_stmt::emit_index_stmt;
+use infer_clause::emit_infer_clause;
 use insert_stmt::{emit_insert_stmt, emit_insert_stmt_no_semicolon};
 use integer::emit_integer;
 use join_expr::emit_join_expr;
@@ -338,10 +358,12 @@ use range_var::emit_range_var;
 use reassign_owned_stmt::emit_reassign_owned_stmt;
 use refresh_matview_stmt::emit_refresh_matview_stmt;
 use reindex_stmt::emit_reindex_stmt;
+use relabel_type::emit_relabel_type;
 use rename_stmt::emit_rename_stmt;
 use replica_identity_stmt::emit_replica_identity_stmt;
 use res_target::emit_res_target;
 use role_spec::emit_role_spec;
+use row_compare_expr::emit_row_compare_expr;
 use row_expr::emit_row_expr;
 use rule_stmt::emit_rule_stmt;
 use scalar_array_op_expr::emit_scalar_array_op_expr;
@@ -413,6 +435,7 @@ pub fn emit_node_enum(node: &NodeEnum, e: &mut EventEmitter) {
         NodeEnum::ColumnRef(n) => emit_column_ref(e, n),
         NodeEnum::ColumnDef(n) => emit_column_def(e, n),
         NodeEnum::Constraint(n) => emit_constraint(e, n),
+        NodeEnum::ConvertRowtypeExpr(n) => emit_convert_rowtype_expr(e, n),
         NodeEnum::DefElem(n) => emit_def_elem(e, n),
         NodeEnum::String(n) => emit_string(e, n),
         NodeEnum::RangeVar(n) => emit_range_var(e, n),
@@ -425,15 +448,21 @@ pub fn emit_node_enum(node: &NodeEnum, e: &mut EventEmitter) {
         NodeEnum::AIndices(n) => emit_a_indices(e, n),
         NodeEnum::AIndirection(n) => emit_a_indirection(e, n),
         NodeEnum::AExpr(n) => emit_a_expr(e, n),
+        NodeEnum::ArrayCoerceExpr(n) => emit_array_coerce_expr(e, n),
         NodeEnum::AStar(n) => emit_a_star(e, n),
         NodeEnum::BoolExpr(n) => emit_bool_expr(e, n),
         NodeEnum::BooleanTest(n) => emit_boolean_test(e, n),
         NodeEnum::CaseExpr(n) => emit_case_expr(e, n),
         NodeEnum::CaseWhen(n) => emit_case_when(e, n),
         NodeEnum::CoalesceExpr(n) => emit_coalesce_expr(e, n),
+        NodeEnum::CoerceToDomain(n) => emit_coerce_to_domain(e, n),
+        NodeEnum::CoerceToDomainValue(n) => emit_coerce_to_domain_value(e, n),
+        NodeEnum::CoerceViaIo(n) => emit_coerce_via_io(e, n),
         NodeEnum::CollateClause(n) => emit_collate_clause(e, n),
         NodeEnum::CurrentOfExpr(n) => emit_current_of_expr(e, n),
         NodeEnum::FuncCall(n) => emit_func_call(e, n),
+        NodeEnum::FieldSelect(n) => emit_field_select(e, n),
+        NodeEnum::FieldStore(n) => emit_field_store(e, n),
         NodeEnum::GroupingFunc(n) => emit_grouping_func(e, n),
         NodeEnum::GroupingSet(n) => emit_grouping_set(e, n),
         NodeEnum::NamedArgExpr(n) => emit_named_arg_expr(e, n),
@@ -442,6 +471,7 @@ pub fn emit_node_enum(node: &NodeEnum, e: &mut EventEmitter) {
         NodeEnum::ParamRef(n) => emit_param_ref(e, n),
         NodeEnum::PartitionElem(n) => emit_partition_elem(e, n),
         NodeEnum::PartitionSpec(n) => emit_partition_spec(e, n),
+        NodeEnum::RowCompareExpr(n) => emit_row_compare_expr(e, n),
         NodeEnum::RowExpr(n) => emit_row_expr(e, n),
         NodeEnum::ScalarArrayOpExpr(n) => emit_scalar_array_op_expr(e, n),
         NodeEnum::SetToDefault(n) => emit_set_to_default(e, n),
@@ -511,6 +541,7 @@ pub fn emit_node_enum(node: &NodeEnum, e: &mut EventEmitter) {
         NodeEnum::AlterFunctionStmt(n) => emit_alter_function_stmt(e, n),
         NodeEnum::AlterObjectDependsStmt(n) => emit_alter_object_depends_stmt(e, n),
         NodeEnum::AlterObjectSchemaStmt(n) => emit_alter_object_schema_stmt(e, n),
+        NodeEnum::AlterOperatorStmt(n) => emit_alter_operator_stmt(e, n),
         NodeEnum::AlterOpFamilyStmt(n) => emit_alter_op_family_stmt(e, n),
         NodeEnum::AlterOwnerStmt(n) => emit_alter_owner_stmt(e, n),
         NodeEnum::AlterPolicyStmt(n) => emit_alter_policy_stmt(e, n),
@@ -529,11 +560,13 @@ pub fn emit_node_enum(node: &NodeEnum, e: &mut EventEmitter) {
         NodeEnum::AlterUserMappingStmt(n) => emit_alter_user_mapping_stmt(e, n),
         NodeEnum::ExplainStmt(n) => emit_explain_stmt(e, n),
         NodeEnum::ImportForeignSchemaStmt(n) => emit_import_foreign_schema_stmt(e, n),
+        NodeEnum::InferClause(n) => emit_infer_clause(e, n),
         NodeEnum::ExecuteStmt(n) => emit_execute_stmt(e, n),
         NodeEnum::FetchStmt(n) => emit_fetch_stmt(e, n),
         NodeEnum::ListenStmt(n) => emit_listen_stmt(e, n),
         NodeEnum::UnlistenStmt(n) => emit_unlisten_stmt(e, n),
         NodeEnum::LockStmt(n) => emit_lock_stmt(e, n),
+        NodeEnum::RelabelType(n) => emit_relabel_type(e, n),
         NodeEnum::ReindexStmt(n) => emit_reindex_stmt(e, n),
         NodeEnum::RenameStmt(n) => emit_rename_stmt(e, n),
         NodeEnum::ReplicaIdentityStmt(n) => emit_replica_identity_stmt(e, n),

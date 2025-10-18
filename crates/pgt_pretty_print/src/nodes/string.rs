@@ -5,6 +5,87 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
 };
 
+const RESERVED_KEYWORDS: &[&str] = &[
+    "all",
+    "analyse",
+    "analyze",
+    "and",
+    "any",
+    "array",
+    "as",
+    "asc",
+    "asymmetric",
+    "both",
+    "case",
+    "cast",
+    "check",
+    "collate",
+    "column",
+    "constraint",
+    "create",
+    "current_catalog",
+    "current_date",
+    "current_role",
+    "current_time",
+    "current_timestamp",
+    "current_user",
+    "default",
+    "deferrable",
+    "desc",
+    "distinct",
+    "do",
+    "else",
+    "end",
+    "except",
+    "false",
+    "fetch",
+    "for",
+    "foreign",
+    "from",
+    "grant",
+    "group",
+    "having",
+    "in",
+    "initially",
+    "intersect",
+    "into",
+    "lateral",
+    "leading",
+    "limit",
+    "localtime",
+    "localtimestamp",
+    "not",
+    "null",
+    "offset",
+    "on",
+    "only",
+    "or",
+    "order",
+    "placing",
+    "primary",
+    "references",
+    "returning",
+    "select",
+    "session_user",
+    "some",
+    "symmetric",
+    "system_user",
+    "table",
+    "then",
+    "to",
+    "trailing",
+    "true",
+    "union",
+    "unique",
+    "user",
+    "using",
+    "variadic",
+    "when",
+    "where",
+    "window",
+    "with",
+];
+
 pub(super) fn emit_string(e: &mut EventEmitter, n: &PgString) {
     e.group_start(GroupKind::String);
     emit_identifier_maybe_quoted(e, &n.sval);
@@ -94,7 +175,8 @@ fn needs_quoting(value: &str) -> bool {
         return true;
     }
 
-    TokenKind::from_keyword(value).is_some()
+    let lower = value.to_ascii_lowercase();
+    RESERVED_KEYWORDS.binary_search(&lower.as_str()).is_ok()
 }
 
 fn pick_dollar_delimiter(body: &str) -> String {

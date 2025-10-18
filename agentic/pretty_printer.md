@@ -701,7 +701,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 }
 ```
 
-### Completed Nodes (167/270) - Last Updated 2025-10-16 Session 36
+### Completed Nodes (179/270) - Last Updated 2025-10-17 Session 41
 - [x] AArrayExpr (array literals ARRAY[...])
 - [x] AConst (with all variants: Integer, Float, Boolean, String, BitString)
 - [x] AExpr (partial - basic binary operators)
@@ -725,6 +725,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] AlterFunctionStmt (ALTER FUNCTION/PROCEDURE with function options)
 - [x] AlterObjectDependsStmt (ALTER FUNCTION DEPENDS ON EXTENSION)
 - [x] AlterObjectSchemaStmt (ALTER object SET SCHEMA)
+- [x] AlterOperatorStmt (ALTER OPERATOR ... SET with commutator/negator/hash/merge options)
 - [x] AlterOpFamilyStmt (ALTER OPERATOR FAMILY ADD/DROP)
 - [x] AlterOwnerStmt (ALTER object_type name OWNER TO new_owner)
 - [x] AlterPolicyStmt (ALTER POLICY with TO roles, USING, WITH CHECK)
@@ -741,6 +742,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] AlterTsconfigurationStmt (ALTER TEXT SEARCH CONFIGURATION with ADD/ALTER/DROP MAPPING)
 - [x] AlterTsdictionaryStmt (ALTER TEXT SEARCH DICTIONARY with options)
 - [x] AlterUserMappingStmt (ALTER USER MAPPING FOR user SERVER server)
+- [x] ArrayCoerceExpr (array coercions that simply forward the inner expression)
 - [x] BitString
 - [x] Boolean
 - [x] BoolExpr (AND/OR/NOT)
@@ -752,6 +754,9 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] ClosePortalStmt (CLOSE cursor|ALL)
 - [x] ClusterStmt (CLUSTER [VERBOSE] table [USING index])
 - [x] CoalesceExpr (COALESCE(...))
+- [x] CoerceToDomain (domain coercion wrapper that defers to the inner expression)
+- [x] CoerceToDomainValue (VALUE keyword inside domain check constraints)
+- [x] CoerceViaIo (no-op cast via I/O that emits only the inner node)
 - [x] CommentStmt (COMMENT ON object_type object IS comment with 42 object types)
 - [x] ConstraintsSetStmt (SET CONSTRAINTS ALL|names DEFERRED|IMMEDIATE)
 - [x] CopyStmt (COPY table/query TO/FROM file with options)
@@ -761,6 +766,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] CommonTableExpr (CTE definitions: name AS (query) for WITH clauses)
 - [x] CompositeTypeStmt (CREATE TYPE ... AS (...))
 - [x] Constraint (all types: NOT NULL, DEFAULT, CHECK, PRIMARY KEY, UNIQUE, FOREIGN KEY, etc.)
+- [x] ConvertRowtypeExpr (row-type coercions that forward to their argument)
 - [x] CreateAmStmt (CREATE ACCESS METHOD name TYPE type HANDLER handler)
 - [x] CreateCastStmt (CREATE CAST with source/target types, function, INOUT, context)
 - [x] CreateConversionStmt (CREATE [DEFAULT] CONVERSION with encoding specifications)
@@ -794,7 +800,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] DeallocateStmt (DEALLOCATE prepared statement)
 - [x] DeclareCursorStmt (DECLARE cursor FOR query)
 - [x] DefElem (option name = value for WITH clauses)
-- [x] DeleteStmt (partial - DELETE FROM table WHERE)
+- [x] DeleteStmt (DELETE FROM ... [USING ...] [WHERE ...] [RETURNING ...] with WITH clause support)
 - [x] DiscardStmt (DISCARD ALL|PLANS|SEQUENCES|TEMP)
 - [x] DoStmt (DO language block)
 - [x] DropStmt (DROP object_type [IF EXISTS] objects [CASCADE])
@@ -807,6 +813,8 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] ExecuteStmt (EXECUTE prepared statement)
 - [x] ExplainStmt (EXPLAIN (options) query)
 - [x] FetchStmt (FETCH/MOVE cursor)
+- [x] FieldSelect (composite field extraction wrapper that reuses the inner expression)
+- [x] FieldStore (composite field assignment wrapper that reuses the inner expression)
 - [x] Float
 - [x] FuncCall (comprehensive - basic function calls, special SQL standard functions with FROM/IN/PLACING syntax: EXTRACT, OVERLAY, POSITION, SUBSTRING, TRIM, TODO: WITHIN GROUP, FILTER)
 - [x] GrantStmt (GRANT/REVOKE privileges ON objects TO/FROM grantees, with options)
@@ -814,9 +822,10 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] GroupingFunc (GROUPING(columns) for GROUP BY GROUPING SETS)
 - [x] GroupingSet (ROLLUP/CUBE/GROUPING SETS in GROUP BY clause)
 - [x] ImportForeignSchemaStmt (IMPORT FOREIGN SCHEMA ... FROM SERVER ... INTO ...)
+- [x] InferClause (ON CONFLICT target spec covering index columns or constraint references with optional WHERE predicate)
 - [x] IndexElem (index column with opclass, collation, ordering)
 - [x] IndexStmt (CREATE INDEX with USING, INCLUDE, WHERE, etc.)
-- [x] InsertStmt (partial - INSERT INTO table VALUES, TODO: ON CONFLICT, RETURNING)
+- [x] InsertStmt (WITH clause, column lists, OVERRIDING SYSTEM/USER VALUE, VALUES/SELECT/DEFAULT VALUES, ON CONFLICT, RETURNING)
 - [x] Integer
 - [x] JoinExpr (all join types: INNER, LEFT, RIGHT, FULL, CROSS, with ON/USING clauses)
 - [x] JsonFuncExpr (JSON_EXISTS, JSON_QUERY, JSON_VALUE functions - basic implementation)
@@ -828,12 +837,13 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] ListenStmt (LISTEN channel)
 - [x] LoadStmt (LOAD 'library')
 - [x] LockStmt (LOCK TABLE with lock modes)
-- [x] MergeStmt (MERGE INTO with WHEN MATCHED/NOT MATCHED clauses, supports UPDATE/INSERT/DELETE/DO NOTHING)
+- [x] MergeStmt (MERGE INTO with WHEN MATCHED/NOT MATCHED clauses, supports UPDATE/INSERT/DELETE/DO NOTHING, WITH clause supported)
 - [x] MinMaxExpr (GREATEST/LEAST functions)
 - [x] NamedArgExpr (named arguments: name := value)
 - [x] NotifyStmt (NOTIFY channel with optional payload)
 - [x] NullTest (IS NULL / IS NOT NULL)
 - [x] ObjectWithArgs (function/operator names with argument types)
+- [x] OnConflictClause (ON CONFLICT DO NOTHING/DO UPDATE with target inference and optional WHERE clause)
 - [x] ParamRef (prepared statement parameters $1, $2, etc.)
 - [x] PartitionElem (column/expression in PARTITION BY clause with optional COLLATE and opclass)
 - [x] PartitionSpec (PARTITION BY RANGE/LIST/HASH with partition parameters)
@@ -846,11 +856,13 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] RangeVar (schema.table with optional alias support)
 - [x] ReassignOwnedStmt (REASSIGN OWNED BY ... TO ...)
 - [x] RefreshMatViewStmt (REFRESH MATERIALIZED VIEW)
+- [x] RelabelType (implicit cast wrapper that leaves output unchanged)
 - [x] ReindexStmt (REINDEX INDEX/TABLE/SCHEMA/DATABASE)
 - [x] RenameStmt (ALTER ... RENAME TO ..., fixed to use rename_type field)
 - [x] ReplicaIdentityStmt (REPLICA IDENTITY DEFAULT/FULL/NOTHING/USING INDEX)
 - [x] ResTarget (partial - SELECT and UPDATE SET contexts)
 - [x] RoleSpec (CURRENT_USER, SESSION_USER, CURRENT_ROLE, PUBLIC, role names)
+- [x] RowCompareExpr (row-wise comparisons with tuple operators)
 - [x] RowExpr (ROW(...) or implicit row constructors)
 - [x] RuleStmt (CREATE RULE ... AS ON ... TO ... DO ...)
 - [x] ScalarArrayOpExpr (expr op ANY/ALL (array) constructs, converts to IN clause format)
@@ -865,9 +877,9 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] TableLikeClause (LIKE table_name for CREATE TABLE)
 - [x] TruncateStmt (TRUNCATE table [RESTART IDENTITY] [CASCADE])
 - [x] TypeCast (CAST(expr AS type))
-- [x] TypeName (partial - basic types with modifiers and array bounds, TODO: INTERVAL special cases)
+- [x] TypeName (canonicalises built-in names, decodes INTERVAL range/precision modifiers, handles array bounds)
 - [x] UnlistenStmt (UNLISTEN channel)
-- [x] UpdateStmt (partial - UPDATE table SET col = val WHERE)
+- [x] UpdateStmt (UPDATE ... SET ... [FROM ...] [WHERE ...] [RETURNING ...] with WITH clause support)
 - [x] VacuumRelation (table and columns for VACUUM)
 - [x] VacuumStmt (partial - VACUUM/ANALYZE, basic implementation)
 - [x] VariableSetStmt (partial - SET variable = value, TODO: RESET, other variants)
@@ -885,6 +897,14 @@ Keep this section focused on durable guidance. When you add new insights, summar
 - Reuse the helpers in `src/nodes/string.rs` for identifiers, keywords, and literals—avoid ad-hoc `TokenKind::IDENT` strings or manual quoting.
 - When normalising nodes like `ScalarArrayOpExpr`, assert the expected shape and consult metadata (`opno`, flags) before rewriting syntax.
 - For `DefElem`-driven nodes (for example `DoStmt`), validate the argument type and route all quoting through the shared helpers so output stays consistent.
+- Treat reserved keywords separately when deciding to quote identifiers; unreserved keywords like `name` can safely remain bare while true reserved words must stay quoted.
+- Normalize TypeName built-ins by mapping `pg_catalog` identifiers to canonical SQL keywords while leaving user-defined schemas untouched.
+- Decode INTERVAL typmods by interpreting the range bitmask in `typmods[0]` before emitting optional second precision so layouts like `INTERVAL DAY TO SECOND(3)` stay canonical.
+- Insert a `LineType::SoftOrSpace` breakpoint between join inputs and their qualifiers so long `ON` predicates can wrap without violating the target width while short joins stay single-line.
+- Render symbolic operator names (composed purely of punctuation) without quoting and force a space before parentheses so DROP/ALTER statements remain parseable.
+- Respect `CoercionForm` when emitting row constructors; implicit casts must stay bare tuples or the planner-visible `row_format` flag changes.
+- Decode prost enums with `TryFrom<i32>` so invalid action codes surface via debug assertions instead of collapsing into deprecated helpers.
+- Drop `LineType::SoftOrSpace` before optional DML clauses so compact statements stay single-line while long lists can wrap cleanly.
 
 ### Logging Future Work
 - Capture new learnings as concise bullets here and keep detailed session history in commit messages or external notes.
@@ -936,15 +956,9 @@ just ready
 
 ## Next Steps
 
-1. **Review this plan** and adjust as needed
-2. **Start with high-priority nodes**: Focus on DML statements (INSERT, DELETE) and essential expressions (FuncCall, TypeCast, etc.)
-3. **Use test-driven development**:
-   - Create a test case for the SQL you want to format
-   - Run: `cargo test -p pgt_pretty_print test_single__<your_test> -- --show-output`
-   - Implement the `emit_*` function
-   - Iterate based on test output
-4. **Implement partially**: Don't try to handle all fields at once - start with common cases
-5. **Iterate progressively**: Add more fields and edge cases as you go
+1. Capture targeted fixtures for INSERT/UPDATE/DELETE RETURNING + CTE cases before broad snapshot review so DML regressions stay isolated.
+2. Spot-check MergeStmt WHEN clause formatting and add focused tests around mixed UPDATE/INSERT/DELETE branches if gaps appear.
+3. Audit existing TypeCast/TypeName snapshots for INTERVAL usages to confirm the new typmod decoding matches legacy expectations before broader review.
 
 ## Summary: Key Points
 
@@ -1115,4 +1129,156 @@ Use this template to document each work session:
 
 ### Session History
 
-(Add new session summaries here)
+---
+**Date**: 2025-10-17 (Session 45)
+**Nodes Implemented/Fixed**: TypeName (INTERVAL typmods)
+**Progress**: 179/270 → 179/270
+**Tests**: cargo test -p pgt_pretty_print test_single__type_name_interval_0_60 -- --show-output
+**Key Changes**:
+- Decoded INTERVAL typmods in `emit_type_name` so range masks render as `YEAR`, `DAY TO SECOND`, and other canonical phrases.
+- Guarded the fallback path once the mask is recognised to keep raw typmod integers from leaking into formatted output.
+- Added a focused single-statement fixture covering INTERVAL combinations and captured the snapshot.
+
+**Learnings**:
+- Interval masks reuse the `dt.h` bit positions; interpreting `typmods[0]` restores the `*_TO_*` wording before we emit precision.
+- Precision arrives as `typmods[1]` only when present, and skipping the full-precision sentinel avoids redundant parentheses.
+
+**Next Steps**:
+- Spot-check CAST/DEFAULT expressions that use INTERVAL typmods so the new layout does not introduce regressions in outstanding snapshots.
+- Fold any incidental diffs from the updated TypeName logic into the planned snapshot review batch to keep `.snap.new` files organised.
+---
+---
+**Date**: 2025-10-18 (Session 44)
+**Nodes Implemented/Fixed**: TypeName (built-in normalization)
+**Progress**: 179/270 → 179/270
+**Tests**: cargo test -p pgt_pretty_print test_single__create_table_simple_0_60; cargo test -p pgt_pretty_print test_single__type_cast_0_60
+**Key Changes**:
+- Normalized built-in TypeName variants to emit canonical SQL keywords and drop redundant `pg_catalog` qualifiers while preserving user schemas.
+- Added `%TYPE` emission support and a shared helper for dot-separated identifiers to keep quoting consistent.
+
+**Learnings**:
+- Restrict builtin normalization to known schema-qualified names so `public.int4` stays explicit while `pg_catalog.int4` becomes `INT`.
+
+**Next Steps**:
+- Backfill INTERVAL typmod decoding so duration precision formatting resumes matching legacy snapshots.
+- Re-run multi snapshot review after interval handling to confirm no remaining TypeName regressions.
+---
+---
+**Date**: 2025-10-17 (Session 43)
+**Nodes Implemented/Fixed**: DeleteStmt; UpdateStmt; MergeStmt (WITH clause)
+**Progress**: 179/270 → 179/270
+**Tests**: cargo check -p pgt_pretty_print
+**Key Changes**:
+- Wired DeleteStmt to emit WITH, USING, WHERE, and RETURNING clauses using shared list helpers and soft-or-space breakpoints.
+- Extended UpdateStmt with WITH, FROM, and RETURNING coverage so multi-table updates share the INSERT layout strategy.
+- Enabled MergeStmt to surface leading WITH clauses via `emit_with_clause`, clearing the lingering TODO for CTEs.
+
+**Learnings**:
+- Soft-or-space breakpoints keep DML clauses compact when short but gracefully wrap once USING/FROM lists grow.
+- Reusing the generic comma-separated list helper prevents spacing drift between RETURNING lists across INSERT/UPDATE/DELETE.
+
+**Next Steps**:
+- Capture targeted fixtures for DELETE/UPDATE WITH + RETURNING combinations before sweeping snapshot review.
+- Spot-check MergeStmt WHEN clause layout against the new DML output to ensure group boundaries stay consistent.
+---
+---
+**Date**: 2025-10-17 (Session 42)
+**Nodes Implemented/Fixed**: InsertStmt (WITH, OVERRIDING, RETURNING)
+**Progress**: 179/270 → 179/270
+**Tests**: cargo check -p pgt_pretty_print
+**Key Changes**:
+- Added WITH clause emission so CTE-backed INSERTs preserve their leading WITH groups.
+- Decoded `OverridingKind` to emit OVERRIDING SYSTEM/USER VALUE tokens in the right slot.
+- Emitted RETURNING lists with soft line breaks for consistency with UPDATE/MERGE output.
+
+**Learnings**:
+- Insert's `override` flag maps cleanly through `OverridingKind::try_from`, keeping unexpected planner values obvious via debug assertions.
+
+**Next Steps**:
+- Mirror the RETURNING/CTE handling in `UpdateStmt` and `DeleteStmt` to close out shared DML gaps.
+- Audit `MergeStmt` to wire up its pending WITH clause now that the helper path is proven.
+---
+---
+**Date**: 2025-10-17 (Session 41)
+**Nodes Implemented/Fixed**: InferClause; OnConflictClause
+**Progress**: 177/270 → 179/270
+**Tests**: cargo check -p pgt_pretty_print
+**Key Changes**:
+- Added a dedicated `emit_infer_clause` so ON CONFLICT targets handle both column lists and constraint references with shared WHERE emission.
+- Reworked `emit_on_conflict_clause` to use keyword token kinds, reuse `emit_set_clause`, and guard action decoding via `TryFrom`.
+- Registered the new node in `mod.rs` so InsertStmt dispatch no longer falls through to the global `todo!` on ON CONFLICT inputs.
+
+**Learnings**:
+- Prost enums expose fallible `TryFrom<i32>` which keeps us off deprecated helpers and makes unexpected planner values obvious.
+
+**Next Steps**:
+- Finish the remaining `InsertStmt` TODOs (RETURNING clause, WITH support) now that ON CONFLICT formatting is wired up.
+- Add targeted fixtures covering `ON CONSTRAINT` usage and partial index predicates to exercise the new emitters.
+---
+---
+**Date**: 2025-10-17 (Session 40)
+**Nodes Implemented/Fixed**: CoerceToDomain; CoerceToDomainValue; FieldSelect; FieldStore
+**Progress**: 173/270 → 177/270
+**Tests**: `cargo test -p pgt_pretty_print` (expected snapshot churn; 146/270 passing)
+**Key Changes**:
+- Added pass-through emitters for CoerceToDomain, FieldSelect, and FieldStore so wrapper nodes no longer trigger dispatcher `todo!` panics.
+- Emitted the VALUE keyword for CoerceToDomainValue to unblock domain constraint formatting.
+- Registered the new emitters in `src/nodes/mod.rs` so the dispatcher recognises them.
+
+**Learnings**:
+- Wrapper nodes that only exist to enforce domain semantics should defer to their inner expressions to preserve layout and avoid redundant tokens.
+
+**Next Steps**:
+- Resume TypeName normalisation work to stabilise built-in type output before snapshot review.
+- Audit remaining wrapper-style nodes (e.g. SubscriptingRef assignment) that still fall through to `todo!`.
+---
+---
+**Date**: 2025-10-17 (Session 39)
+**Nodes Implemented/Fixed**: ArrayCoerceExpr; CoerceViaIo; ConvertRowtypeExpr; RelabelType; RowCompareExpr; RowExpr implicit tuples
+**Progress**: 168/270 → 173/270
+**Tests**: 1 targeted (row_compare_expr) passes; bulk snapshot review still outstanding
+**Key Changes**:
+- Added pass-through emitters for CoerceViaIo, ArrayCoerceExpr, ConvertRowtypeExpr, and RelabelType so implicit casts defer to their inner node
+- Implemented RowCompareExpr formatting with tuple grouping and operator tokens
+- Updated RowExpr to respect implicit tuple form and surface optional column aliases without forcing ROW keyword
+
+**Learnings**:
+- Use `CoercionForm::CoerceImplicitCast` to decide when a row constructor should omit the `ROW` keyword to preserve the original AST shape
+- RowCompareExpr carries row-wise operator metadata; mapping that enum directly to tokens keeps comparisons symmetric
+
+**Next Steps**:
+- Normalize TypeName output for built-in catalog types so snapshots stop oscillating between schema-qualified and canonical names
+- Implement remaining coercion wrappers (CoerceToDomain, FieldSelect/FieldStore) that still fall through to `todo!`
+---
+---
+**Date**: 2025-10-17 (Session 38)
+**Nodes Implemented/Fixed**: JoinExpr (line breaking); ObjectWithArgs (operator spacing)
+**Progress**: 168/270 → 168/270
+**Tests**: 0 passed (was 0) — `test_multi__alter_operator_60` now requires snapshot review
+**Key Changes**:
+- Added soft breaks around join keywords and qualifiers so ON clauses respect the 60-column limit without forcing ragged joins
+- Emitted symbolic operator names without quoting and forced a separating space before argument lists to keep DROP/ALTER syntax parseable
+
+**Learnings**:
+- Soft lines before join segments give the renderer flexibility to fall back to multi-line layouts when predicates are long
+- Operator names composed purely of punctuation must stay bare and include an explicit space before parentheses
+
+**Next Steps**:
+- Review `tests__alter_operator_60.snap.new` via `cargo insta review`
+- Spot-check other join-heavy statements for consistent wrapping before re-running broader suites
+---
+---
+**Date**: 2025-10-17 (Session 37)
+**Nodes Implemented/Fixed**: AlterOperatorStmt; AExpr operator forms; DefineStmt (operator support)
+**Progress**: 167/270 → 168/270
+**Tests**: 0 passed (was 0) — `test_multi__alter_operator_60` still fails on legacy long lines
+**Key Changes**:
+- Added explicit operator emitters for CREATE/ALTER OPERATOR and extended AExpr handling for qualified operators and NOT variants
+- Relaxed identifier quoting using a reserved keyword allowlist and preserved schema-aware type names while improving function parameter layout
+**Learnings**:
+- Operator names need bespoke rendering (no quoting, optional schema qualifiers) and SET option payloads mix lists, typenames, and sentinel NONE values
+- Reserved keywords are the inflection point for quoting; unreserved keywords like `name` should remain bare to match snapshot expectations
+**Next Steps**:
+- Address remaining line-length regressions in legacy SELECT formatting before re-running the multi-suite
+- Expand AlterOperatorStmt to cover MERGES/HASHES boolean toggles without string fallbacks once layout is sorted
+---

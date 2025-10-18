@@ -3,7 +3,7 @@ source: crates/pgt_pretty_print/tests/tests.rs
 assertion_line: 174
 input_file: crates/pgt_pretty_print/tests/data/multi/event_trigger_login_60.sql
 ---
-CREATE TABLE user_logins ( id serial, who TEXT );
+CREATE TABLE user_logins ( id serial, who text );
 
 GRANT SELECT ON TABLE user_logins TO PUBLIC;
 

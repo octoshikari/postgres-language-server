@@ -159,7 +159,7 @@ show-logs:
 # Run a codex agent with the given agentic prompt file.
 # Commented out by default to avoid accidental usage that may incur costs.
 agentic name:
-    codex --yolo "please read agentic/{{name}}.md and follow the instructions closely while completing the described task."
+    codex exec --yolo "please read agentic/{{name}}.md and follow the instructions closely while completing the described task."
 
 agentic-loop name:
     #!/usr/bin/env bash

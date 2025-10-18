@@ -1,8 +1,10 @@
+use std::convert::TryFrom;
+
 use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind, LineType},
 };
-use pgt_query::protobuf::InsertStmt;
+use pgt_query::protobuf::{InsertStmt, OverridingKind};
 
 use super::node_list::emit_comma_separated_list;
 use super::res_target::emit_column_name;
@@ -17,6 +19,11 @@ pub(super) fn emit_insert_stmt_no_semicolon(e: &mut EventEmitter, n: &InsertStmt
 
 fn emit_insert_stmt_impl(e: &mut EventEmitter, n: &InsertStmt, with_semicolon: bool) {
     e.group_start(GroupKind::InsertStmt);
+
+    if let Some(ref with_clause) = n.with_clause {
+        super::emit_with_clause(e, with_clause);
+        e.line(LineType::SoftOrSpace);
+    }
 
     e.token(TokenKind::INSERT_KW);
     e.space();
@@ -42,6 +49,34 @@ fn emit_insert_stmt_impl(e: &mut EventEmitter, n: &InsertStmt, with_semicolon: b
         e.token(TokenKind::R_PAREN);
     }
 
+    if let Ok(kind) = OverridingKind::try_from(n.r#override) {
+        match kind {
+            OverridingKind::OverridingUserValue => {
+                e.space();
+                e.token(TokenKind::OVERRIDING_KW);
+                e.space();
+                e.token(TokenKind::USER_KW);
+                e.space();
+                e.token(TokenKind::VALUE_KW);
+            }
+            OverridingKind::OverridingSystemValue => {
+                e.space();
+                e.token(TokenKind::OVERRIDING_KW);
+                e.space();
+                e.token(TokenKind::SYSTEM_KW);
+                e.space();
+                e.token(TokenKind::VALUE_KW);
+            }
+            OverridingKind::OverridingNotSet | OverridingKind::Undefined => {}
+        }
+    } else {
+        debug_assert!(
+            n.r#override == 0 || n.r#override == 1,
+            "unexpected overriding kind {}",
+            n.r#override
+        );
+    }
+
     // Emit VALUES or SELECT or DEFAULT VALUES
     if let Some(ref select_stmt) = n.select_stmt {
         e.line(LineType::SoftOrSpace);
@@ -64,8 +99,12 @@ fn emit_insert_stmt_impl(e: &mut EventEmitter, n: &InsertStmt, with_semicolon: b
         super::emit_on_conflict_clause(e, on_conflict);
     }
 
-    // TODO: Handle RETURNING clause
-    // TODO: Handle WITH clause (CTEs)
+    if !n.returning_list.is_empty() {
+        e.line(LineType::SoftOrSpace);
+        e.token(TokenKind::RETURNING_KW);
+        e.space();
+        emit_comma_separated_list(e, &n.returning_list, super::emit_node);
+    }
 
     if with_semicolon {
         e.token(TokenKind::SEMICOLON);

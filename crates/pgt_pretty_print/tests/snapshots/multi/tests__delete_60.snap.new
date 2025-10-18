@@ -5,8 +5,8 @@ input_file: crates/pgt_pretty_print/tests/data/multi/delete_60.sql
 ---
 CREATE TABLE delete_test (
   id serial PRIMARY KEY,
-  a INT,
-  b TEXT
+  a pg_catalog.int4,
+  b text
 );
 
 INSERT INTO delete_test (a) VALUES (10);

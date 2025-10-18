@@ -3,7 +3,7 @@ source: crates/pgt_pretty_print/tests/tests.rs
 assertion_line: 174
 input_file: crates/pgt_pretty_print/tests/data/multi/macaddr_60.sql
 ---
-CREATE TABLE macaddr_data ( a INT, b macaddr );
+CREATE TABLE macaddr_data ( a pg_catalog.int4, b macaddr );
 
 INSERT INTO macaddr_data VALUES (1, '08:00:2b:01:02:03');
 
@@ -89,7 +89,7 @@ FROM
   macaddr_data
 WHERE a = 1;
 
-SELECT  ~ b FROM macaddr_data;
+SELECT ~b FROM macaddr_data;
 
 SELECT b & '00:00:00:ff:ff:ff' FROM macaddr_data;
 

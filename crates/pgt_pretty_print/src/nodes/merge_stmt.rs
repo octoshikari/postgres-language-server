@@ -17,11 +17,10 @@ pub(super) fn emit_merge_stmt_no_semicolon(e: &mut EventEmitter, n: &MergeStmt) 
 fn emit_merge_stmt_impl(e: &mut EventEmitter, n: &MergeStmt, with_semicolon: bool) {
     e.group_start(GroupKind::MergeStmt);
 
-    // TODO: WITH clause (CTEs)
-    // if let Some(ref with_clause) = n.with_clause {
-    //     super::emit_with_clause(e, with_clause);
-    //     e.line(LineType::SoftOrSpace);
-    // }
+    if let Some(ref with_clause) = n.with_clause {
+        super::emit_with_clause(e, with_clause);
+        e.line(LineType::SoftOrSpace);
+    }
 
     e.token(TokenKind::MERGE_KW);
     e.space();
