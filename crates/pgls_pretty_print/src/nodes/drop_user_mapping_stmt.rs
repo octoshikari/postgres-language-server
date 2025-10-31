@@ -1,4 +1,4 @@
-use pgt_query::protobuf::DropUserMappingStmt;
+use pgls_query::protobuf::DropUserMappingStmt;
 
 use crate::{
     TokenKind,

@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::emit_comma_separated_list,
 };
-use pgt_query::{
+use pgls_query::{
     NodeEnum,
     protobuf::{Node, VariableSetStmt},
 };
@@ -12,7 +12,7 @@ use pgt_query::{
 /// Special handling: AConst with string values should be emitted as unquoted identifiers
 fn emit_set_arg(node: &Node, e: &mut EventEmitter) {
     if let Some(NodeEnum::AConst(a_const)) = &node.node {
-        if let Some(pgt_query::protobuf::a_const::Val::Sval(s)) = &a_const.val {
+        if let Some(pgls_query::protobuf::a_const::Val::Sval(s)) = &a_const.val {
             // Check if this looks like it should be an identifier (not a quoted string)
             // In SET statements, simple identifiers like schema names are stored as string constants
             // but should be emitted without quotes

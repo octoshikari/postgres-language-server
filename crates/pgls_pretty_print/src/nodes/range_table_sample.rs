@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::{node_list::emit_comma_separated_list, node_list::emit_dot_separated_list},
 };
-use pgt_query::protobuf::RangeTableSample;
+use pgls_query::protobuf::RangeTableSample;
 
 pub(super) fn emit_range_table_sample(e: &mut EventEmitter, n: &RangeTableSample) {
     e.group_start(GroupKind::RangeTableSample);

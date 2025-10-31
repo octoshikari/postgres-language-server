@@ -1,4 +1,4 @@
-use pgt_query::protobuf::ParamRef;
+use pgls_query::protobuf::ParamRef;
 
 use crate::{
     TokenKind,

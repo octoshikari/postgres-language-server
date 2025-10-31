@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::emit_comma_separated_list,
 };
-use pgt_query::{NodeEnum, protobuf::CreatePolicyStmt};
+use pgls_query::{NodeEnum, protobuf::CreatePolicyStmt};
 
 pub(super) fn emit_create_policy_stmt(e: &mut EventEmitter, n: &CreatePolicyStmt) {
     e.group_start(GroupKind::CreatePolicyStmt);

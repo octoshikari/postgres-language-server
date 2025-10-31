@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::{JsonObjectAgg, JsonObjectConstructor};
+use pgls_query::protobuf::{JsonObjectAgg, JsonObjectConstructor};
 
 use super::json_agg_constructor::emit_json_agg_tail;
 

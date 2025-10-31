@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind, LineType},
 };
-use pgt_query::protobuf::CreateForeignServerStmt;
+use pgls_query::protobuf::CreateForeignServerStmt;
 
 use super::{
     node_list::emit_comma_separated_list,

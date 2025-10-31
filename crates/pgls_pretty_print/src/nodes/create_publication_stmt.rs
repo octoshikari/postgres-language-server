@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::emit_comma_separated_list,
 };
-use pgt_query::{NodeEnum, protobuf::CreatePublicationStmt};
+use pgls_query::{NodeEnum, protobuf::CreatePublicationStmt};
 
 pub(super) fn emit_create_publication_stmt(e: &mut EventEmitter, n: &CreatePublicationStmt) {
     e.group_start(GroupKind::CreatePublicationStmt);

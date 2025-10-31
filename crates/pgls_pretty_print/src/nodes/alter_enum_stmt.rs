@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::AlterEnumStmt;
+use pgls_query::protobuf::AlterEnumStmt;
 
 use super::node_list::emit_dot_separated_list;
 use super::string::{emit_keyword, emit_single_quoted_str};

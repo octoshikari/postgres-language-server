@@ -1,4 +1,4 @@
-use pgt_query::protobuf::Alias;
+use pgls_query::protobuf::Alias;
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
@@ -23,7 +23,7 @@ pub(super) fn emit_alias(e: &mut EventEmitter, n: &Alias) {
         e.token(TokenKind::L_PAREN);
         emit_comma_separated_list(e, &n.colnames, |node, e| {
             // Column names in alias are String nodes
-            if let Some(pgt_query::NodeEnum::String(s)) = node.node.as_ref() {
+            if let Some(pgls_query::NodeEnum::String(s)) = node.node.as_ref() {
                 e.token(TokenKind::IDENT(s.sval.clone()));
             } else {
                 super::emit_node(node, e);

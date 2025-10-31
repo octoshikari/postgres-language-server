@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::JsonFuncExpr;
+use pgls_query::protobuf::JsonFuncExpr;
 
 pub(super) fn emit_json_func_expr(e: &mut EventEmitter, n: &JsonFuncExpr) {
     e.group_start(GroupKind::JsonFuncExpr);

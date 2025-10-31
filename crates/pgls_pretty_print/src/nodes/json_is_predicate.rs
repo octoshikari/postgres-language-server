@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::{JsonIsPredicate, JsonValueType};
+use pgls_query::protobuf::{JsonIsPredicate, JsonValueType};
 
 pub(super) fn emit_json_is_predicate(e: &mut EventEmitter, n: &JsonIsPredicate) {
     e.group_start(GroupKind::JsonIsPredicate);

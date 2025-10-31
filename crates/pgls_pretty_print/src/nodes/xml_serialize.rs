@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::XmlSerialize;
+use pgls_query::protobuf::XmlSerialize;
 
 pub(super) fn emit_xml_serialize(e: &mut EventEmitter, n: &XmlSerialize) {
     e.group_start(GroupKind::XmlSerialize);

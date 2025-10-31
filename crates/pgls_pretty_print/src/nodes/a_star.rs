@@ -1,4 +1,4 @@
-use pgt_query::protobuf::AStar;
+use pgls_query::protobuf::AStar;
 
 use crate::{TokenKind, emitter::EventEmitter};
 

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::ReplicaIdentityStmt;
+use pgls_query::protobuf::ReplicaIdentityStmt;
 
 use crate::{
     TokenKind,

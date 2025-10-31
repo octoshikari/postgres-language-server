@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CollateClause;
+use pgls_query::protobuf::CollateClause;
 
 use crate::{
     TokenKind,
@@ -24,7 +24,7 @@ pub(super) fn emit_collate_clause(e: &mut EventEmitter, n: &CollateClause) {
             e.token(TokenKind::DOT);
         }
         // Use emit_string_identifier to add quotes
-        if let Some(pgt_query::NodeEnum::String(s)) = &node.node {
+        if let Some(pgls_query::NodeEnum::String(s)) = &node.node {
             super::emit_string_identifier(e, s);
         }
     }

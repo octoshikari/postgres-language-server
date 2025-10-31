@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::AlterRoleSetStmt;
+use pgls_query::protobuf::AlterRoleSetStmt;
 
 use super::role_spec::emit_role_spec;
 

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{ViewCheckOption, ViewStmt};
+use pgls_query::protobuf::{ViewCheckOption, ViewStmt};
 
 use crate::{
     TokenKind,
@@ -67,7 +67,7 @@ pub(super) fn emit_view_stmt(e: &mut EventEmitter, n: &ViewStmt) {
         e.token(TokenKind::AS_KW);
         e.line(LineType::SoftOrSpace);
 
-        if let Some(pgt_query::NodeEnum::SelectStmt(stmt)) = query.node.as_ref() {
+        if let Some(pgls_query::NodeEnum::SelectStmt(stmt)) = query.node.as_ref() {
             super::emit_select_stmt_no_semicolon(e, stmt);
         } else {
             super::emit_node(query, e);

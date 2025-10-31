@@ -1,5 +1,5 @@
-use pgt_query::protobuf::AConst;
-use pgt_query::protobuf::a_const::Val;
+use pgls_query::protobuf::AConst;
+use pgls_query::protobuf::a_const::Val;
 
 use crate::{
     TokenKind,

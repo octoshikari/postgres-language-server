@@ -1,4 +1,4 @@
-use pgt_query::protobuf::RuleStmt;
+use pgls_query::protobuf::RuleStmt;
 
 use crate::{
     TokenKind,
@@ -51,8 +51,7 @@ pub(super) fn emit_rule_stmt(e: &mut EventEmitter, n: &RuleStmt) {
     if let Some(ref where_clause) = n.where_clause {
         e.space();
         e.token(TokenKind::WHERE_KW);
-        e.space();
-        emit_node(where_clause, e);
+        super::emit_clause_condition(e, where_clause);
     }
 
     e.space();

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{DropBehavior, GrantStmt, GrantTargetType, ObjectType};
+use pgls_query::protobuf::{DropBehavior, GrantStmt, GrantTargetType, ObjectType};
 
 use crate::{
     TokenKind,
@@ -33,7 +33,7 @@ pub(super) fn emit_grant_stmt(e: &mut EventEmitter, n: &GrantStmt) {
         e.token(TokenKind::ALL_KW);
     } else {
         emit_comma_separated_list(e, &n.privileges, |node, e| {
-            if let Some(pgt_query::NodeEnum::AccessPriv(priv_node)) = &node.node {
+            if let Some(pgls_query::NodeEnum::AccessPriv(priv_node)) = &node.node {
                 emit_access_priv(e, priv_node);
             }
         });
@@ -193,7 +193,7 @@ pub(super) fn emit_grant_stmt(e: &mut EventEmitter, n: &GrantStmt) {
     e.group_end();
 }
 
-fn emit_access_priv(e: &mut EventEmitter, priv_node: &pgt_query::protobuf::AccessPriv) {
+fn emit_access_priv(e: &mut EventEmitter, priv_node: &pgls_query::protobuf::AccessPriv) {
     if priv_node.priv_name.is_empty() && !priv_node.cols.is_empty() {
         e.token(TokenKind::ALL_KW);
     } else if !priv_node.priv_name.is_empty() {

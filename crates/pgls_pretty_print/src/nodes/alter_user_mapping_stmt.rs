@@ -3,7 +3,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind, LineType},
 };
-use pgt_query::protobuf::AlterUserMappingStmt;
+use pgls_query::protobuf::AlterUserMappingStmt;
 
 pub(super) fn emit_alter_user_mapping_stmt(e: &mut EventEmitter, n: &AlterUserMappingStmt) {
     e.group_start(GroupKind::AlterUserMappingStmt);

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::ColumnDef;
+use pgls_query::protobuf::ColumnDef;
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};

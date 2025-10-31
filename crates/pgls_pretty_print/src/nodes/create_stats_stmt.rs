@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::{node_list::emit_comma_separated_list, node_list::emit_dot_separated_list},
 };
-use pgt_query::{NodeEnum, protobuf::CreateStatsStmt};
+use pgls_query::{NodeEnum, protobuf::CreateStatsStmt};
 
 pub(super) fn emit_create_stats_stmt(e: &mut EventEmitter, n: &CreateStatsStmt) {
     e.group_start(GroupKind::CreateStatsStmt);

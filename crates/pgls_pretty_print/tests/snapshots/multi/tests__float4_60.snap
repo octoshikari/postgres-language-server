@@ -1,7 +1,7 @@
 ---
-source: crates/pgt_pretty_print/tests/tests.rs
-assertion_line: 174
-input_file: crates/pgt_pretty_print/tests/data/multi/float4_60.sql
+source: crates/pgls_pretty_print/tests/tests.rs
+input_file: crates/pgls_pretty_print/tests/data/multi/float4_60.sql
+snapshot_kind: text
 ---
 CREATE TABLE float4_tbl ( f1 REAL );
 
@@ -114,28 +114,32 @@ SELECT
   f.f1 * '-10' AS "x"
 FROM
   float4_tbl AS f
-WHERE f.f1 > '0.0';
+WHERE f.f1 >
+  '0.0';
 
 SELECT
   f.f1,
   f.f1 + '-10' AS "x"
 FROM
   float4_tbl AS f
-WHERE f.f1 > '0.0';
+WHERE f.f1 >
+  '0.0';
 
 SELECT
   f.f1,
   f.f1 / '-10' AS "x"
 FROM
   float4_tbl AS f
-WHERE f.f1 > '0.0';
+WHERE f.f1 >
+  '0.0';
 
 SELECT
   f.f1,
   f.f1 - '-10' AS "x"
 FROM
   float4_tbl AS f
-WHERE f.f1 > '0.0';
+WHERE f.f1 >
+  '0.0';
 
 SELECT f.f1 / '0.0' FROM float4_tbl AS f;
 
@@ -145,7 +149,8 @@ SELECT f.f1, @f.f1 AS "abs_f1" FROM float4_tbl AS f;
 
 UPDATE float4_tbl
 SET f1 = float4_tbl.f1 * '-1'
-WHERE float4_tbl.f1 > '0.0';
+WHERE float4_tbl.f1 >
+  '0.0';
 
 SELECT * FROM float4_tbl ORDER BY 1;
 
@@ -218,9 +223,12 @@ CREATE FUNCTION xfloat4out(
   xfloat4
 ) RETURNS cstring IMMUTABLE STRICT LANGUAGE "internal" AS 'int4out';
 
-CREATE TYPE xfloat4 (input = xfloat4in,
-output = xfloat4out,
-like = REAL);
+CREATE TYPE xfloat4
+(
+  input = xfloat4in,
+  output = xfloat4out,
+  like = REAL
+);
 
 CREATE CAST (xfloat4 AS REAL) WITHOUT FUNCTION;
 
@@ -527,7 +535,8 @@ SELECT
   flt,
   CAST(CAST(flt AS TEXT) AS REAL) AS "r_flt",
   float4send(CAST(CAST(flt AS TEXT) AS REAL)) AS "obits",
-  float4send(CAST(CAST(flt AS TEXT) AS REAL)) = float4send(flt) AS "correct"
+  float4send(CAST(CAST(flt AS TEXT) AS REAL)) =
+  float4send(flt) AS "correct"
 FROM
   (SELECT
     CAST(CAST(CAST(bits AS INT) AS xfloat4) AS REAL) AS "flt"

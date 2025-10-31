@@ -1,4 +1,4 @@
-use pgt_query::protobuf::VariableShowStmt;
+use pgls_query::protobuf::VariableShowStmt;
 
 use crate::{
     TokenKind,

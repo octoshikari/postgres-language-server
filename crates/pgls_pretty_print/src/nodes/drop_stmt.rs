@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{DropBehavior, DropStmt, ObjectType};
+use pgls_query::protobuf::{DropBehavior, DropStmt, ObjectType};
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
@@ -71,7 +71,7 @@ pub(super) fn emit_drop_stmt(e: &mut EventEmitter, n: &DropStmt) {
             emit_comma_separated_list(e, &n.objects, emit_drop_cast_object);
         } else {
             emit_comma_separated_list(e, &n.objects, |node, e| {
-                if let Some(pgt_query::NodeEnum::List(list)) = node.node.as_ref() {
+                if let Some(pgls_query::NodeEnum::List(list)) = node.node.as_ref() {
                     emit_dot_separated_identifiers(e, &list.items);
                 } else {
                     super::emit_node(node, e);
@@ -90,13 +90,13 @@ pub(super) fn emit_drop_stmt(e: &mut EventEmitter, n: &DropStmt) {
     e.group_end();
 }
 
-fn emit_dot_separated_identifiers(e: &mut EventEmitter, items: &[pgt_query::protobuf::Node]) {
+fn emit_dot_separated_identifiers(e: &mut EventEmitter, items: &[pgls_query::protobuf::Node]) {
     for (i, item) in items.iter().enumerate() {
         if i > 0 {
             e.token(TokenKind::DOT);
         }
 
-        if let Some(pgt_query::NodeEnum::String(s)) = item.node.as_ref() {
+        if let Some(pgls_query::NodeEnum::String(s)) = item.node.as_ref() {
             super::string::emit_identifier(e, &s.sval);
         } else {
             super::emit_node(item, e);
@@ -104,8 +104,8 @@ fn emit_dot_separated_identifiers(e: &mut EventEmitter, items: &[pgt_query::prot
     }
 }
 
-fn emit_drop_cast_object(node: &pgt_query::protobuf::Node, e: &mut EventEmitter) {
-    if let Some(pgt_query::NodeEnum::List(list)) = node.node.as_ref() {
+fn emit_drop_cast_object(node: &pgls_query::protobuf::Node, e: &mut EventEmitter) {
+    if let Some(pgls_query::NodeEnum::List(list)) = node.node.as_ref() {
         if list.items.len() == 2 {
             e.token(TokenKind::L_PAREN);
             super::emit_node(&list.items[0], e);

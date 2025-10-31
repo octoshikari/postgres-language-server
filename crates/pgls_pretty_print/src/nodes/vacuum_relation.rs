@@ -1,4 +1,4 @@
-use pgt_query::protobuf::VacuumRelation;
+use pgls_query::protobuf::VacuumRelation;
 
 use crate::{
     TokenKind,

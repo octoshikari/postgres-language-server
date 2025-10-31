@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::ClosePortalStmt;
+use pgls_query::protobuf::ClosePortalStmt;
 
 pub(super) fn emit_close_portal_stmt(e: &mut EventEmitter, n: &ClosePortalStmt) {
     e.group_start(GroupKind::ClosePortalStmt);

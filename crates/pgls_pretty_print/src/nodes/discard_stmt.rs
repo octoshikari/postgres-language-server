@@ -1,4 +1,4 @@
-use pgt_query::protobuf::DiscardStmt;
+use pgls_query::protobuf::DiscardStmt;
 
 use crate::{
     TokenKind,

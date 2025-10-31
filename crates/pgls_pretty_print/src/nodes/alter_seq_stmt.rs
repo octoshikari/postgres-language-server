@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::AlterSeqStmt;
+use pgls_query::protobuf::AlterSeqStmt;
 
 pub(super) fn emit_alter_seq_stmt(e: &mut EventEmitter, n: &AlterSeqStmt) {
     e.group_start(GroupKind::AlterSeqStmt);
@@ -26,7 +26,7 @@ pub(super) fn emit_alter_seq_stmt(e: &mut EventEmitter, n: &AlterSeqStmt) {
         for opt in &n.options {
             e.space();
             // Use specialized sequence option emission
-            if let Some(pgt_query::NodeEnum::DefElem(def_elem)) = opt.node.as_ref() {
+            if let Some(pgls_query::NodeEnum::DefElem(def_elem)) = opt.node.as_ref() {
                 super::emit_sequence_option(e, def_elem);
             } else {
                 super::emit_node(opt, e);

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{SetOperation, SetOperationStmt};
+use pgls_query::protobuf::{SetOperation, SetOperationStmt};
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind, LineType};

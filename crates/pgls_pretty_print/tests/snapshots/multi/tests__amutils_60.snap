@@ -1,6 +1,6 @@
 ---
-source: crates/pgt_pretty_print/tests/tests.rs
-input_file: crates/pgt_pretty_print/tests/data/multi/amutils_60.sql
+source: crates/pgls_pretty_print/tests/tests.rs
+input_file: crates/pgls_pretty_print/tests/data/multi/amutils_60.sql
 snapshot_kind: text
 ---
 SELECT
@@ -34,7 +34,8 @@ FROM
   'can_include',
   'bogus'] AS TEXT[])) WITH ORDINALITY AS u (prop,
   ord)
-WHERE a.amname = 'btree'
+WHERE a.amname =
+  'btree'
 ORDER BY ord;
 
 SELECT
@@ -68,7 +69,8 @@ FROM
   'can_include',
   'bogus'] AS TEXT[])) WITH ORDINALITY AS u (prop,
   ord)
-WHERE a.amname = 'gist'
+WHERE a.amname =
+  'gist'
 ORDER BY ord;
 
 SELECT
@@ -145,7 +147,8 @@ FROM
   'can_include',
   'bogus'] AS TEXT[])) WITH ORDINALITY AS u (prop,
   ord)
-WHERE amtype = 'i'
+WHERE amtype =
+  'i'
 ORDER BY amname,
   ord;
 

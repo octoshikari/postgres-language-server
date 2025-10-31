@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::AlterPublicationStmt;
+use pgls_query::protobuf::AlterPublicationStmt;
 
 use super::node_list::emit_comma_separated_list;
 

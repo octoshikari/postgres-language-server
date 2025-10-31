@@ -1,4 +1,4 @@
-use pgt_query::{NodeEnum, protobuf::CreateTableAsStmt};
+use pgls_query::{NodeEnum, protobuf::CreateTableAsStmt};
 
 use crate::{
     TokenKind,

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{MinMaxExpr, MinMaxOp};
+use pgls_query::protobuf::{MinMaxExpr, MinMaxOp};
 
 use crate::{
     TokenKind,

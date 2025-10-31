@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind, LineType},
 };
-use pgt_query::protobuf::{CmdType, MergeMatchKind, MergeStmt, MergeWhenClause};
+use pgls_query::protobuf::{CmdType, MergeMatchKind, MergeStmt, MergeWhenClause};
 
 use super::emit_node;
 

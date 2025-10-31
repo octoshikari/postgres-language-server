@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CurrentOfExpr;
+use pgls_query::protobuf::CurrentOfExpr;
 
 use crate::{
     TokenKind,

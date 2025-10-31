@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{TransactionStmt, TransactionStmtKind};
+use pgls_query::protobuf::{TransactionStmt, TransactionStmtKind};
 
 use crate::{
     TokenKind,

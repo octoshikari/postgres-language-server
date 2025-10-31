@@ -1,4 +1,4 @@
-use pgt_query::protobuf::VacuumStmt;
+use pgls_query::protobuf::VacuumStmt;
 
 use crate::{
     TokenKind,

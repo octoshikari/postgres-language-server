@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{ConstrType, Constraint};
+use pgls_query::protobuf::{ConstrType, Constraint};
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
@@ -189,7 +189,7 @@ pub(super) fn emit_constraint(e: &mut EventEmitter, n: &Constraint) {
                 e.token(TokenKind::WHERE_KW);
                 e.space();
                 e.token(TokenKind::L_PAREN);
-                super::emit_node(where_clause, e);
+                super::emit_clause_condition(e, where_clause);
                 e.token(TokenKind::R_PAREN);
             }
         }
@@ -302,7 +302,7 @@ fn emit_foreign_key_action(
     e: &mut EventEmitter,
     action: &str,
     event: &str,
-    set_cols: &[pgt_query::protobuf::Node],
+    set_cols: &[pgls_query::protobuf::Node],
 ) {
     if action == "a" {
         // NO ACTION is the default, usually not emitted

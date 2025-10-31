@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::CheckPointStmt;
+use pgls_query::protobuf::CheckPointStmt;
 
 pub(super) fn emit_checkpoint_stmt(e: &mut EventEmitter, _n: &CheckPointStmt) {
     e.group_start(GroupKind::CheckPointStmt);

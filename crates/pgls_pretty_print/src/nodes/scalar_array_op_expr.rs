@@ -1,4 +1,4 @@
-use pgt_query::protobuf::ScalarArrayOpExpr;
+use pgls_query::protobuf::ScalarArrayOpExpr;
 
 use crate::{
     TokenKind,

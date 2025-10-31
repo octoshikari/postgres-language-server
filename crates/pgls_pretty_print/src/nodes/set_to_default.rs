@@ -1,4 +1,4 @@
-use pgt_query::protobuf::SetToDefault;
+use pgls_query::protobuf::SetToDefault;
 
 use crate::{
     TokenKind,

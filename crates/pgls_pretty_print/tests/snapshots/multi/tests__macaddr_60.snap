@@ -1,6 +1,6 @@
 ---
-source: crates/pgt_pretty_print/tests/tests.rs
-input_file: crates/pgt_pretty_print/tests/data/multi/macaddr_60.sql
+source: crates/pgls_pretty_print/tests/tests.rs
+input_file: crates/pgls_pretty_print/tests/data/multi/macaddr_60.sql
 snapshot_kind: text
 ---
 CREATE TABLE macaddr_data ( a INT, b MACADDR );
@@ -42,52 +42,68 @@ CREATE INDEX "macaddr_data_hash" ON macaddr_data USING hash (b);
 SELECT a, b, trunc(b) FROM macaddr_data ORDER BY 2, 1;
 
 SELECT
-  b < '08:00:2b:01:02:04'
+  b <
+  '08:00:2b:01:02:04'
 FROM
   macaddr_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  b > '08:00:2b:01:02:04'
+  b >
+  '08:00:2b:01:02:04'
 FROM
   macaddr_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  b > '08:00:2b:01:02:03'
+  b >
+  '08:00:2b:01:02:03'
 FROM
   macaddr_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  b <= '08:00:2b:01:02:04'
+  b <=
+  '08:00:2b:01:02:04'
 FROM
   macaddr_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  b >= '08:00:2b:01:02:04'
+  b >=
+  '08:00:2b:01:02:04'
 FROM
   macaddr_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  b = '08:00:2b:01:02:03'
+  b =
+  '08:00:2b:01:02:03'
 FROM
   macaddr_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  b <> '08:00:2b:01:02:04'
+  b <>
+  '08:00:2b:01:02:04'
 FROM
   macaddr_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  b <> '08:00:2b:01:02:03'
+  b <>
+  '08:00:2b:01:02:03'
 FROM
   macaddr_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT ~b FROM macaddr_data;
 

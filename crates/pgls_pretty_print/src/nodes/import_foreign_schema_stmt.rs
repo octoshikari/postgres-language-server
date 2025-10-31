@@ -1,4 +1,4 @@
-use pgt_query::protobuf::ImportForeignSchemaStmt;
+use pgls_query::protobuf::ImportForeignSchemaStmt;
 
 use crate::{
     TokenKind,

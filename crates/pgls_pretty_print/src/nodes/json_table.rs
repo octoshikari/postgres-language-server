@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind, LineType},
     nodes::node_list::emit_comma_separated_list,
 };
-use pgt_query::{
+use pgls_query::{
     NodeEnum,
     protobuf::{
         JsonArgument, JsonBehavior, JsonBehaviorType, JsonQuotes, JsonTable, JsonTableColumn,

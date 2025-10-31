@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::emit_comma_separated_list,
 };
-use pgt_query::protobuf::{self, TypeName};
+use pgls_query::protobuf::{self, TypeName};
 
 use super::string::emit_identifier_maybe_quoted;
 
@@ -42,7 +42,7 @@ fn collect_name_parts(n: &TypeName) -> Vec<String> {
     n.names
         .iter()
         .filter_map(|node| match &node.node {
-            Some(pgt_query::NodeEnum::String(s)) => Some(s.sval.clone()),
+            Some(pgls_query::NodeEnum::String(s)) => Some(s.sval.clone()),
             _ => None,
         })
         .collect()
@@ -187,7 +187,7 @@ fn emit_type_modifiers(e: &mut EventEmitter, n: &TypeName, name_parts: &[String]
 
 fn emit_array_bounds(e: &mut EventEmitter, n: &TypeName) {
     for bound in &n.array_bounds {
-        if let Some(pgt_query::NodeEnum::Integer(int_bound)) = &bound.node {
+        if let Some(pgls_query::NodeEnum::Integer(int_bound)) = &bound.node {
             e.token(TokenKind::L_BRACK);
             if int_bound.ival != -1 {
                 e.token(TokenKind::IDENT(int_bound.ival.to_string()));
@@ -287,11 +287,11 @@ fn interval_field_keywords(range: i32) -> Option<&'static [&'static str]> {
 
 fn extract_interval_typmod_int(node: &protobuf::Node) -> Option<i32> {
     match &node.node {
-        Some(pgt_query::NodeEnum::AConst(a_const)) => match &a_const.val {
-            Some(pgt_query::protobuf::a_const::Val::Ival(integer)) => Some(integer.ival),
+        Some(pgls_query::NodeEnum::AConst(a_const)) => match &a_const.val {
+            Some(pgls_query::protobuf::a_const::Val::Ival(integer)) => Some(integer.ival),
             _ => None,
         },
-        Some(pgt_query::NodeEnum::Integer(integer)) => Some(integer.ival),
+        Some(pgls_query::NodeEnum::Integer(integer)) => Some(integer.ival),
         _ => None,
     }
 }

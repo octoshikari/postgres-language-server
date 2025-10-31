@@ -1,4 +1,4 @@
-use pgt_query::{Node, NodeEnum, protobuf::ObjectWithArgs};
+use pgls_query::{Node, NodeEnum, protobuf::ObjectWithArgs};
 
 use crate::{
     TokenKind,

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::ColumnRef;
+use pgls_query::protobuf::ColumnRef;
 
 use crate::emitter::{EventEmitter, GroupKind};
 

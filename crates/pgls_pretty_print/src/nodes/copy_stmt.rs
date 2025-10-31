@@ -6,7 +6,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::CopyStmt;
+use pgls_query::protobuf::CopyStmt;
 
 pub(super) fn emit_copy_stmt(e: &mut EventEmitter, n: &CopyStmt) {
     e.group_start(GroupKind::CopyStmt);
@@ -29,16 +29,16 @@ pub(super) fn emit_copy_stmt(e: &mut EventEmitter, n: &CopyStmt) {
         e.token(TokenKind::L_PAREN);
         // Use no-semicolon variant for DML queries in COPY statement
         match &query.node {
-            Some(pgt_query::NodeEnum::SelectStmt(stmt)) => {
+            Some(pgls_query::NodeEnum::SelectStmt(stmt)) => {
                 super::emit_select_stmt_no_semicolon(e, stmt);
             }
-            Some(pgt_query::NodeEnum::InsertStmt(stmt)) => {
+            Some(pgls_query::NodeEnum::InsertStmt(stmt)) => {
                 super::emit_insert_stmt_no_semicolon(e, stmt);
             }
-            Some(pgt_query::NodeEnum::UpdateStmt(stmt)) => {
+            Some(pgls_query::NodeEnum::UpdateStmt(stmt)) => {
                 super::emit_update_stmt_no_semicolon(e, stmt);
             }
-            Some(pgt_query::NodeEnum::DeleteStmt(stmt)) => {
+            Some(pgls_query::NodeEnum::DeleteStmt(stmt)) => {
                 super::emit_delete_stmt_no_semicolon(e, stmt);
             }
             _ => {
@@ -86,8 +86,7 @@ pub(super) fn emit_copy_stmt(e: &mut EventEmitter, n: &CopyStmt) {
     if let Some(ref where_clause) = n.where_clause {
         e.space();
         e.token(TokenKind::WHERE_KW);
-        e.space();
-        super::emit_node(where_clause, e);
+        super::emit_clause_condition(e, where_clause);
     }
 
     e.token(TokenKind::SEMICOLON);

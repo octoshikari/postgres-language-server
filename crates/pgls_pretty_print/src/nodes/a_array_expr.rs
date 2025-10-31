@@ -1,4 +1,4 @@
-use pgt_query::protobuf::AArrayExpr;
+use pgls_query::protobuf::AArrayExpr;
 
 use crate::{
     TokenKind,

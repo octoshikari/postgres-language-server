@@ -1,4 +1,4 @@
-use pgt_query::protobuf::WithCheckOption;
+use pgls_query::protobuf::WithCheckOption;
 
 use crate::emitter::{EventEmitter, GroupKind};
 

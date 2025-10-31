@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::TypeCast;
+use pgls_query::protobuf::TypeCast;
 
 pub(super) fn emit_type_cast(e: &mut EventEmitter, n: &TypeCast) {
     e.group_start(GroupKind::TypeCast);

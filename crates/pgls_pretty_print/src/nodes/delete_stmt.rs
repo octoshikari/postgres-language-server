@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind, LineType},
 };
-use pgt_query::protobuf::DeleteStmt;
+use pgls_query::protobuf::DeleteStmt;
 
 pub(super) fn emit_delete_stmt(e: &mut EventEmitter, n: &DeleteStmt) {
     emit_delete_stmt_impl(e, n, true);
@@ -40,8 +40,7 @@ fn emit_delete_stmt_impl(e: &mut EventEmitter, n: &DeleteStmt, with_semicolon: b
     if let Some(ref where_clause) = n.where_clause {
         e.line(LineType::SoftOrSpace);
         e.token(TokenKind::WHERE_KW);
-        e.space();
-        super::emit_node(where_clause, e);
+        super::emit_clause_condition(e, where_clause);
     }
 
     if !n.returning_list.is_empty() {

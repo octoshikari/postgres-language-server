@@ -747,7 +747,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] ArrayCoerceExpr (array coercions that simply forward the inner expression)
 - [x] BitString
 - [x] Boolean
-- [x] BoolExpr (AND/OR/NOT)
+- [x] BoolExpr (AND/OR/NOT; precedence-aware parentheses preservation to maintain AST shape)
 - [x] BooleanTest (IS TRUE/FALSE/UNKNOWN and negations)
 - [x] CallStmt (CALL procedure)
 - [x] CaseExpr (CASE WHEN ... THEN ... ELSE ... END)
@@ -939,6 +939,9 @@ Keep this section focused on durable guidance. When you add new insights, summar
 - Render symbolic operator names (composed purely of punctuation) without quoting and force a space before parentheses so DROP/ALTER statements remain parseable.
 - Drop `LineType::SoftOrSpace` before optional DML clauses so compact statements stay single-line while long lists can wrap cleanly.
 - Drop `LineType::SoftOrSpace` before `OVER` clauses and each window spec segment so inline window functions can wrap without blowing per-line limits while still re-parsing to the same AST.
+- Preserve explicit parentheses in arithmetic expressions by wrapping child `AExpr` nodes whenever their operator precedence is lower than the parent or a left-associative parent holds a right-nested operand; otherwise constructs like `100 * 3 + (vs.i - 1) * 3` lose grouping and fail AST equality.
+- Wrap `BoolExpr` children whose precedence is lower than their parent (e.g. OR under AND, AND/OR under NOT) so expressions like `(a OR b) AND c` retain explicit parentheses and keep the original AST structure.
+- Use `emit_clause_condition` to indent boolean clause bodies (`WHERE`, `HAVING`, planner filters) so wrapped predicates align under their keywords instead of hugging the left margin.
 
 **Node-Specific Patterns**:
 - Respect `CoercionForm` when emitting row constructors; implicit casts must stay bare tuples or the planner-visible `row_format` flag changes.
@@ -948,6 +951,7 @@ Keep this section focused on durable guidance. When you add new insights, summar
 - Decode window frame bitmasks to render RANGE/ROWS/GROUPS with the correct UNBOUNDED/CURRENT/OFFSET bounds and guard PRECEDING/FOLLOWING against missing offsets.
 - Ordered-set aggregates must render `WITHIN GROUP (ORDER BY ...)` outside the argument list and emit `FILTER (WHERE ...)` ahead of any `OVER` clause so planner fallbacks reuse the same surface layout.
 - For `MergeStmt`, only append `BY TARGET` when the clause has no predicate (the `DO NOTHING` branch); conditional branches should stay as bare `WHEN NOT MATCHED` so we don't rewrite user intent.
+- When a binary comparison must wrap, keep the operator attached to the left expression and indent the right-hand side behind a `LineType::SoftOrSpace` break. This avoids the renderer splitting each token onto its own line once the surrounding group has already broken.
 
 **Planner Nodes (CRITICAL - Read Carefully)**:
 - **NEVER create synthetic nodes or wrap nodes in SELECT statements for deparse round-trips**. This violates the architecture and breaks AST preservation.
@@ -1009,7 +1013,8 @@ just ready
 
 ## Next Steps
 
-1. Investigate the remaining line-length failure in `test_multi__window_60`; the embedded `CREATE FUNCTION` body still emits a long SQL string that blows past the 60-column budget, so we either need a smarter break in the ViewStmt emitter or a harness carve-out for multiline literals.
+1. Investigate why `ResTarget` aliases are still quoted even when lowercase-only, and adjust the identifier helper if we can emit bare aliases without breaking AST equality.
+2. Audit rename/owner emitters so non-table object types (FDWs, conversions, operator families) carry their specific keywords and reshape lists like `USING` clauses without falling back to `ALTER TABLE`.
 
 ## Summary: Key Points
 

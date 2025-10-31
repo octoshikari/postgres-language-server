@@ -1,9 +1,9 @@
-use pgt_query::protobuf::{AExpr, AExprKind};
-use pgt_query::{Node, NodeEnum};
+use pgls_query::protobuf::{AExpr, AExprKind};
+use pgls_query::{Node, NodeEnum};
 
 use crate::{
     TokenKind,
-    emitter::{EventEmitter, GroupKind},
+    emitter::{EventEmitter, GroupKind, LineType},
 };
 
 pub(super) fn emit_a_expr(e: &mut EventEmitter, n: &AExpr) {
@@ -45,45 +45,75 @@ fn emit_aexpr_op(e: &mut EventEmitter, n: &AExpr) {
         return;
     }
 
-    let lexpr = n.lexpr.as_ref();
-    let rexpr = n.rexpr.as_ref();
+    let parent_info = operator_info(&n.name, OperatorArity::from_aexpr(n));
 
-    match (lexpr, rexpr) {
+    match (n.lexpr.as_ref(), n.rexpr.as_ref()) {
         (Some(lexpr), Some(rexpr)) => {
-            super::emit_node(lexpr, e);
-            e.space();
-            emit_operator(e, &n.name);
-            e.space();
-            super::emit_node(rexpr, e);
+            emit_operand_with_parens(e, lexpr, parent_info, OperandSide::Left);
+
+            if operator_prefers_line_break(&n.name) {
+                // Keep the operator attached to the left-hand side and allow the
+                // right-hand side to wrap underneath when the expression exceeds
+                // the line width.
+                e.space();
+                emit_operator(e, &n.name);
+                e.line(LineType::SoftOrSpace);
+                emit_operand_with_parens(e, rexpr, parent_info, OperandSide::Right);
+            } else {
+                e.space();
+                emit_operator(e, &n.name);
+                e.space();
+                emit_operand_with_parens(e, rexpr, parent_info, OperandSide::Right);
+            }
         }
         (None, Some(rexpr)) => {
             if let Some(op) = extract_simple_operator(&n.name) {
                 if op.eq_ignore_ascii_case("not") {
                     e.token(TokenKind::NOT_KW);
-                    e.space();
-                    super::emit_node(rexpr, e);
+                    if operator_prefers_line_break(&n.name) {
+                        e.line(LineType::SoftOrSpace);
+                    } else {
+                        e.space();
+                    }
+                    emit_operand_with_parens(e, rexpr, parent_info, OperandSide::Unary);
                 } else {
                     emit_simple_operator(e, op);
                     if operator_needs_space(op) {
-                        e.space();
+                        if operator_prefers_line_break(&n.name) {
+                            e.line(LineType::SoftOrSpace);
+                        } else {
+                            e.space();
+                        }
                     }
-                    super::emit_node(rexpr, e);
+                    emit_operand_with_parens(e, rexpr, parent_info, OperandSide::Unary);
                 }
             } else {
                 emit_operator(e, &n.name);
-                e.space();
-                super::emit_node(rexpr, e);
+                if operator_prefers_line_break(&n.name) {
+                    e.line(LineType::SoftOrSpace);
+                } else {
+                    e.space();
+                }
+                emit_operand_with_parens(e, rexpr, parent_info, OperandSide::Unary);
             }
         }
         (Some(lexpr), None) => {
-            super::emit_node(lexpr, e);
+            emit_operand_with_parens(e, lexpr, parent_info, OperandSide::Left);
             if let Some(op) = extract_simple_operator(&n.name) {
                 if operator_needs_space(op) {
-                    e.space();
+                    if operator_prefers_line_break(&n.name) {
+                        e.line(LineType::SoftOrSpace);
+                    } else {
+                        e.space();
+                    }
                 }
                 emit_simple_operator(e, op);
             } else {
-                e.space();
+                if operator_prefers_line_break(&n.name) {
+                    e.line(LineType::SoftOrSpace);
+                } else {
+                    e.space();
+                }
                 emit_operator(e, &n.name);
             }
         }
@@ -317,7 +347,7 @@ fn emit_aexpr_between(e: &mut EventEmitter, n: &AExpr) {
 
     // rexpr is a List node with two elements, but we need "expr AND expr" not "expr, expr"
     if let Some(ref rexpr) = n.rexpr {
-        if let Some(pgt_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
+        if let Some(pgls_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
             if !list.items.is_empty() {
                 super::emit_node(&list.items[0], e);
             }
@@ -347,7 +377,7 @@ fn emit_aexpr_not_between(e: &mut EventEmitter, n: &AExpr) {
 
     // rexpr is a List node with two elements, but we need "expr AND expr" not "expr, expr"
     if let Some(ref rexpr) = n.rexpr {
-        if let Some(pgt_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
+        if let Some(pgls_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
             if !list.items.is_empty() {
                 super::emit_node(&list.items[0], e);
             }
@@ -377,7 +407,7 @@ fn emit_aexpr_between_sym(e: &mut EventEmitter, n: &AExpr) {
 
     // rexpr is a List node with two elements, but we need "expr AND expr" not "expr, expr"
     if let Some(ref rexpr) = n.rexpr {
-        if let Some(pgt_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
+        if let Some(pgls_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
             if !list.items.is_empty() {
                 super::emit_node(&list.items[0], e);
             }
@@ -409,7 +439,7 @@ fn emit_aexpr_not_between_sym(e: &mut EventEmitter, n: &AExpr) {
 
     // rexpr is a List node with two elements, but we need "expr AND expr" not "expr, expr"
     if let Some(ref rexpr) = n.rexpr {
-        if let Some(pgt_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
+        if let Some(pgls_query::NodeEnum::List(list)) = rexpr.node.as_ref() {
             if !list.items.is_empty() {
                 super::emit_node(&list.items[0], e);
             }
@@ -471,4 +501,142 @@ fn extract_simple_operator(name: &[Node]) -> Option<&str> {
 
 fn operator_needs_space(op: &str) -> bool {
     op.chars().any(|c| c.is_alphabetic())
+}
+
+fn operator_prefers_line_break(name: &[Node]) -> bool {
+    match extract_simple_operator(name) {
+        Some("=") | Some("<>") | Some("!=") | Some("<") | Some(">") | Some("<=") | Some(">=") => {
+            true
+        }
+        _ => false,
+    }
+}
+
+const PREC_UNARY: u8 = 90;
+const PREC_POWER: u8 = 80;
+const PREC_MULTIPLICATIVE: u8 = 70;
+const PREC_ADDITIVE: u8 = 60;
+const PREC_OTHER: u8 = 55;
+const PREC_COMPARISON: u8 = 45;
+const PREC_IS: u8 = 40;
+const PREC_NOT: u8 = 35;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct OperatorInfo {
+    precedence: u8,
+    associativity: OperatorAssociativity,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum OperatorAssociativity {
+    Left,
+    Right,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum OperatorArity {
+    Unary,
+    Binary,
+}
+
+impl OperatorArity {
+    fn from_aexpr(expr: &AExpr) -> Self {
+        match (expr.lexpr.as_ref(), expr.rexpr.as_ref()) {
+            (Some(_), Some(_)) => OperatorArity::Binary,
+            (None, Some(_)) | (Some(_), None) => OperatorArity::Unary,
+            (None, None) => OperatorArity::Unary,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum OperandSide {
+    Left,
+    Right,
+    Unary,
+}
+
+fn emit_operand_with_parens(
+    e: &mut EventEmitter,
+    node: &Node,
+    parent: Option<OperatorInfo>,
+    side: OperandSide,
+) {
+    if needs_parentheses(node, parent, side) {
+        e.token(TokenKind::L_PAREN);
+        super::emit_node(node, e);
+        e.token(TokenKind::R_PAREN);
+    } else {
+        super::emit_node(node, e);
+    }
+}
+
+fn needs_parentheses(node: &Node, parent: Option<OperatorInfo>, side: OperandSide) -> bool {
+    let Some(parent_info) = parent else {
+        return false;
+    };
+
+    let Some(child_info) = node_operator_info(node) else {
+        return false;
+    };
+
+    if matches!(side, OperandSide::Unary) {
+        return child_info.precedence < parent_info.precedence;
+    }
+
+    if child_info.precedence < parent_info.precedence {
+        return true;
+    }
+
+    if child_info.precedence > parent_info.precedence {
+        return false;
+    }
+
+    match parent_info.associativity {
+        OperatorAssociativity::Left => matches!(side, OperandSide::Right),
+        OperatorAssociativity::Right => matches!(side, OperandSide::Left),
+    }
+}
+
+fn node_operator_info(node: &Node) -> Option<OperatorInfo> {
+    match node.node.as_ref()? {
+        NodeEnum::AExpr(expr) if matches!(expr.kind(), AExprKind::AexprOp) => {
+            operator_info(&expr.name, OperatorArity::from_aexpr(expr))
+        }
+        _ => None,
+    }
+}
+
+fn operator_info(name: &[Node], arity: OperatorArity) -> Option<OperatorInfo> {
+    let symbol = operator_symbol(name)?.to_ascii_lowercase();
+
+    let (precedence, associativity) = match symbol.as_str() {
+        "+" | "-" if matches!(arity, OperatorArity::Unary) => {
+            (PREC_UNARY, OperatorAssociativity::Right)
+        }
+        "~" if matches!(arity, OperatorArity::Unary) => (PREC_UNARY, OperatorAssociativity::Right),
+        "!" if matches!(arity, OperatorArity::Unary) => (PREC_UNARY, OperatorAssociativity::Left),
+        "^" => (PREC_POWER, OperatorAssociativity::Left),
+        "*" | "/" | "%" => (PREC_MULTIPLICATIVE, OperatorAssociativity::Left),
+        "+" | "-" => (PREC_ADDITIVE, OperatorAssociativity::Left),
+        "||" | "<<" | ">>" | "#" | "&" | "|" => (PREC_OTHER, OperatorAssociativity::Left),
+        "not" => (PREC_NOT, OperatorAssociativity::Right),
+        "=" | "<" | ">" | "<=" | ">=" | "<>" | "!=" => {
+            (PREC_COMPARISON, OperatorAssociativity::Left)
+        }
+        "is" | "isnull" | "notnull" => (PREC_IS, OperatorAssociativity::Left),
+        _ => (PREC_OTHER, OperatorAssociativity::Left),
+    };
+
+    Some(OperatorInfo {
+        precedence,
+        associativity,
+    })
+}
+
+fn operator_symbol(name: &[Node]) -> Option<&str> {
+    name.last().and_then(|node| match node.node.as_ref()? {
+        NodeEnum::String(s) => Some(s.sval.as_str()),
+        _ => None,
+    })
 }

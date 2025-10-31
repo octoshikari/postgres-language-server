@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::CreateOpClassItem;
+use pgls_query::protobuf::CreateOpClassItem;
 
 use super::node_list::{emit_comma_separated_list, emit_dot_separated_list};
 use super::object_with_args::{emit_object_name_only, emit_object_with_args};

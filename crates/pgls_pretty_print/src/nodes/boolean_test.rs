@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{BoolTestType, BooleanTest};
+use pgls_query::protobuf::{BoolTestType, BooleanTest};
 
 use crate::{
     TokenKind,

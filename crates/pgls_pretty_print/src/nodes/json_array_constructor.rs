@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::{JsonArrayAgg, JsonArrayConstructor, JsonArrayQueryConstructor};
+use pgls_query::protobuf::{JsonArrayAgg, JsonArrayConstructor, JsonArrayQueryConstructor};
 
 use super::{
     json_agg_constructor::emit_json_agg_tail,
@@ -19,7 +19,7 @@ pub(super) fn emit_json_array_constructor(e: &mut EventEmitter, n: &JsonArrayCon
 
     if !n.exprs.is_empty() {
         super::node_list::emit_comma_separated_list(e, &n.exprs, |node, emitter| {
-            if let Some(pgt_query::NodeEnum::JsonValueExpr(value)) = node.node.as_ref() {
+            if let Some(pgls_query::NodeEnum::JsonValueExpr(value)) = node.node.as_ref() {
                 emit_json_value_expr(emitter, value);
             } else {
                 super::emit_node(node, emitter);

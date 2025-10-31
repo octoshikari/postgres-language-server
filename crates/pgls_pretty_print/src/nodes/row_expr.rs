@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{CoercionForm, RowExpr};
+use pgls_query::protobuf::{CoercionForm, RowExpr};
 
 use crate::{
     TokenKind,

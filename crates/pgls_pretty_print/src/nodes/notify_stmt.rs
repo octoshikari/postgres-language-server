@@ -1,4 +1,4 @@
-use pgt_query::protobuf::NotifyStmt;
+use pgls_query::protobuf::NotifyStmt;
 
 use crate::{
     TokenKind,

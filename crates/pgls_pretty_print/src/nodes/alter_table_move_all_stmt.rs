@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind, LineType},
 };
-use pgt_query::protobuf::{AlterTableMoveAllStmt, ObjectType};
+use pgls_query::protobuf::{AlterTableMoveAllStmt, ObjectType};
 
 pub(super) fn emit_alter_table_move_all_stmt(e: &mut EventEmitter, n: &AlterTableMoveAllStmt) {
     e.group_start(GroupKind::AlterTableMoveAllStmt);

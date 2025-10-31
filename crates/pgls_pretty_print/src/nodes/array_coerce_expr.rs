@@ -1,4 +1,4 @@
-use pgt_query::protobuf::ArrayCoerceExpr;
+use pgls_query::protobuf::ArrayCoerceExpr;
 
 use crate::emitter::EventEmitter;
 

@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::AlterDefaultPrivilegesStmt;
+use pgls_query::protobuf::AlterDefaultPrivilegesStmt;
 
 use super::node_list::emit_comma_separated_list;
 
@@ -25,7 +25,7 @@ pub(super) fn emit_alter_default_privileges_stmt(
     // The actual GRANT/REVOKE statement
     if let Some(ref action) = n.action {
         e.space();
-        super::emit_node_enum(&pgt_query::NodeEnum::GrantStmt(action.clone()), e);
+        super::emit_node_enum(&pgls_query::NodeEnum::GrantStmt(action.clone()), e);
     }
 
     e.group_end();

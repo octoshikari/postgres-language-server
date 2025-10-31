@@ -1,30 +1,30 @@
-use pgt_query::NodeEnum;
-use pgt_query::protobuf::{DefElem, DefineStmt, List, Node, ObjectType};
+use pgls_query::NodeEnum;
+use pgls_query::protobuf::{DefElem, DefineStmt, List, Node, ObjectType};
 
 use super::string::emit_identifier_maybe_quoted;
 use crate::{
     TokenKind,
-    emitter::{EventEmitter, GroupKind},
+    emitter::{EventEmitter, GroupKind, LineType},
     nodes::node_list::{emit_comma_separated_list, emit_dot_separated_list},
 };
 
 /// Emit collation definition (FROM clause)
 fn emit_collation_definition(e: &mut EventEmitter, definition: &[Node]) {
     for def_node in definition {
-        if let Some(pgt_query::NodeEnum::DefElem(def_elem)) = &def_node.node {
+        if let Some(pgls_query::NodeEnum::DefElem(def_elem)) = &def_node.node {
             if def_elem.defname == "from" {
                 e.space();
                 e.token(TokenKind::FROM_KW);
                 e.space();
                 // The arg is a List containing String nodes with the collation name
                 if let Some(ref arg) = def_elem.arg {
-                    if let Some(pgt_query::NodeEnum::List(list)) = &arg.node {
+                    if let Some(pgls_query::NodeEnum::List(list)) = &arg.node {
                         // Emit the strings in the list as dot-separated qualified name with quotes
                         for (i, item) in list.items.iter().enumerate() {
                             if i > 0 {
                                 e.token(TokenKind::DOT);
                             }
-                            if let Some(pgt_query::NodeEnum::String(s)) = &item.node {
+                            if let Some(pgls_query::NodeEnum::String(s)) = &item.node {
                                 super::emit_string_identifier(e, s);
                             } else {
                                 super::emit_node(item, e);
@@ -120,7 +120,11 @@ pub(super) fn emit_define_stmt(e: &mut EventEmitter, n: &DefineStmt) {
     if !n.args.is_empty() {
         e.space();
         e.token(TokenKind::L_PAREN);
-        emit_comma_separated_list(e, &n.args, super::emit_node);
+        if kind == ObjectType::ObjectAggregate {
+            emit_aggregate_args(e, &n.args);
+        } else {
+            emit_comma_separated_list(e, &n.args, super::emit_node);
+        }
         e.token(TokenKind::R_PAREN);
     }
 
@@ -140,9 +144,13 @@ pub(super) fn emit_define_stmt(e: &mut EventEmitter, n: &DefineStmt) {
     } else if kind == ObjectType::ObjectCollation && !n.definition.is_empty() {
         emit_collation_definition(e, &n.definition);
     } else if !n.definition.is_empty() {
-        e.space();
+        e.line(LineType::SoftOrSpace);
         e.token(TokenKind::L_PAREN);
+        e.indent_start();
+        e.line(LineType::SoftOrSpace);
         emit_comma_separated_list(e, &n.definition, super::emit_node);
+        e.indent_end();
+        e.line(LineType::Soft);
         e.token(TokenKind::R_PAREN);
     }
 
@@ -197,6 +205,42 @@ fn emit_operator_list(e: &mut EventEmitter, list: &List) {
         match item.node.as_ref() {
             Some(NodeEnum::String(s)) => e.token(TokenKind::IDENT(s.sval.clone())),
             _ => super::emit_node(item, e),
+        }
+    }
+}
+
+fn emit_aggregate_args(e: &mut EventEmitter, args: &[Node]) {
+    let mut first = true;
+
+    for arg in args {
+        match arg.node.as_ref() {
+            Some(NodeEnum::TypeName(type_name)) => {
+                if !first {
+                    e.token(TokenKind::COMMA);
+                    e.line(LineType::SoftOrSpace);
+                }
+                super::emit_type_name(e, type_name);
+                first = false;
+            }
+            Some(NodeEnum::Integer(int_node)) => {
+                if int_node.ival >= 0 {
+                    if !first {
+                        e.token(TokenKind::COMMA);
+                        e.line(LineType::SoftOrSpace);
+                    }
+                    e.token(TokenKind::IDENT(int_node.ival.to_string()));
+                    first = false;
+                }
+                // Skip negative sentinel values produced by the parser for missing ORDER BY args.
+            }
+            _ => {
+                if !first {
+                    e.token(TokenKind::COMMA);
+                    e.line(LineType::SoftOrSpace);
+                }
+                super::emit_node(arg, e);
+                first = false;
+            }
         }
     }
 }

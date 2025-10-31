@@ -1,4 +1,4 @@
-use pgt_query::protobuf::RefreshMatViewStmt;
+use pgls_query::protobuf::RefreshMatViewStmt;
 
 use crate::{
     TokenKind,

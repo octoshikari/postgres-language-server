@@ -1,7 +1,7 @@
 ---
 source: crates/pgt_pretty_print/tests/tests.rs
-assertion_line: 174
 input_file: crates/pgt_pretty_print/tests/data/multi/float8_60.sql
+snapshot_kind: text
 ---
 CREATE TEMPORARY TABLE float8_tbl ( f1 DOUBLE PRECISION );
 

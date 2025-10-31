@@ -4,7 +4,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind, LineType},
 };
-use pgt_query::protobuf::{Node, WindowClause};
+use pgls_query::protobuf::{Node, WindowClause};
 
 pub(super) fn emit_window_clause(e: &mut EventEmitter, n: &WindowClause) {
     e.group_start(GroupKind::WindowClause);

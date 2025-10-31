@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::ClusterStmt;
+use pgls_query::protobuf::ClusterStmt;
 
 pub(super) fn emit_cluster_stmt(e: &mut EventEmitter, n: &ClusterStmt) {
     e.group_start(GroupKind::ClusterStmt);

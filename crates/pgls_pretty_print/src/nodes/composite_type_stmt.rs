@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CompositeTypeStmt;
+use pgls_query::protobuf::CompositeTypeStmt;
 
 use crate::{
     TokenKind,

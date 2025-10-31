@@ -1,4 +1,4 @@
-use pgt_query::protobuf::DropOwnedStmt;
+use pgls_query::protobuf::DropOwnedStmt;
 
 use crate::{
     TokenKind,

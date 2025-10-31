@@ -1,6 +1,6 @@
 ---
-source: crates/pgt_pretty_print/tests/tests.rs
-input_file: crates/pgt_pretty_print/tests/data/multi/date_60.sql
+source: crates/pgls_pretty_print/tests/tests.rs
+input_file: crates/pgls_pretty_print/tests/data/multi/date_60.sql
 snapshot_kind: text
 ---
 CREATE TABLE date_tbl ( f1 DATE );
@@ -547,10 +547,12 @@ SELECT date_trunc('DECADE', CAST('0002-12-31 BC' AS DATE));
 SELECT CAST('infinity' AS DATE), CAST('-infinity' AS DATE);
 
 SELECT
-  CAST('infinity' AS DATE) > CAST('today' AS DATE) AS "t";
+  CAST('infinity' AS DATE) >
+  CAST('today' AS DATE) AS "t";
 
 SELECT
-  CAST('-infinity' AS DATE) < CAST('today' AS DATE) AS "t";
+  CAST('-infinity' AS DATE) <
+  CAST('today' AS DATE) AS "t";
 
 SELECT
   isfinite(CAST('infinity' AS DATE)),
@@ -558,7 +560,8 @@ SELECT
   isfinite(CAST('today' AS DATE));
 
 SELECT
-  CAST('infinity' AS DATE) = CAST('+infinity' AS DATE) AS "t";
+  CAST('infinity' AS DATE) =
+  CAST('+infinity' AS DATE) AS "t";
 
 SELECT EXTRACT('day' FROM CAST('infinity' AS DATE));
 

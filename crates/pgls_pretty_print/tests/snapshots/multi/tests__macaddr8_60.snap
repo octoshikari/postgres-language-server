@@ -1,6 +1,6 @@
 ---
-source: crates/pgt_pretty_print/tests/tests.rs
-input_file: crates/pgt_pretty_print/tests/data/multi/macaddr8_60.sql
+source: crates/pgls_pretty_print/tests/tests.rs
+input_file: crates/pgls_pretty_print/tests/data/multi/macaddr8_60.sql
 snapshot_kind: text
 ---
 SELECT CAST('08:00:2b:01:02:03     ' AS MACADDR8);
@@ -105,100 +105,132 @@ CREATE INDEX "macaddr8_data_hash" ON macaddr8_data USING hash (b);
 SELECT a, b, trunc(b) FROM macaddr8_data ORDER BY 2, 1;
 
 SELECT
-  b < '08:00:2b:01:02:04'
+  b <
+  '08:00:2b:01:02:04'
 FROM
   macaddr8_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  b > '08:00:2b:ff:fe:01:02:04'
+  b >
+  '08:00:2b:ff:fe:01:02:04'
 FROM
   macaddr8_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  b > '08:00:2b:ff:fe:01:02:03'
+  b >
+  '08:00:2b:ff:fe:01:02:03'
 FROM
   macaddr8_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  CAST(b AS MACADDR) <= '08:00:2b:01:02:04'
+  CAST(b AS MACADDR) <=
+  '08:00:2b:01:02:04'
 FROM
   macaddr8_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  CAST(b AS MACADDR) >= '08:00:2b:01:02:04'
+  CAST(b AS MACADDR) >=
+  '08:00:2b:01:02:04'
 FROM
   macaddr8_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  b = '08:00:2b:ff:fe:01:02:03'
+  b =
+  '08:00:2b:ff:fe:01:02:03'
 FROM
   macaddr8_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  CAST(b AS MACADDR) <> CAST('08:00:2b:01:02:04' AS MACADDR)
+  CAST(b AS MACADDR) <>
+  CAST('08:00:2b:01:02:04' AS MACADDR)
 FROM
   macaddr8_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  CAST(b AS MACADDR) <> CAST('08:00:2b:01:02:03' AS MACADDR)
+  CAST(b AS MACADDR) <>
+  CAST('08:00:2b:01:02:03' AS MACADDR)
 FROM
   macaddr8_data
-WHERE a = 1;
+WHERE a =
+  1;
 
 SELECT
-  b < '08:00:2b:01:02:03:04:06'
+  b <
+  '08:00:2b:01:02:03:04:06'
 FROM
   macaddr8_data
-WHERE a = 15;
+WHERE a =
+  15;
 
 SELECT
-  b > '08:00:2b:01:02:03:04:06'
+  b >
+  '08:00:2b:01:02:03:04:06'
 FROM
   macaddr8_data
-WHERE a = 15;
+WHERE a =
+  15;
 
 SELECT
-  b > '08:00:2b:01:02:03:04:05'
+  b >
+  '08:00:2b:01:02:03:04:05'
 FROM
   macaddr8_data
-WHERE a = 15;
+WHERE a =
+  15;
 
 SELECT
-  b <= '08:00:2b:01:02:03:04:06'
+  b <=
+  '08:00:2b:01:02:03:04:06'
 FROM
   macaddr8_data
-WHERE a = 15;
+WHERE a =
+  15;
 
 SELECT
-  b >= '08:00:2b:01:02:03:04:06'
+  b >=
+  '08:00:2b:01:02:03:04:06'
 FROM
   macaddr8_data
-WHERE a = 15;
+WHERE a =
+  15;
 
 SELECT
-  b = '08:00:2b:01:02:03:04:05'
+  b =
+  '08:00:2b:01:02:03:04:05'
 FROM
   macaddr8_data
-WHERE a = 15;
+WHERE a =
+  15;
 
 SELECT
-  b <> '08:00:2b:01:02:03:04:06'
+  b <>
+  '08:00:2b:01:02:03:04:06'
 FROM
   macaddr8_data
-WHERE a = 15;
+WHERE a =
+  15;
 
 SELECT
-  b <> '08:00:2b:01:02:03:04:05'
+  b <>
+  '08:00:2b:01:02:03:04:05'
 FROM
   macaddr8_data
-WHERE a = 15;
+WHERE a =
+  15;
 
 SELECT ~b FROM macaddr8_data;
 

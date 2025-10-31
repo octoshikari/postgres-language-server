@@ -1,4 +1,4 @@
-use pgt_query::protobuf::TableLikeClause;
+use pgls_query::protobuf::TableLikeClause;
 
 use crate::{
     TokenKind,

@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::{
+use pgls_query::protobuf::{
     AlterTableCmd, AlterTableStmt, AlterTableType, DropBehavior, ObjectType,
 };
 

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CaseExpr;
+use pgls_query::protobuf::CaseExpr;
 
 use crate::{
     TokenKind,

@@ -1,4 +1,4 @@
-use pgt_query::{
+use pgls_query::{
     Node,
     protobuf::{LimitOption, SelectStmt, SetOperation},
 };
@@ -124,8 +124,7 @@ fn emit_select_stmt_impl(e: &mut EventEmitter, n: &SelectStmt, with_semicolon: b
         if let Some(ref where_clause) = n.where_clause {
             e.line(LineType::SoftOrSpace);
             e.token(TokenKind::WHERE_KW);
-            e.space();
-            super::emit_node(where_clause, e);
+            super::emit_clause_condition(e, where_clause);
         }
 
         // Emit GROUP BY clause if present
@@ -144,8 +143,7 @@ fn emit_select_stmt_impl(e: &mut EventEmitter, n: &SelectStmt, with_semicolon: b
         if let Some(ref having_clause) = n.having_clause {
             e.line(LineType::SoftOrSpace);
             e.token(TokenKind::HAVING_KW);
-            e.space();
-            super::emit_node(having_clause, e);
+            super::emit_clause_condition(e, having_clause);
         }
 
         // Emit WINDOW clause if present
@@ -160,7 +158,7 @@ fn emit_select_stmt_impl(e: &mut EventEmitter, n: &SelectStmt, with_semicolon: b
                     e.line(LineType::SoftOrSpace);
                 }
 
-                if let Some(pgt_query::NodeEnum::WindowDef(window_def)) = window.node.as_ref() {
+                if let Some(pgls_query::NodeEnum::WindowDef(window_def)) = window.node.as_ref() {
                     emit_window_definition(e, window_def);
                 } else {
                     super::emit_node(window, e);
@@ -226,7 +224,7 @@ fn emit_select_stmt_impl(e: &mut EventEmitter, n: &SelectStmt, with_semicolon: b
 
         if !n.locking_clause.is_empty() {
             for locking in &n.locking_clause {
-                if let Some(pgt_query::NodeEnum::LockingClause(locking_clause)) =
+                if let Some(pgls_query::NodeEnum::LockingClause(locking_clause)) =
                     locking.node.as_ref()
                 {
                     e.line(LineType::SoftOrSpace);

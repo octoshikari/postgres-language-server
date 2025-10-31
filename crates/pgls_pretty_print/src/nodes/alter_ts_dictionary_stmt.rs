@@ -3,7 +3,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::AlterTsDictionaryStmt;
+use pgls_query::protobuf::AlterTsDictionaryStmt;
 
 pub(super) fn emit_alter_ts_dictionary_stmt(e: &mut EventEmitter, n: &AlterTsDictionaryStmt) {
     e.group_start(GroupKind::AlterTsdictionaryStmt);

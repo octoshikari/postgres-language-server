@@ -1,7 +1,7 @@
 macro_rules! assert_node_variant {
     ($variant:ident, $expr:expr) => {
         match $expr.node.as_ref() {
-            Some(pgt_query::NodeEnum::$variant(inner)) => inner,
+            Some(pgls_query::NodeEnum::$variant(inner)) => inner,
             other => panic!("Expected {}, got {:?}", stringify!($variant), other),
         }
     };
@@ -180,6 +180,7 @@ mod relabel_type;
 mod rename_stmt;
 mod replica_identity_stmt;
 mod res_target;
+mod return_stmt;
 mod role_spec;
 mod row_compare_expr;
 mod row_expr;
@@ -387,6 +388,7 @@ use relabel_type::emit_relabel_type;
 use rename_stmt::emit_rename_stmt;
 use replica_identity_stmt::emit_replica_identity_stmt;
 use res_target::emit_res_target;
+use return_stmt::emit_return_stmt;
 use role_spec::emit_role_spec;
 use row_compare_expr::emit_row_compare_expr;
 use row_expr::emit_row_expr;
@@ -425,12 +427,19 @@ use xml_expr::emit_xml_expr;
 use xml_serialize::emit_xml_serialize;
 
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::{NodeEnum, protobuf::Node};
+use pgls_query::{NodeEnum, protobuf::Node};
 
 pub fn emit_node(node: &Node, e: &mut EventEmitter) {
     if let Some(ref inner) = node.node {
         emit_node_enum(inner, e)
     }
+}
+
+pub(super) fn emit_clause_condition(e: &mut EventEmitter, clause: &Node) {
+    e.space();
+    e.indent_start();
+    emit_node(clause, e);
+    e.indent_end();
 }
 
 pub fn emit_node_enum(node: &NodeEnum, e: &mut EventEmitter) {
@@ -609,6 +618,7 @@ pub fn emit_node_enum(node: &NodeEnum, e: &mut EventEmitter) {
         NodeEnum::ReindexStmt(n) => emit_reindex_stmt(e, n),
         NodeEnum::RenameStmt(n) => emit_rename_stmt(e, n),
         NodeEnum::ReplicaIdentityStmt(n) => emit_replica_identity_stmt(e, n),
+        NodeEnum::ReturnStmt(n) => emit_return_stmt(e, n),
         NodeEnum::DeallocateStmt(n) => emit_deallocate_stmt(e, n),
         NodeEnum::RefreshMatViewStmt(n) => emit_refresh_matview_stmt(e, n),
         NodeEnum::ReassignOwnedStmt(n) => emit_reassign_owned_stmt(e, n),

@@ -1,5 +1,5 @@
-use pgt_query::NodeEnum;
-use pgt_query::protobuf::DefElem;
+use pgls_query::NodeEnum;
+use pgls_query::protobuf::DefElem;
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};

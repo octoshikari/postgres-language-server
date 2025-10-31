@@ -1,4 +1,4 @@
-use pgt_query::protobuf::InferClause;
+use pgls_query::protobuf::InferClause;
 
 use crate::{
     TokenKind,
@@ -25,8 +25,7 @@ pub(super) fn emit_infer_clause(e: &mut EventEmitter, n: &InferClause) {
     if let Some(ref where_clause) = n.where_clause {
         e.space();
         e.token(TokenKind::WHERE_KW);
-        e.space();
-        super::emit_node(where_clause, e);
+        super::emit_clause_condition(e, where_clause);
     }
 
     e.group_end();

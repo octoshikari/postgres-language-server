@@ -1,4 +1,4 @@
-use pgt_query::protobuf::ReindexStmt;
+use pgls_query::protobuf::ReindexStmt;
 
 use crate::{
     TokenKind,

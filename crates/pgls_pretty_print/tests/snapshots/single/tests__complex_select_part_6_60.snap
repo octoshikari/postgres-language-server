@@ -1,6 +1,6 @@
 ---
-source: crates/pgt_pretty_print/tests/tests.rs
-input_file: crates/pgt_pretty_print/tests/data/single/complex_select_part_6_60.sql
+source: crates/pgls_pretty_print/tests/tests.rs
+input_file: crates/pgls_pretty_print/tests/data/single/complex_select_part_6_60.sql
 snapshot_kind: text
 ---
 SELECT
@@ -13,8 +13,10 @@ SELECT
 FROM
   recursion
   INNER JOIN pg_attribute AS vcol
-  ON vcol.attrelid = view_id AND
-    vcol.attnum = view_column
+  ON vcol.attrelid =
+    view_id AND
+    vcol.attnum =
+    view_column
 GROUP BY view_id,
   view_schema,
   view_name,

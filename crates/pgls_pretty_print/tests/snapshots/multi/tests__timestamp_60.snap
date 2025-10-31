@@ -1,6 +1,6 @@
 ---
-source: crates/pgt_pretty_print/tests/tests.rs
-input_file: crates/pgt_pretty_print/tests/data/multi/timestamp_60.sql
+source: crates/pgls_pretty_print/tests/tests.rs
+input_file: crates/pgls_pretty_print/tests/data/multi/timestamp_60.sql
 snapshot_kind: text
 ---
 CREATE TABLE timestamp_tbl ( d1 TIMESTAMP(2) );
@@ -21,19 +21,22 @@ SELECT
   COUNT(*) AS "one"
 FROM
   timestamp_tbl
-WHERE d1 = CAST('today' AS TIMESTAMP);
+WHERE d1 =
+  CAST('today' AS TIMESTAMP);
 
 SELECT
   COUNT(*) AS "three"
 FROM
   timestamp_tbl
-WHERE d1 = CAST('tomorrow' AS TIMESTAMP);
+WHERE d1 =
+  CAST('tomorrow' AS TIMESTAMP);
 
 SELECT
   COUNT(*) AS "one"
 FROM
   timestamp_tbl
-WHERE d1 = CAST('yesterday' AS TIMESTAMP);
+WHERE d1 =
+  CAST('yesterday' AS TIMESTAMP);
 
 COMMIT;
 
@@ -57,7 +60,8 @@ SELECT
   COUNT(*) AS "two"
 FROM
   timestamp_tbl
-WHERE d1 = CAST('now' AS TIMESTAMP(2));
+WHERE d1 =
+  CAST('now' AS TIMESTAMP(2));
 
 SELECT
   COUNT(d1) AS "three",
@@ -76,7 +80,8 @@ INSERT INTO timestamp_tbl VALUES ('infinity');
 INSERT INTO timestamp_tbl VALUES ('epoch');
 
 SELECT
-  CAST('infinity' AS TIMESTAMP) = CAST('+infinity' AS TIMESTAMP) AS "t";
+  CAST('infinity' AS TIMESTAMP) =
+  CAST('+infinity' AS TIMESTAMP) AS "t";
 
 INSERT INTO timestamp_tbl
 VALUES ('Mon Feb 10 17:32:01 1997 PST');
@@ -268,37 +273,43 @@ SELECT
   d1
 FROM
   timestamp_tbl
-WHERE d1 > CAST('1997-01-02' AS TIMESTAMP);
+WHERE d1 >
+  CAST('1997-01-02' AS TIMESTAMP);
 
 SELECT
   d1
 FROM
   timestamp_tbl
-WHERE d1 < CAST('1997-01-02' AS TIMESTAMP);
+WHERE d1 <
+  CAST('1997-01-02' AS TIMESTAMP);
 
 SELECT
   d1
 FROM
   timestamp_tbl
-WHERE d1 = CAST('1997-01-02' AS TIMESTAMP);
+WHERE d1 =
+  CAST('1997-01-02' AS TIMESTAMP);
 
 SELECT
   d1
 FROM
   timestamp_tbl
-WHERE d1 <> CAST('1997-01-02' AS TIMESTAMP);
+WHERE d1 <>
+  CAST('1997-01-02' AS TIMESTAMP);
 
 SELECT
   d1
 FROM
   timestamp_tbl
-WHERE d1 <= CAST('1997-01-02' AS TIMESTAMP);
+WHERE d1 <=
+  CAST('1997-01-02' AS TIMESTAMP);
 
 SELECT
   d1
 FROM
   timestamp_tbl
-WHERE d1 >= CAST('1997-01-02' AS TIMESTAMP);
+WHERE d1 >=
+  CAST('1997-01-02' AS TIMESTAMP);
 
 SELECT
   d1 - CAST('1997-01-02' AS TIMESTAMP) AS "diff"
@@ -330,7 +341,8 @@ SELECT
   str,
   interval,
   date_trunc(str,
-  ts) = date_bin(CAST(interval AS INTERVAL),
+  ts) =
+  date_bin(CAST(interval AS INTERVAL),
   ts,
   CAST('2001-01-01' AS TIMESTAMP)) AS "equal"
 FROM
@@ -355,7 +367,8 @@ SELECT
   str,
   interval,
   date_trunc(str,
-  ts) = date_bin(CAST(interval AS INTERVAL),
+  ts) =
+  date_bin(CAST(interval AS INTERVAL),
   ts,
   CAST('2000-01-01 BC' AS TIMESTAMP)) AS "equal"
 FROM
@@ -380,7 +393,8 @@ SELECT
   str,
   interval,
   date_trunc(str,
-  ts) = date_bin(CAST(interval AS INTERVAL),
+  ts) =
+  date_bin(CAST(interval AS INTERVAL),
   ts,
   CAST('2020-03-02' AS TIMESTAMP)) AS "equal"
 FROM
@@ -405,7 +419,8 @@ SELECT
   str,
   interval,
   date_trunc(str,
-  ts) = date_bin(CAST(interval AS INTERVAL),
+  ts) =
+  date_bin(CAST(interval AS INTERVAL),
   ts,
   CAST('0055-06-17 BC' AS TIMESTAMP)) AS "equal"
 FROM

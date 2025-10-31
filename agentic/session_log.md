@@ -7,6 +7,81 @@ For current implementation status and guidance, see [pretty_printer.md](./pretty
 ## Session History
 
 ---
+**Date**: 2025-10-31 (Session 67)
+**Nodes Implemented/Fixed**: `emit_clause_condition`, `emit_aexpr_op` spacing tweaks, snapshot updates
+**Progress**: 192/270 → 192/270
+**Tests**: `cargo test -p pgls_pretty_print test_single__update_with_cte_returning_0_60 -- --show-output`; `cargo test -p pgls_pretty_print test_multi__float4_60 -- --show-output`
+**Key Changes**:
+- Reworked `emit_clause_condition` and `emit_aexpr_op` so binary comparisons keep their operator with the left-hand side while permitting the right-hand side to wrap with indentation, preventing per-token line splitting.
+- Reviewed and accepted snapshot churn after the clause helper landed, ensuring the layout changes are captured for SELECT/UPDATE predicates and JSON-heavy fixtures.
+- Documented the wrapping pattern and queued follow-up work for rename/owner emitters that still fall back to `ALTER TABLE`.
+
+**Learnings**:
+- The current renderer breaks every `SoftOrSpace` once a group overflows, so grouping the left operand and operator together is critical to avoid fragmented predicates.
+- Owner/rename emitters for non-table object types still need bespoke formatting to keep AST equality—worth calling out explicitly in durable guidance and Next Steps.
+
+**Next Steps**:
+- Expand rename/owner support so conversions, FDWs, and operator families emit their proper keywords rather than defaulting to `ALTER TABLE`.
+- Re-run the full pretty-print suite once the rename emitters are tightened.
+---
+
+---
+**Date**: 2025-10-30 (Session 66)
+**Nodes Implemented/Fixed**: Clause body indentation helper; WHERE/HAVING emitters
+**Progress**: 192/270 → 192/270
+**Tests**: cargo test -p pgls_pretty_print test_single__complex_select_0_60 -- --show-output (expected line-length panic pre-existing); cargo test -p pgls_pretty_print test_single__update_with_cte_returning_0_60 -- --show-output (snapshot pending)
+**Key Changes**:
+- Introduced `emit_clause_condition` and rewired WHERE/HAVING, planner filters, and related clauses to use it so wrapped predicates indent beneath their clause keyword.
+- Updated durable guidance to document the helper and removed the completed Next Step on clause indentation.
+- Verified new layout on targeted fixtures; snapshots remain to be refreshed once the broader suite is reviewed.
+
+**Learnings**:
+- Centralising boolean clause formatting behind a shared helper keeps indentation consistent across statement emitters and simplifies future adjustments.
+- Planner FILTER clauses (Aggref/FuncCall/WindowFunc) benefit from the same indentation logic, avoiding bespoke spacing tweaks.
+
+**Next Steps**:
+- Review snapshot fallout from clause indentation and accept once output looks stable across multi-statement fixtures.
+- Resume investigation into emitting bare lowercase `ResTarget` aliases without reintroducing AST churn.
+---
+
+---
+**Date**: 2025-10-30 (Session 65)
+**Nodes Implemented/Fixed**: BoolExpr precedence guarding; Added targeted pretty-print fixtures
+**Progress**: 192/270 → 192/270
+**Tests**: cargo test -p pgls_pretty_print test_single__bool_expr_parentheses_0_80 -- --show-output; cargo test -p pgls_pretty_print test_single__aexpr_precedence_parentheses_0_80 -- --show-output; cargo insta accept
+**Key Changes**:
+- Added precedence-aware parentheses handling in `emit_bool_expr` so nested OR/AND/NOT combinations keep the original grouping.
+- Introduced `bool_expr_parentheses_0_80.sql` and `aexpr_precedence_parentheses_0_80.sql` single-statement fixtures and accepted their snapshots to lock in coverage.
+- Updated durable guidance and Next Steps to track indentation follow-ups and alias-quoting investigations.
+
+**Learnings**:
+- BoolExpr trees rely on operator precedence rather than explicit markers; wrapping lower-precedence children is required to preserve `(a OR b) AND c`-style groupings during pretty printing.
+- Clearing lingering `.snap.new` files via `cargo insta accept` prevents legacy snapshot churn from obscuring new regressions.
+
+**Next Steps**:
+- Explore clause-level indentation helpers so multiline WHERE/HAVING predicates align cleanly.
+- Review identifier emission for ResTarget aliases to avoid quoting simple lowercase names unless required.
+---
+
+---
+**Date**: 2025-10-24 (Session 64)
+**Nodes Implemented/Fixed**: AExpr precedence-aware parentheses emission
+**Progress**: 192/270 → 192/270
+**Tests**: cargo test -p pgls_pretty_print test_multi__window_60 -- --nocapture
+**Key Changes**:
+- Added operator-precedence analysis in `emit_aexpr_op` so lower-precedence or right-nested operands are wrapped, restoring parentheses for expressions like `100 * 3 + (vs.i - 1) * 3`.
+- Updated the `window_60` snapshot to reflect the restored grouping and verified the multi-statement harness now passes without AST diffs.
+- Captured durable guidance about preserving explicit arithmetic parentheses in `agentic/pretty_printer.md` and refreshed the Next Steps queue.
+
+**Learnings**:
+- Preserving AST structure for arithmetic requires checking both precedence and associativity; wrapping only lower-precedence children is insufficient when left-associative parents hold right-nested operands.
+
+**Next Steps**:
+- Extend `BoolExpr` emission to keep user-written parentheses when mixing AND/OR so precedence alone doesn't change the tree shape.
+- Add focused fixtures exercising the new `AExpr` precedence guard to prevent regressions.
+---
+
+---
 **Date**: 2025-10-23 (Session 63)
 **Nodes Implemented/Fixed**: MergeStmt emitter tweaks; JSON_TABLE and ordered-set coverage
 **Progress**: 192/270 → 192/270

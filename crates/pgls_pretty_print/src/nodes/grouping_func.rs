@@ -1,4 +1,4 @@
-use pgt_query::protobuf::GroupingFunc;
+use pgls_query::protobuf::GroupingFunc;
 
 use crate::{
     TokenKind,

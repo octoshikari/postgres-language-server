@@ -1,1 +1,1 @@
-pgt_pretty_print_codegen::token_kind_codegen!();
+pgls_pretty_print_codegen::token_kind_codegen!();

@@ -3,7 +3,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::AlterTableSpaceOptionsStmt;
+use pgls_query::protobuf::AlterTableSpaceOptionsStmt;
 
 pub(super) fn emit_alter_tablespace_options_stmt(
     e: &mut EventEmitter,

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CoerceToDomain;
+use pgls_query::protobuf::CoerceToDomain;
 
 use crate::emitter::EventEmitter;
 

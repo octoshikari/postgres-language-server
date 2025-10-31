@@ -1,4 +1,4 @@
-use pgt_query::protobuf::PartitionBoundSpec;
+use pgls_query::protobuf::PartitionBoundSpec;
 
 use crate::{
     TokenKind,

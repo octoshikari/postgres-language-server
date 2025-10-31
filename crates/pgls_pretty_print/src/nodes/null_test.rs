@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::NullTest;
+use pgls_query::protobuf::NullTest;
 
 pub(super) fn emit_null_test(e: &mut EventEmitter, n: &NullTest) {
     e.group_start(GroupKind::NullTest);

@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind, LineType},
     nodes::node_list::emit_comma_separated_list,
 };
-use pgt_query::protobuf::FuncCall;
+use pgls_query::protobuf::FuncCall;
 
 pub(super) fn emit_func_call(e: &mut EventEmitter, n: &FuncCall) {
     e.group_start(GroupKind::FuncCall);
@@ -12,7 +12,7 @@ pub(super) fn emit_func_call(e: &mut EventEmitter, n: &FuncCall) {
     let mut name_parts = Vec::new();
 
     for (i, node) in n.funcname.iter().enumerate() {
-        if let Some(pgt_query::NodeEnum::String(s)) = &node.node {
+        if let Some(pgls_query::NodeEnum::String(s)) = &node.node {
             // Skip pg_catalog schema for built-in functions
             if i == 0 && s.sval.to_lowercase() == "pg_catalog" {
                 continue;
@@ -119,8 +119,7 @@ pub(super) fn emit_func_call(e: &mut EventEmitter, n: &FuncCall) {
         e.space();
         e.token(TokenKind::L_PAREN);
         e.token(TokenKind::WHERE_KW);
-        e.space();
-        super::emit_node(filter, e);
+        super::emit_clause_condition(e, filter);
         e.token(TokenKind::R_PAREN);
     }
 
@@ -340,7 +339,7 @@ fn emit_normalize_function(e: &mut EventEmitter, n: &FuncCall) {
         // This should be emitted as an identifier, not a string literal
         // The form is stored as an AConst node with a string value
         let a_const = assert_node_variant!(AConst, &n.args[1]);
-        if let Some(pgt_query::protobuf::a_const::Val::Sval(s)) = &a_const.val {
+        if let Some(pgls_query::protobuf::a_const::Val::Sval(s)) = &a_const.val {
             // Only emit as identifier if it's a known normalization form
             match s.sval.as_str() {
                 "NFC" | "NFD" | "NFKC" | "NFKD" => {

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{SortBy, SortByDir, SortByNulls};
+use pgls_query::protobuf::{SortBy, SortByDir, SortByNulls};
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
@@ -67,13 +67,13 @@ pub(super) fn emit_sort_by(e: &mut EventEmitter, n: &SortBy) {
     e.group_end();
 }
 
-fn emit_operator_name(e: &mut EventEmitter, use_op: &[pgt_query::protobuf::Node]) {
+fn emit_operator_name(e: &mut EventEmitter, use_op: &[pgls_query::protobuf::Node]) {
     for (i, node) in use_op.iter().enumerate() {
         if i > 0 {
             e.token(TokenKind::DOT);
         }
 
-        if let Some(pgt_query::NodeEnum::String(s)) = node.node.as_ref() {
+        if let Some(pgls_query::NodeEnum::String(s)) = node.node.as_ref() {
             // Operator name - emit as identifier
             e.token(TokenKind::IDENT(s.sval.clone()));
         } else {

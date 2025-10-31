@@ -6,7 +6,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::AlterSubscriptionStmt;
+use pgls_query::protobuf::AlterSubscriptionStmt;
 
 pub(super) fn emit_alter_subscription_stmt(e: &mut EventEmitter, n: &AlterSubscriptionStmt) {
     e.group_start(GroupKind::AlterSubscriptionStmt);

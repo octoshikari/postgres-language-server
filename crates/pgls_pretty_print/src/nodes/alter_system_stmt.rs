@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::AlterSystemStmt;
+use pgls_query::protobuf::AlterSystemStmt;
 
 pub(super) fn emit_alter_system_stmt(e: &mut EventEmitter, n: &AlterSystemStmt) {
     e.group_start(GroupKind::AlterSystemStmt);

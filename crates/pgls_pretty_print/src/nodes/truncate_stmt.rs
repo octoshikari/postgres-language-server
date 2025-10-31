@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{DropBehavior, TruncateStmt};
+use pgls_query::protobuf::{DropBehavior, TruncateStmt};
 
 use crate::{
     TokenKind,

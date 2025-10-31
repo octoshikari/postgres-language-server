@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CreateStmt;
+use pgls_query::protobuf::CreateStmt;
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind, LineType};

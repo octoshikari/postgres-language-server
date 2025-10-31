@@ -1,4 +1,4 @@
-use pgt_query::protobuf::WindowFunc;
+use pgls_query::protobuf::WindowFunc;
 
 use crate::{
     TokenKind,
@@ -36,8 +36,7 @@ pub(super) fn emit_window_func(e: &mut EventEmitter, n: &WindowFunc) {
         e.space();
         e.token(TokenKind::L_PAREN);
         e.token(TokenKind::WHERE_KW);
-        e.space();
-        super::emit_node(filter, e);
+        super::emit_clause_condition(e, filter);
         e.token(TokenKind::R_PAREN);
     }
 

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::ExplainStmt;
+use pgls_query::protobuf::ExplainStmt;
 
 use crate::{
     TokenKind,

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::BitString;
+use pgls_query::protobuf::BitString;
 
 use crate::{
     TokenKind,

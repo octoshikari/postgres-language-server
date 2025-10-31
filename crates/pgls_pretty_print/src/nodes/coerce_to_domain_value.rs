@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CoerceToDomainValue;
+use pgls_query::protobuf::CoerceToDomainValue;
 
 use crate::{
     TokenKind,

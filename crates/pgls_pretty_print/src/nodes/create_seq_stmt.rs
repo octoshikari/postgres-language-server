@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CreateSeqStmt;
+use pgls_query::protobuf::CreateSeqStmt;
 
 use crate::{
     TokenKind,
@@ -35,7 +35,7 @@ pub(super) fn emit_create_seq_stmt(e: &mut EventEmitter, n: &CreateSeqStmt) {
                 e.space();
             }
             // Use specialized sequence option emission
-            if let Some(pgt_query::NodeEnum::DefElem(def_elem)) = opt.node.as_ref() {
+            if let Some(pgls_query::NodeEnum::DefElem(def_elem)) = opt.node.as_ref() {
                 super::emit_sequence_option(e, def_elem);
             } else {
                 super::emit_node(opt, e);

@@ -3,7 +3,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::AlterTsConfigurationStmt;
+use pgls_query::protobuf::AlterTsConfigurationStmt;
 
 pub(super) fn emit_alter_ts_configuration_stmt(e: &mut EventEmitter, n: &AlterTsConfigurationStmt) {
     e.group_start(GroupKind::AlterTsconfigurationStmt);

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{SubLink, SubLinkType};
+use pgls_query::protobuf::{SubLink, SubLinkType};
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
@@ -130,9 +130,9 @@ pub(super) fn emit_sub_link(e: &mut EventEmitter, n: &SubLink) {
     e.group_end();
 }
 
-fn emit_subquery(e: &mut EventEmitter, node: &pgt_query::protobuf::Node) {
+fn emit_subquery(e: &mut EventEmitter, node: &pgls_query::protobuf::Node) {
     // Check if this is a SelectStmt and emit without semicolon
-    if let Some(pgt_query::NodeEnum::SelectStmt(select_stmt)) = node.node.as_ref() {
+    if let Some(pgls_query::NodeEnum::SelectStmt(select_stmt)) = node.node.as_ref() {
         super::emit_select_stmt_no_semicolon(e, select_stmt);
     } else {
         // For other node types (e.g., VALUES), emit normally
@@ -140,7 +140,7 @@ fn emit_subquery(e: &mut EventEmitter, node: &pgt_query::protobuf::Node) {
     }
 }
 
-fn emit_operator_from_list(e: &mut EventEmitter, oper_name: &[pgt_query::protobuf::Node]) {
+fn emit_operator_from_list(e: &mut EventEmitter, oper_name: &[pgls_query::protobuf::Node]) {
     // The operator name is typically stored as a list of String nodes
     // For most operators it's just one element like "=" or "<"
     // For qualified operators like "pg_catalog.=" it could be multiple
@@ -150,7 +150,7 @@ fn emit_operator_from_list(e: &mut EventEmitter, oper_name: &[pgt_query::protobu
 
     // For simplicity, just take the last element which is usually the operator symbol
     if let Some(last) = oper_name.last() {
-        if let Some(pgt_query::NodeEnum::String(s)) = last.node.as_ref() {
+        if let Some(pgls_query::NodeEnum::String(s)) = last.node.as_ref() {
             e.token(TokenKind::IDENT(s.sval.clone()));
         } else {
             super::emit_node(last, e);

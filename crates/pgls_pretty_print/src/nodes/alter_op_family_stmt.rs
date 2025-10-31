@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::AlterOpFamilyStmt;
+use pgls_query::protobuf::AlterOpFamilyStmt;
 
 use super::node_list::emit_dot_separated_list;
 

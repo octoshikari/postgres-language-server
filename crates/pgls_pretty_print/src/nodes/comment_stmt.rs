@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::CommentStmt;
+use pgls_query::protobuf::CommentStmt;
 
 use super::string::{emit_keyword, emit_single_quoted_str};
 

@@ -1,5 +1,5 @@
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::List;
+use pgls_query::protobuf::List;
 
 use super::node_list::emit_comma_separated_list;
 

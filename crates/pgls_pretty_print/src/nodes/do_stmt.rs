@@ -1,4 +1,4 @@
-use pgt_query::{NodeEnum, protobuf::DoStmt};
+use pgls_query::{NodeEnum, protobuf::DoStmt};
 
 use crate::{
     TokenKind,

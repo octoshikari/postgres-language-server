@@ -1,4 +1,4 @@
-use pgt_query::protobuf::DeclareCursorStmt;
+use pgls_query::protobuf::DeclareCursorStmt;
 
 use crate::{
     TokenKind,

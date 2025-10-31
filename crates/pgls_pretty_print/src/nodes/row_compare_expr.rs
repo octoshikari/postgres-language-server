@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::emit_comma_separated_list,
 };
-use pgt_query::protobuf::{RowCompareExpr, RowCompareType};
+use pgls_query::protobuf::{RowCompareExpr, RowCompareType};
 
 pub(super) fn emit_row_compare_expr(e: &mut EventEmitter, n: &RowCompareExpr) {
     e.group_start(GroupKind::RowCompareExpr);

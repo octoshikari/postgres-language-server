@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind, LineType};
-use pgt_query::protobuf::AlterFdwStmt;
+use pgls_query::protobuf::AlterFdwStmt;
 
 use super::node_list::emit_comma_separated_list;
 

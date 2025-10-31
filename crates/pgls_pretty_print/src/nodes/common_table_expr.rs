@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{CommonTableExpr, CteMaterialize};
+use pgls_query::protobuf::{CommonTableExpr, CteMaterialize};
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
@@ -49,10 +49,10 @@ pub(super) fn emit_common_table_expr(e: &mut EventEmitter, n: &CommonTableExpr) 
         // For CTEs, we don't want semicolons in the query
         // Check if it's a SelectStmt or MergeStmt and use the no-semicolon variant
         match &query.node {
-            Some(pgt_query::NodeEnum::SelectStmt(select_stmt)) => {
+            Some(pgls_query::NodeEnum::SelectStmt(select_stmt)) => {
                 emit_select_stmt_no_semicolon(e, select_stmt);
             }
-            Some(pgt_query::NodeEnum::MergeStmt(merge_stmt)) => {
+            Some(pgls_query::NodeEnum::MergeStmt(merge_stmt)) => {
                 emit_merge_stmt_no_semicolon(e, merge_stmt);
             }
             _ => {

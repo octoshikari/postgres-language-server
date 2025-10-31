@@ -1,4 +1,4 @@
-use pgt_query::protobuf::Integer;
+use pgls_query::protobuf::Integer;
 
 use crate::{
     TokenKind,

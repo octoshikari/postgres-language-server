@@ -1,6 +1,6 @@
 ---
-source: crates/pgt_pretty_print/tests/tests.rs
-input_file: crates/pgt_pretty_print/tests/data/single/complex_select_part_1_60.sql
+source: crates/pgls_pretty_print/tests/tests.rs
+input_file: crates/pgls_pretty_print/tests/data/single/complex_select_part_1_60.sql
 snapshot_kind: text
 ---
 SELECT
@@ -11,8 +11,10 @@ SELECT
 FROM
   pg_class AS c
   INNER JOIN pg_namespace AS n
-  ON n.oid = c.relnamespace
+  ON n.oid =
+    c.relnamespace
   INNER JOIN pg_rewrite AS r
-  ON r.ev_class = c.oid
+  ON r.ev_class =
+    c.oid
 WHERE c.relkind IN ('v',
-'m');
+  'm');

@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::emit_dot_separated_list,
 };
-use pgt_query::protobuf::CreatePLangStmt;
+use pgls_query::protobuf::CreatePLangStmt;
 
 pub(super) fn emit_create_plang_stmt(e: &mut EventEmitter, n: &CreatePLangStmt) {
     e.group_start(GroupKind::CreatePlangStmt);

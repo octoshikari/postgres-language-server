@@ -1,4 +1,4 @@
-use pgt_query::protobuf::DropdbStmt;
+use pgls_query::protobuf::DropdbStmt;
 
 use crate::{
     TokenKind,

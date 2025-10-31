@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{OnConflictAction, OnConflictClause};
+use pgls_query::protobuf::{OnConflictAction, OnConflictClause};
 
 use crate::{
     TokenKind,
@@ -44,8 +44,7 @@ pub(super) fn emit_on_conflict_clause(e: &mut EventEmitter, n: &OnConflictClause
             if let Some(ref where_clause) = n.where_clause {
                 e.space();
                 e.token(TokenKind::WHERE_KW);
-                e.space();
-                super::emit_node(where_clause, e);
+                super::emit_clause_condition(e, where_clause);
             }
         }
         OnConflictAction::OnconflictNone | OnConflictAction::Undefined => {

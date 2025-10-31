@@ -3,7 +3,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind, LineType},
 };
-use pgt_query::protobuf::CreateOpClassStmt;
+use pgls_query::protobuf::CreateOpClassStmt;
 
 pub(super) fn emit_create_op_class_stmt(e: &mut EventEmitter, n: &CreateOpClassStmt) {
     e.group_start(GroupKind::CreateOpClassStmt);

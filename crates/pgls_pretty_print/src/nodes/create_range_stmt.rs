@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::{emit_comma_separated_list, emit_dot_separated_list},
 };
-use pgt_query::protobuf::CreateRangeStmt;
+use pgls_query::protobuf::CreateRangeStmt;
 
 pub(super) fn emit_create_range_stmt(e: &mut EventEmitter, n: &CreateRangeStmt) {
     e.group_start(GroupKind::CreateRangeStmt);

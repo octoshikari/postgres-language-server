@@ -3,7 +3,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::CreateForeignTableStmt;
+use pgls_query::protobuf::CreateForeignTableStmt;
 
 pub(super) fn emit_create_foreign_table_stmt(e: &mut EventEmitter, n: &CreateForeignTableStmt) {
     e.group_start(GroupKind::CreateForeignTableStmt);

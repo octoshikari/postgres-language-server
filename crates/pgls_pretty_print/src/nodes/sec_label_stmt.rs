@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::{ObjectType, SecLabelStmt};
+use pgls_query::protobuf::{ObjectType, SecLabelStmt};
 
 use super::string::{emit_identifier_maybe_quoted, emit_keyword, emit_single_quoted_str};
 

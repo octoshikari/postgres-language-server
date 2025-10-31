@@ -1,4 +1,4 @@
-use pgt_query::protobuf::NamedArgExpr;
+use pgls_query::protobuf::NamedArgExpr;
 
 use crate::{
     TokenKind,

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::DropTableSpaceStmt;
+use pgls_query::protobuf::DropTableSpaceStmt;
 
 use crate::{
     TokenKind,

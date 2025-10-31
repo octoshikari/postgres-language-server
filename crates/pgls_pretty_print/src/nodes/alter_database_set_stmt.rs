@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::AlterDatabaseSetStmt;
+use pgls_query::protobuf::AlterDatabaseSetStmt;
 
 pub(super) fn emit_alter_database_set_stmt(e: &mut EventEmitter, n: &AlterDatabaseSetStmt) {
     e.group_start(GroupKind::AlterDatabaseSetStmt);

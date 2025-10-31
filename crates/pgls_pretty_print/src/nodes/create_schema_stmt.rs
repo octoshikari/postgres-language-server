@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CreateSchemaStmt;
+use pgls_query::protobuf::CreateSchemaStmt;
 
 use crate::{
     TokenKind,

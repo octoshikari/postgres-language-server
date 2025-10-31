@@ -1,4 +1,4 @@
-use pgt_query::protobuf::String as PgString;
+use pgls_query::protobuf::String as PgString;
 
 use crate::{
     TokenKind,

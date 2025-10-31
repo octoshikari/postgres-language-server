@@ -3,7 +3,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::AlterStatsStmt;
+use pgls_query::protobuf::AlterStatsStmt;
 
 pub(super) fn emit_alter_stats_stmt(e: &mut EventEmitter, n: &AlterStatsStmt) {
     e.group_start(GroupKind::AlterStatsStmt);

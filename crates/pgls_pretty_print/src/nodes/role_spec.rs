@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{RoleSpec, RoleSpecType};
+use pgls_query::protobuf::{RoleSpec, RoleSpecType};
 
 use crate::{
     TokenKind,

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::RangeFunction;
+use pgls_query::protobuf::RangeFunction;
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
@@ -22,7 +22,7 @@ pub(super) fn emit_range_function(e: &mut EventEmitter, n: &RangeFunction) {
 
         emit_comma_separated_list(e, &n.functions, |node, e| {
             // Each item is a List containing function + optional column definitions
-            if let Some(pgt_query::NodeEnum::List(func_list)) = node.node.as_ref() {
+            if let Some(pgls_query::NodeEnum::List(func_list)) = node.node.as_ref() {
                 if !func_list.items.is_empty() {
                     // Emit the function call (first item)
                     super::emit_node(&func_list.items[0], e);
@@ -47,7 +47,7 @@ pub(super) fn emit_range_function(e: &mut EventEmitter, n: &RangeFunction) {
         // Simple function call - Functions contains a single List with one function
         if !n.functions.is_empty() {
             // For non-ROWS FROM, functions[0] is the List containing the function
-            if let Some(pgt_query::NodeEnum::List(func_list)) = n.functions[0].node.as_ref() {
+            if let Some(pgls_query::NodeEnum::List(func_list)) = n.functions[0].node.as_ref() {
                 if !func_list.items.is_empty() {
                     super::emit_node(&func_list.items[0], e);
                 }

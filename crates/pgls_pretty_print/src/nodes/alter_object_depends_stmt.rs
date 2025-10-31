@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::{AlterObjectDependsStmt, ObjectType};
+use pgls_query::protobuf::{AlterObjectDependsStmt, ObjectType};
 
 pub(super) fn emit_alter_object_depends_stmt(e: &mut EventEmitter, n: &AlterObjectDependsStmt) {
     e.group_start(GroupKind::AlterObjectDependsStmt);

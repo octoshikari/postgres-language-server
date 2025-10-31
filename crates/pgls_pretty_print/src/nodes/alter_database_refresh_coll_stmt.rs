@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::AlterDatabaseRefreshCollStmt;
+use pgls_query::protobuf::AlterDatabaseRefreshCollStmt;
 
 pub(super) fn emit_alter_database_refresh_coll_stmt(
     e: &mut EventEmitter,

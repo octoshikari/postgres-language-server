@@ -3,7 +3,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind, LineType},
 };
-use pgt_query::protobuf::CreateFdwStmt;
+use pgls_query::protobuf::CreateFdwStmt;
 
 pub(super) fn emit_create_fdw_stmt(e: &mut EventEmitter, n: &CreateFdwStmt) {
     e.group_start(GroupKind::CreateFdwStmt);

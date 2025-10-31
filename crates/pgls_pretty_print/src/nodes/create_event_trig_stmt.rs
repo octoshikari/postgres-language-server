@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CreateEventTrigStmt;
+use pgls_query::protobuf::CreateEventTrigStmt;
 
 use crate::{
     TokenKind,
@@ -41,7 +41,7 @@ pub(super) fn emit_create_event_trig_stmt(e: &mut EventEmitter, n: &CreateEventT
                 e.space();
             }
             // Each when clause is a DefElem with defname=tag and arg=List of values
-            if let Some(pgt_query::NodeEnum::DefElem(def_elem)) = when.node.as_ref() {
+            if let Some(pgls_query::NodeEnum::DefElem(def_elem)) = when.node.as_ref() {
                 // Emit TAG name (uppercased)
                 e.token(TokenKind::IDENT(def_elem.defname.to_uppercase()));
                 e.space();
@@ -50,13 +50,13 @@ pub(super) fn emit_create_event_trig_stmt(e: &mut EventEmitter, n: &CreateEventT
                 e.token(TokenKind::L_PAREN);
                 // Emit list of values
                 if let Some(arg) = &def_elem.arg {
-                    if let Some(pgt_query::NodeEnum::List(list)) = arg.node.as_ref() {
+                    if let Some(pgls_query::NodeEnum::List(list)) = arg.node.as_ref() {
                         for (j, item) in list.items.iter().enumerate() {
                             if j > 0 {
                                 e.token(TokenKind::COMMA);
                                 e.space();
                             }
-                            if let Some(pgt_query::NodeEnum::String(s)) = item.node.as_ref() {
+                            if let Some(pgls_query::NodeEnum::String(s)) = item.node.as_ref() {
                                 super::emit_string_literal(e, s);
                             }
                         }

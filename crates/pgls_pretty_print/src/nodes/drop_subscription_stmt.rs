@@ -1,4 +1,4 @@
-use pgt_query::protobuf::DropSubscriptionStmt;
+use pgls_query::protobuf::DropSubscriptionStmt;
 
 use crate::{
     TokenKind,

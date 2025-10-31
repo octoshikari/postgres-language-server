@@ -3,7 +3,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::ConstraintsSetStmt;
+use pgls_query::protobuf::ConstraintsSetStmt;
 
 pub(super) fn emit_constraints_set_stmt(e: &mut EventEmitter, n: &ConstraintsSetStmt) {
     e.group_start(GroupKind::ConstraintsSetStmt);

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::RelabelType;
+use pgls_query::protobuf::RelabelType;
 
 use crate::emitter::EventEmitter;
 

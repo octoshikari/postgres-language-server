@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::PublicationObjSpec;
+use pgls_query::protobuf::PublicationObjSpec;
 
 pub(super) fn emit_publication_obj_spec(e: &mut EventEmitter, n: &PublicationObjSpec) {
     e.group_start(GroupKind::PublicationObjSpec);
@@ -58,7 +58,7 @@ pub(super) fn emit_publication_obj_spec(e: &mut EventEmitter, n: &PublicationObj
                     e.token(TokenKind::WHERE_KW);
                     e.space();
                     e.token(TokenKind::L_PAREN);
-                    super::emit_node(where_clause, e);
+                    super::emit_clause_condition(e, where_clause);
                     e.token(TokenKind::R_PAREN);
                 }
             }

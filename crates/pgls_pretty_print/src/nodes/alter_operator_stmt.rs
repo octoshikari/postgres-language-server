@@ -1,5 +1,5 @@
-use pgt_query::NodeEnum;
-use pgt_query::protobuf::{AlterOperatorStmt, DefElem, List, ObjectWithArgs};
+use pgls_query::NodeEnum;
+use pgls_query::protobuf::{AlterOperatorStmt, DefElem, List, ObjectWithArgs};
 
 use crate::{
     TokenKind,
@@ -97,7 +97,7 @@ fn emit_operator_option(e: &mut EventEmitter, def: &DefElem) {
     }
 }
 
-fn emit_operator_option_arg(e: &mut EventEmitter, arg: &pgt_query::protobuf::Node) {
+fn emit_operator_option_arg(e: &mut EventEmitter, arg: &pgls_query::protobuf::Node) {
     match arg.node.as_ref() {
         Some(NodeEnum::Boolean(b)) => {
             e.token(TokenKind::IDENT(if b.boolval {

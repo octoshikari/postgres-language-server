@@ -1,6 +1,6 @@
 ---
-source: crates/pgt_pretty_print/tests/tests.rs
-input_file: crates/pgt_pretty_print/tests/data/multi/tsrf_60.sql
+source: crates/pgls_pretty_print/tests/tests.rs
+input_file: crates/pgls_pretty_print/tests/data/multi/tsrf_60.sql
 snapshot_kind: text
 ---
 SELECT generate_series(1, 3);
@@ -119,7 +119,8 @@ SELECT
   unnest(CAST('{1,1,3}' AS INT[]))
 FROM
   few
-WHERE few.id = 1
+WHERE few.id =
+  1
 GROUP BY few.dataa;
 
 SELECT
@@ -130,7 +131,8 @@ SELECT
   unnest(CAST('{1,1,3}' AS INT[]))
 FROM
   few
-WHERE few.id = 1
+WHERE few.id =
+  1
 GROUP BY few.dataa,
   unnest(CAST('{1,1,3}' AS INT[]));
 
@@ -142,7 +144,8 @@ SELECT
   unnest(CAST('{1,1,3}' AS INT[]))
 FROM
   few
-WHERE few.id = 1
+WHERE few.id =
+  1
 GROUP BY few.dataa,
   5;
 
@@ -156,7 +159,8 @@ SELECT
 FROM
   few
 GROUP BY 1
-HAVING COUNT(*) > 1;
+HAVING COUNT(*) >
+  1;
 
 SELECT
   dataa,
@@ -167,14 +171,16 @@ FROM
   few
 GROUP BY 1,
   2
-HAVING COUNT(*) > 1;
+HAVING COUNT(*) >
+  1;
 
 SELECT
   few.dataa,
   COUNT(*)
 FROM
   few
-WHERE dataa = 'a'
+WHERE dataa =
+  'a'
 GROUP BY few.dataa
 ORDER BY 2;
 
@@ -183,7 +189,8 @@ SELECT
   COUNT(*)
 FROM
   few
-WHERE dataa = 'a'
+WHERE dataa =
+  'a'
 GROUP BY few.dataa,
   unnest(CAST('{1,1,3}' AS INT[]))
 ORDER BY 2;
@@ -191,7 +198,8 @@ ORDER BY 2;
 SELECT
   q1,
   CASE
-  WHEN q1 > 0 THEN generate_series(1,
+  WHEN q1 >
+  0 THEN generate_series(1,
   3)
   ELSE 0
   END
@@ -351,7 +359,7 @@ ORDER BY 1;
 CREATE TABLE fewmore AS
   SELECT
     generate_series(1,
-    3) AS "data";;
+    3) AS "data";
 
 INSERT INTO fewmore VALUES (generate_series(4, 5));
 

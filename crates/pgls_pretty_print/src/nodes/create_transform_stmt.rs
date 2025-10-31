@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::CreateTransformStmt;
+use pgls_query::protobuf::CreateTransformStmt;
 
 pub(super) fn emit_create_transform_stmt(e: &mut EventEmitter, n: &CreateTransformStmt) {
     e.group_start(GroupKind::CreateTransformStmt);

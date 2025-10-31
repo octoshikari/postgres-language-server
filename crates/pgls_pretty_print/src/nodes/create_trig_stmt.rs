@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::emit_dot_separated_list,
 };
-use pgt_query::protobuf::CreateTrigStmt;
+use pgls_query::protobuf::CreateTrigStmt;
 
 pub(super) fn emit_create_trig_stmt(e: &mut EventEmitter, n: &CreateTrigStmt) {
     e.group_start(GroupKind::CreateTrigStmt);

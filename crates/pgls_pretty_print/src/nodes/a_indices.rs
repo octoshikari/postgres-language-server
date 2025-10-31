@@ -1,4 +1,4 @@
-use pgt_query::protobuf::AIndices;
+use pgls_query::protobuf::AIndices;
 
 use crate::{
     TokenKind,

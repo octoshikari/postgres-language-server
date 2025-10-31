@@ -1,4 +1,4 @@
-use pgt_query::protobuf::FieldStore;
+use pgls_query::protobuf::FieldStore;
 
 use crate::emitter::EventEmitter;
 

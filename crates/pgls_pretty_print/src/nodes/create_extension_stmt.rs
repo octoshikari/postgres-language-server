@@ -3,7 +3,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::CreateExtensionStmt;
+use pgls_query::protobuf::CreateExtensionStmt;
 
 pub(super) fn emit_create_extension_stmt(e: &mut EventEmitter, n: &CreateExtensionStmt) {
     e.group_start(GroupKind::CreateExtensionStmt);

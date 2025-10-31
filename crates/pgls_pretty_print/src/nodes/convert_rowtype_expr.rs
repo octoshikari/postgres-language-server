@@ -1,4 +1,4 @@
-use pgt_query::protobuf::ConvertRowtypeExpr;
+use pgls_query::protobuf::ConvertRowtypeExpr;
 
 use crate::emitter::EventEmitter;
 

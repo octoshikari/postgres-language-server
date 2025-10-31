@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::{AlterExtensionContentsStmt, ObjectType};
+use pgls_query::protobuf::{AlterExtensionContentsStmt, ObjectType};
 
 pub(super) fn emit_alter_extension_contents_stmt(
     e: &mut EventEmitter,

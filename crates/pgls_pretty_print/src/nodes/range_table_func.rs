@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::emit_comma_separated_list,
 };
-use pgt_query::{NodeEnum, protobuf::RangeTableFunc};
+use pgls_query::{NodeEnum, protobuf::RangeTableFunc};
 
 pub(super) fn emit_range_table_func(e: &mut EventEmitter, n: &RangeTableFunc) {
     e.group_start(GroupKind::RangeTableFunc);

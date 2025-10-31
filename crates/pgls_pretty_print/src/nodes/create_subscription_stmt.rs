@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::emit_comma_separated_list,
 };
-use pgt_query::{NodeEnum, protobuf::CreateSubscriptionStmt};
+use pgls_query::{NodeEnum, protobuf::CreateSubscriptionStmt};
 
 use super::string::{emit_identifier_maybe_quoted, emit_keyword, emit_single_quoted_str};
 

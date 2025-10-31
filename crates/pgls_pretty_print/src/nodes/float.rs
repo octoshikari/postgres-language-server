@@ -1,4 +1,4 @@
-use pgt_query::protobuf::Float;
+use pgls_query::protobuf::Float;
 
 use crate::{
     TokenKind,

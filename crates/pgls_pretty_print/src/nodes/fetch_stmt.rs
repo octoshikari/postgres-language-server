@@ -1,4 +1,4 @@
-use pgt_query::protobuf::FetchStmt;
+use pgls_query::protobuf::FetchStmt;
 
 use crate::{
     TokenKind,

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::ResTarget;
+use pgls_query::protobuf::ResTarget;
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
@@ -50,7 +50,7 @@ pub(super) fn emit_column_name_with_indirection(e: &mut EventEmitter, n: &ResTar
     for i in &n.indirection {
         match &i.node {
             // Field selection - emit dot before the field name
-            Some(pgt_query::NodeEnum::String(s)) => {
+            Some(pgls_query::NodeEnum::String(s)) => {
                 e.token(TokenKind::DOT);
                 super::emit_string_identifier(e, s);
             }

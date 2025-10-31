@@ -2,7 +2,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::JsonParseExpr;
+use pgls_query::protobuf::JsonParseExpr;
 
 use super::json_value_expr::{emit_json_output, emit_json_value_expr};
 

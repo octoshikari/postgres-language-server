@@ -1,4 +1,4 @@
-use pgt_query::Node;
+use pgls_query::Node;
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, LineType};
@@ -25,6 +25,7 @@ pub(super) fn emit_dot_separated_list(e: &mut EventEmitter, nodes: &[Node]) {
     }
 }
 
+#[allow(dead_code)]
 pub(super) fn emit_keyword_separated_list(
     e: &mut EventEmitter,
     nodes: &[Node],

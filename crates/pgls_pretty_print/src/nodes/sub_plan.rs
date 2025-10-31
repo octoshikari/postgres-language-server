@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{AlternativeSubPlan, SubPlan};
+use pgls_query::protobuf::{AlternativeSubPlan, SubPlan};
 
 use crate::{
     TokenKind,

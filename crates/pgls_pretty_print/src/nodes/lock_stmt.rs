@@ -1,4 +1,4 @@
-use pgt_query::protobuf::LockStmt;
+use pgls_query::protobuf::LockStmt;
 
 use crate::{
     TokenKind,

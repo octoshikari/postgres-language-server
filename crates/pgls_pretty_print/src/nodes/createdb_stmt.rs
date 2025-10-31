@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CreatedbStmt;
+use pgls_query::protobuf::CreatedbStmt;
 
 use crate::{
     TokenKind,

@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{SqlValueFunction, SqlValueFunctionOp};
+use pgls_query::protobuf::{SqlValueFunction, SqlValueFunctionOp};
 
 use crate::{
     TokenKind,

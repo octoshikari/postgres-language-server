@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::AlterEventTrigStmt;
+use pgls_query::protobuf::AlterEventTrigStmt;
 
 pub(super) fn emit_alter_event_trig_stmt(e: &mut EventEmitter, n: &AlterEventTrigStmt) {
     e.group_start(GroupKind::AlterEventTrigStmt);

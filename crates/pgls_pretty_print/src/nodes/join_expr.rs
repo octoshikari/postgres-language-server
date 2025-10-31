@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{JoinExpr, JoinType};
+use pgls_query::protobuf::{JoinExpr, JoinType};
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind, LineType};
@@ -91,7 +91,7 @@ pub(super) fn emit_join_expr(e: &mut EventEmitter, n: &JoinExpr) {
             e.line(LineType::SoftOrSpace);
             emit_comma_separated_list(e, &n.using_clause, |node, e| {
                 // For USING clause, String nodes should be identifiers
-                if let Some(pgt_query::NodeEnum::String(s)) = node.node.as_ref() {
+                if let Some(pgls_query::NodeEnum::String(s)) = node.node.as_ref() {
                     emit_identifier(e, &s.sval);
                 } else {
                     super::emit_node(node, e);
@@ -100,7 +100,7 @@ pub(super) fn emit_join_expr(e: &mut EventEmitter, n: &JoinExpr) {
             e.indent_end();
         } else {
             emit_comma_separated_list(e, &n.using_clause, |node, e| {
-                if let Some(pgt_query::NodeEnum::String(s)) = node.node.as_ref() {
+                if let Some(pgls_query::NodeEnum::String(s)) = node.node.as_ref() {
                     emit_identifier(e, &s.sval);
                 } else {
                     super::emit_node(node, e);

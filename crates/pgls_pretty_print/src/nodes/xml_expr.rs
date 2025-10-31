@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::emit_comma_separated_list,
 };
-use pgt_query::protobuf::XmlExpr;
+use pgls_query::protobuf::XmlExpr;
 
 pub(super) fn emit_xml_expr(e: &mut EventEmitter, n: &XmlExpr) {
     e.group_start(GroupKind::XmlExpr);

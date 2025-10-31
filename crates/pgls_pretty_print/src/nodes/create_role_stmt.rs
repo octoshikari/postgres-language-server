@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{CreateRoleStmt, RoleStmtType};
+use pgls_query::protobuf::{CreateRoleStmt, RoleStmtType};
 
 use crate::{
     TokenKind,
@@ -28,7 +28,7 @@ pub(super) fn emit_create_role_stmt(e: &mut EventEmitter, n: &CreateRoleStmt) {
         e.indent_start();
         for option in &n.options {
             if let Some(ref node) = option.node {
-                if let pgt_query::NodeEnum::DefElem(def_elem) = node {
+                if let pgls_query::NodeEnum::DefElem(def_elem) = node {
                     e.line(LineType::SoftOrSpace);
                     format_role_option(e, def_elem);
                 }
@@ -42,13 +42,13 @@ pub(super) fn emit_create_role_stmt(e: &mut EventEmitter, n: &CreateRoleStmt) {
     e.group_end();
 }
 
-fn format_role_option(e: &mut EventEmitter, d: &pgt_query::protobuf::DefElem) {
+fn format_role_option(e: &mut EventEmitter, d: &pgls_query::protobuf::DefElem) {
     let defname_lower = d.defname.to_lowercase();
 
     match defname_lower.as_str() {
         "canlogin" => {
             if let Some(ref arg) = d.arg {
-                if let Some(pgt_query::NodeEnum::Boolean(b)) = &arg.node {
+                if let Some(pgls_query::NodeEnum::Boolean(b)) = &arg.node {
                     if b.boolval {
                         e.token(TokenKind::IDENT("LOGIN".to_string()));
                     } else {
@@ -60,7 +60,7 @@ fn format_role_option(e: &mut EventEmitter, d: &pgt_query::protobuf::DefElem) {
         }
         "inherit" => {
             if let Some(ref arg) = d.arg {
-                if let Some(pgt_query::NodeEnum::Boolean(b)) = &arg.node {
+                if let Some(pgls_query::NodeEnum::Boolean(b)) = &arg.node {
                     if b.boolval {
                         e.token(TokenKind::INHERIT_KW);
                     } else {
@@ -72,7 +72,7 @@ fn format_role_option(e: &mut EventEmitter, d: &pgt_query::protobuf::DefElem) {
         }
         "createrole" => {
             if let Some(ref arg) = d.arg {
-                if let Some(pgt_query::NodeEnum::Boolean(b)) = &arg.node {
+                if let Some(pgls_query::NodeEnum::Boolean(b)) = &arg.node {
                     if b.boolval {
                         e.token(TokenKind::IDENT("CREATEROLE".to_string()));
                     } else {
@@ -84,7 +84,7 @@ fn format_role_option(e: &mut EventEmitter, d: &pgt_query::protobuf::DefElem) {
         }
         "createdb" => {
             if let Some(ref arg) = d.arg {
-                if let Some(pgt_query::NodeEnum::Boolean(b)) = &arg.node {
+                if let Some(pgls_query::NodeEnum::Boolean(b)) = &arg.node {
                     if b.boolval {
                         e.token(TokenKind::IDENT("CREATEDB".to_string()));
                     } else {
@@ -96,7 +96,7 @@ fn format_role_option(e: &mut EventEmitter, d: &pgt_query::protobuf::DefElem) {
         }
         "isreplication" => {
             if let Some(ref arg) = d.arg {
-                if let Some(pgt_query::NodeEnum::Boolean(b)) = &arg.node {
+                if let Some(pgls_query::NodeEnum::Boolean(b)) = &arg.node {
                     if b.boolval {
                         e.token(TokenKind::IDENT("REPLICATION".to_string()));
                     } else {
@@ -108,7 +108,7 @@ fn format_role_option(e: &mut EventEmitter, d: &pgt_query::protobuf::DefElem) {
         }
         "issuperuser" | "superuser" => {
             if let Some(ref arg) = d.arg {
-                if let Some(pgt_query::NodeEnum::Boolean(b)) = &arg.node {
+                if let Some(pgls_query::NodeEnum::Boolean(b)) = &arg.node {
                     if b.boolval {
                         e.token(TokenKind::IDENT("SUPERUSER".to_string()));
                     } else {
@@ -120,7 +120,7 @@ fn format_role_option(e: &mut EventEmitter, d: &pgt_query::protobuf::DefElem) {
         }
         "bypassrls" => {
             if let Some(ref arg) = d.arg {
-                if let Some(pgt_query::NodeEnum::Boolean(b)) = &arg.node {
+                if let Some(pgls_query::NodeEnum::Boolean(b)) = &arg.node {
                     if b.boolval {
                         e.token(TokenKind::IDENT("BYPASSRLS".to_string()));
                     } else {
@@ -181,7 +181,7 @@ fn format_role_option(e: &mut EventEmitter, d: &pgt_query::protobuf::DefElem) {
             e.space();
             if let Some(ref arg) = d.arg {
                 // Password must be a string literal with single quotes
-                if let Some(pgt_query::NodeEnum::String(s)) = &arg.node {
+                if let Some(pgls_query::NodeEnum::String(s)) = &arg.node {
                     super::emit_string_literal(e, s);
                 } else {
                     super::emit_node(arg, e);

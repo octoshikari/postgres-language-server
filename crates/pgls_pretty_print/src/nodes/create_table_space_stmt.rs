@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CreateTableSpaceStmt;
+use pgls_query::protobuf::CreateTableSpaceStmt;
 
 use crate::{
     TokenKind,

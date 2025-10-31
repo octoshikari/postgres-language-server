@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind, LineType};
-use pgt_query::protobuf::AlterForeignServerStmt;
+use pgls_query::protobuf::AlterForeignServerStmt;
 
 use super::{
     node_list::emit_comma_separated_list,

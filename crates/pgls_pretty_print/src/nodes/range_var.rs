@@ -1,4 +1,4 @@
-use pgt_query::protobuf::RangeVar;
+use pgls_query::protobuf::RangeVar;
 
 use crate::{
     TokenKind,

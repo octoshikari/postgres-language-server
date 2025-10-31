@@ -1,4 +1,4 @@
-use pgt_query::protobuf::UnlistenStmt;
+use pgls_query::protobuf::UnlistenStmt;
 
 use crate::{
     TokenKind,

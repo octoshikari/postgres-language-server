@@ -1,4 +1,4 @@
-use pgt_query::protobuf::AIndirection;
+use pgls_query::protobuf::AIndirection;
 
 use crate::{
     TokenKind,
@@ -11,7 +11,7 @@ pub(super) fn emit_a_indirection(e: &mut EventEmitter, n: &AIndirection) {
     // Emit the base expression
     // Some expressions need parentheses when used with indirection (e.g., ROW(...))
     let needs_parens = if let Some(ref arg) = n.arg {
-        matches!(arg.node.as_ref(), Some(pgt_query::NodeEnum::RowExpr(_)))
+        matches!(arg.node.as_ref(), Some(pgls_query::NodeEnum::RowExpr(_)))
     } else {
         false
     };
@@ -31,7 +31,7 @@ pub(super) fn emit_a_indirection(e: &mut EventEmitter, n: &AIndirection) {
     // Emit indirection operators (array subscripts, field selections)
     for indirection in &n.indirection {
         // Field selection needs a dot before the field name
-        if let Some(pgt_query::NodeEnum::String(_)) = &indirection.node {
+        if let Some(pgls_query::NodeEnum::String(_)) = &indirection.node {
             e.token(TokenKind::DOT);
         }
         super::emit_node(indirection, e);

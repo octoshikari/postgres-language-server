@@ -3,7 +3,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::CreateOpFamilyStmt;
+use pgls_query::protobuf::CreateOpFamilyStmt;
 
 pub(super) fn emit_create_op_family_stmt(e: &mut EventEmitter, n: &CreateOpFamilyStmt) {
     e.group_start(GroupKind::CreateOpFamilyStmt);

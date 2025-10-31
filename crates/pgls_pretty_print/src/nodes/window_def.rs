@@ -4,7 +4,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, LineType},
 };
-use pgt_query::protobuf::{Node, WindowDef};
+use pgls_query::protobuf::{Node, WindowDef};
 
 const FRAMEOPTION_NONDEFAULT: i32 = 0x00001;
 const FRAMEOPTION_RANGE: i32 = 0x00002;

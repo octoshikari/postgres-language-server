@@ -1,6 +1,6 @@
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
-use pgt_query::protobuf::{AlterObjectSchemaStmt, ObjectType};
+use pgls_query::protobuf::{AlterObjectSchemaStmt, ObjectType};
 
 pub(super) fn emit_alter_object_schema_stmt(e: &mut EventEmitter, n: &AlterObjectSchemaStmt) {
     e.group_start(GroupKind::AlterObjectSchemaStmt);

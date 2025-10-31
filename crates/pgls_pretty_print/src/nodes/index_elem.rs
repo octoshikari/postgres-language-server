@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{IndexElem, SortByDir, SortByNulls};
+use pgls_query::protobuf::{IndexElem, SortByDir, SortByNulls};
 
 use crate::{
     TokenKind,

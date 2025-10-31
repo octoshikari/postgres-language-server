@@ -1,4 +1,4 @@
-use pgt_query::protobuf::DropRoleStmt;
+use pgls_query::protobuf::DropRoleStmt;
 
 use crate::{
     TokenKind,

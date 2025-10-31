@@ -3,7 +3,7 @@ use crate::{
     emitter::{EventEmitter, GroupKind},
     nodes::node_list::emit_comma_separated_list,
 };
-use pgt_query::protobuf::CreateUserMappingStmt;
+use pgls_query::protobuf::CreateUserMappingStmt;
 
 pub(super) fn emit_create_user_mapping_stmt(e: &mut EventEmitter, n: &CreateUserMappingStmt) {
     e.group_start(GroupKind::CreateUserMappingStmt);

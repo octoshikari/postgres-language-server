@@ -4,6 +4,6 @@ input_file: crates/pgt_pretty_print/tests/data/single/create_op_class_stmt_0_60.
 snapshot_kind: text
 ---
 CREATE OPERATOR CLASS myopclass
-  FOR TYPE int4
+  FOR TYPE INT
   USING btree
   AS OPERATOR 1 <;

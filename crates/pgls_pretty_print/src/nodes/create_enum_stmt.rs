@@ -1,4 +1,4 @@
-use pgt_query::protobuf::CreateEnumStmt;
+use pgls_query::protobuf::CreateEnumStmt;
 
 use crate::{
     TokenKind,

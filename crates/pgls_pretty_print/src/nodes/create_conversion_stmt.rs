@@ -6,7 +6,7 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
-use pgt_query::protobuf::CreateConversionStmt;
+use pgls_query::protobuf::CreateConversionStmt;
 
 pub(super) fn emit_create_conversion_stmt(e: &mut EventEmitter, n: &CreateConversionStmt) {
     e.group_start(GroupKind::CreateConversionStmt);

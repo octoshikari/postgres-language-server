@@ -1,4 +1,4 @@
-use pgt_query::protobuf::PartitionSpec;
+use pgls_query::protobuf::PartitionSpec;
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};

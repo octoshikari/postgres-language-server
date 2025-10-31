@@ -1,5 +1,5 @@
-use pgt_query::protobuf::Node;
-use pgt_query::protobuf::{DistinctExpr, NullIfExpr, OpExpr};
+use pgls_query::protobuf::Node;
+use pgls_query::protobuf::{DistinctExpr, NullIfExpr, OpExpr};
 
 use crate::{
     TokenKind,

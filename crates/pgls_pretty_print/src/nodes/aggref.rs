@@ -1,4 +1,4 @@
-use pgt_query::protobuf::{Aggref, Node};
+use pgls_query::protobuf::{Aggref, Node};
 
 use crate::{
     TokenKind,
@@ -53,8 +53,7 @@ pub(super) fn emit_aggref(e: &mut EventEmitter, n: &Aggref) {
         e.space();
         e.token(TokenKind::L_PAREN);
         e.token(TokenKind::WHERE_KW);
-        e.space();
-        super::emit_node(filter, e);
+        super::emit_clause_condition(e, filter);
         e.token(TokenKind::R_PAREN);
     }
 
