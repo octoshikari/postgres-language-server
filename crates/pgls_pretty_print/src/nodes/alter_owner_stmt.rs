@@ -1,9 +1,14 @@
-use pgt_query::protobuf::AlterOwnerStmt;
+use pgls_query::{
+    NodeEnum,
+    protobuf::{AlterOwnerStmt, ObjectType},
+};
 
 use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind},
 };
+
+use super::node_list::emit_dot_separated_list;
 
 pub(super) fn emit_alter_owner_stmt(e: &mut EventEmitter, n: &AlterOwnerStmt) {
     e.group_start(GroupKind::AlterOwnerStmt);
@@ -11,118 +16,32 @@ pub(super) fn emit_alter_owner_stmt(e: &mut EventEmitter, n: &AlterOwnerStmt) {
     e.token(TokenKind::ALTER_KW);
     e.space();
 
-    // Object type - map object_type enum to SQL keyword
-    // Based on ObjectType enum in protobuf.rs
-    match n.object_type {
-        1 => {
-            // ObjectAccessMethod
-            e.token(TokenKind::IDENT("ACCESS".to_string()));
-            e.space();
-            e.token(TokenKind::IDENT("METHOD".to_string()));
+    let object_type = ObjectType::try_from(n.object_type).unwrap_or(ObjectType::Undefined);
+    emit_object_type(e, object_type);
+
+    match object_type {
+        ObjectType::ObjectOpfamily | ObjectType::ObjectOpclass => {
+            if let Some(ref object) = n.object {
+                e.space();
+                emit_owner_operator_collection(e, object);
+            }
         }
-        2 => e.token(TokenKind::IDENT("AGGREGATE".to_string())),
-        8 => e.token(TokenKind::IDENT("COLLATION".to_string())),
-        9 => e.token(TokenKind::IDENT("CONVERSION".to_string())),
-        10 => e.token(TokenKind::DATABASE_KW),
-        13 => e.token(TokenKind::DOMAIN_KW),
-        15 => {
-            // ObjectEventTrigger
-            e.token(TokenKind::IDENT("EVENT".to_string()));
-            e.space();
-            e.token(TokenKind::IDENT("TRIGGER".to_string()));
+        _ => {
+            if let Some(ref relation) = n.relation {
+                e.space();
+                super::emit_range_var(e, relation);
+            } else if let Some(ref object) = n.object {
+                e.space();
+                emit_owner_object(e, object);
+            }
         }
-        17 => {
-            // ObjectFdw
-            e.token(TokenKind::IDENT("FOREIGN".to_string()));
-            e.space();
-            e.token(TokenKind::IDENT("DATA".to_string()));
-            e.space();
-            e.token(TokenKind::IDENT("WRAPPER".to_string()));
-        }
-        18 => {
-            // ObjectForeignServer
-            e.token(TokenKind::IDENT("SERVER".to_string()));
-        }
-        19 => {
-            // ObjectForeignTable
-            e.token(TokenKind::IDENT("FOREIGN".to_string()));
-            e.space();
-            e.token(TokenKind::TABLE_KW);
-        }
-        20 => e.token(TokenKind::FUNCTION_KW),
-        22 => e.token(TokenKind::IDENT("LANGUAGE".to_string())),
-        23 => {
-            // ObjectLargeobject
-            e.token(TokenKind::IDENT("LARGE".to_string()));
-            e.space();
-            e.token(TokenKind::IDENT("OBJECT".to_string()));
-        }
-        24 => {
-            // ObjectMatview
-            e.token(TokenKind::IDENT("MATERIALIZED".to_string()));
-            e.space();
-            e.token(TokenKind::VIEW_KW);
-        }
-        25 => {
-            // ObjectOpclass
-            e.token(TokenKind::IDENT("OPERATOR".to_string()));
-            e.space();
-            e.token(TokenKind::IDENT("CLASS".to_string()));
-        }
-        26 => e.token(TokenKind::IDENT("OPERATOR".to_string())),
-        27 => {
-            // ObjectOpfamily
-            e.token(TokenKind::IDENT("OPERATOR".to_string()));
-            e.space();
-            e.token(TokenKind::IDENT("FAMILY".to_string()));
-        }
-        30 => e.token(TokenKind::IDENT("PROCEDURE".to_string())),
-        31 => e.token(TokenKind::IDENT("PUBLICATION".to_string())),
-        35 => e.token(TokenKind::IDENT("ROUTINE".to_string())),
-        37 => e.token(TokenKind::SCHEMA_KW),
-        38 => e.token(TokenKind::SEQUENCE_KW),
-        39 => e.token(TokenKind::IDENT("SUBSCRIPTION".to_string())),
-        40 => {
-            // ObjectStatisticExt
-            e.token(TokenKind::IDENT("STATISTICS".to_string()));
-        }
-        42 => e.token(TokenKind::TABLE_KW),
-        43 => e.token(TokenKind::IDENT("TABLESPACE".to_string())),
-        46 => {
-            // ObjectTsconfiguration
-            e.token(TokenKind::IDENT("TEXT".to_string()));
-            e.space();
-            e.token(TokenKind::IDENT("SEARCH".to_string()));
-            e.space();
-            e.token(TokenKind::IDENT("CONFIGURATION".to_string()));
-        }
-        47 => {
-            // ObjectTsdictionary
-            e.token(TokenKind::IDENT("TEXT".to_string()));
-            e.space();
-            e.token(TokenKind::IDENT("SEARCH".to_string()));
-            e.space();
-            e.token(TokenKind::IDENT("DICTIONARY".to_string()));
-        }
-        50 => e.token(TokenKind::TYPE_KW),
-        52 => e.token(TokenKind::VIEW_KW),
-        _ => e.token(TokenKind::IDENT("OBJECT".to_string())), // Fallback for unsupported types
     }
 
-    e.space();
-
-    // Object name (could be qualified name or simple identifier)
-    if let Some(ref obj) = n.object {
-        super::emit_node(obj, e);
-    }
-
-    // OWNER TO
-    e.space();
-    e.token(TokenKind::IDENT("OWNER".to_string()));
+    e.line(crate::emitter::LineType::SoftOrSpace);
+    e.token(TokenKind::OWNER_KW);
     e.space();
     e.token(TokenKind::TO_KW);
 
-    // New owner
     if let Some(ref newowner) = n.newowner {
         e.space();
         super::emit_role_spec(e, newowner);
@@ -130,4 +49,129 @@ pub(super) fn emit_alter_owner_stmt(e: &mut EventEmitter, n: &AlterOwnerStmt) {
 
     e.token(TokenKind::SEMICOLON);
     e.group_end();
+}
+
+fn emit_object_type(e: &mut EventEmitter, object_type: ObjectType) {
+    match object_type {
+        ObjectType::ObjectTable => e.token(TokenKind::TABLE_KW),
+        ObjectType::ObjectSequence => e.token(TokenKind::SEQUENCE_KW),
+        ObjectType::ObjectView => e.token(TokenKind::VIEW_KW),
+        ObjectType::ObjectMatview => {
+            e.token(TokenKind::MATERIALIZED_KW);
+            e.space();
+            e.token(TokenKind::VIEW_KW);
+        }
+        ObjectType::ObjectForeignTable => {
+            e.token(TokenKind::FOREIGN_KW);
+            e.space();
+            e.token(TokenKind::TABLE_KW);
+        }
+        ObjectType::ObjectDatabase => e.token(TokenKind::DATABASE_KW),
+        ObjectType::ObjectSchema => e.token(TokenKind::SCHEMA_KW),
+        ObjectType::ObjectTablespace => e.token(TokenKind::TABLESPACE_KW),
+        ObjectType::ObjectFunction => e.token(TokenKind::FUNCTION_KW),
+        ObjectType::ObjectProcedure => e.token(TokenKind::PROCEDURE_KW),
+        ObjectType::ObjectRoutine => e.token(TokenKind::ROUTINE_KW),
+        ObjectType::ObjectType => e.token(TokenKind::TYPE_KW),
+        ObjectType::ObjectOperator => e.token(TokenKind::OPERATOR_KW),
+        ObjectType::ObjectAggregate => e.token(TokenKind::AGGREGATE_KW),
+        ObjectType::ObjectOpclass => {
+            e.token(TokenKind::OPERATOR_KW);
+            e.space();
+            e.token(TokenKind::CLASS_KW);
+        }
+        ObjectType::ObjectOpfamily => {
+            e.token(TokenKind::OPERATOR_KW);
+            e.space();
+            e.token(TokenKind::FAMILY_KW);
+        }
+        ObjectType::ObjectConversion => e.token(TokenKind::CONVERSION_KW),
+        ObjectType::ObjectCollation => e.token(TokenKind::COLLATION_KW),
+        ObjectType::ObjectDomain => e.token(TokenKind::DOMAIN_KW),
+        ObjectType::ObjectExtension => e.token(TokenKind::EXTENSION_KW),
+        ObjectType::ObjectLanguage => e.token(TokenKind::LANGUAGE_KW),
+        ObjectType::ObjectPublication => e.token(TokenKind::PUBLICATION_KW),
+        ObjectType::ObjectSubscription => e.token(TokenKind::SUBSCRIPTION_KW),
+        ObjectType::ObjectFdw => {
+            e.token(TokenKind::FOREIGN_KW);
+            e.space();
+            e.token(TokenKind::DATA_KW);
+            e.space();
+            e.token(TokenKind::WRAPPER_KW);
+        }
+        ObjectType::ObjectForeignServer => e.token(TokenKind::SERVER_KW),
+        ObjectType::ObjectAccessMethod => {
+            e.token(TokenKind::ACCESS_KW);
+            e.space();
+            e.token(TokenKind::METHOD_KW);
+        }
+        ObjectType::ObjectLargeobject => {
+            e.token(TokenKind::LARGE_KW);
+            e.space();
+            e.token(TokenKind::OBJECT_KW);
+        }
+        ObjectType::ObjectTsparser => {
+            e.token(TokenKind::TEXT_KW);
+            e.space();
+            e.token(TokenKind::SEARCH_KW);
+            e.space();
+            e.token(TokenKind::PARSER_KW);
+        }
+        ObjectType::ObjectTsdictionary => {
+            e.token(TokenKind::TEXT_KW);
+            e.space();
+            e.token(TokenKind::SEARCH_KW);
+            e.space();
+            e.token(TokenKind::DICTIONARY_KW);
+        }
+        ObjectType::ObjectTstemplate => {
+            e.token(TokenKind::TEXT_KW);
+            e.space();
+            e.token(TokenKind::SEARCH_KW);
+            e.space();
+            e.token(TokenKind::TEMPLATE_KW);
+        }
+        ObjectType::ObjectTsconfiguration => {
+            e.token(TokenKind::TEXT_KW);
+            e.space();
+            e.token(TokenKind::SEARCH_KW);
+            e.space();
+            e.token(TokenKind::CONFIGURATION_KW);
+        }
+        ObjectType::ObjectStatisticExt => e.token(TokenKind::STATISTICS_KW),
+        ObjectType::ObjectPolicy => e.token(TokenKind::POLICY_KW),
+        ObjectType::ObjectRule => e.token(TokenKind::RULE_KW),
+        ObjectType::ObjectTrigger => e.token(TokenKind::TRIGGER_KW),
+        ObjectType::ObjectUserMapping => {
+            e.token(TokenKind::USER_KW);
+            e.space();
+            e.token(TokenKind::MAPPING_KW);
+        }
+        _ => e.token(TokenKind::TABLE_KW),
+    }
+}
+
+fn emit_owner_object(e: &mut EventEmitter, object: &pgls_query::Node) {
+    match &object.node {
+        Some(NodeEnum::List(list)) => emit_dot_separated_list(e, &list.items),
+        _ => super::emit_node(object, e),
+    }
+}
+
+fn emit_owner_operator_collection(e: &mut EventEmitter, object: &pgls_query::Node) {
+    if let Some(NodeEnum::List(list)) = &object.node {
+        if list.items.len() >= 2 {
+            let (method_node, name_nodes) = list.items.split_first().unwrap();
+            if !name_nodes.is_empty() {
+                emit_dot_separated_list(e, name_nodes);
+                e.space();
+                e.token(TokenKind::USING_KW);
+                e.space();
+                super::emit_node(method_node, e);
+                return;
+            }
+        }
+    }
+
+    emit_owner_object(e, object);
 }

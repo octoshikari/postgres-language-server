@@ -45,13 +45,8 @@ pub(super) fn emit_create_stats_stmt(e: &mut EventEmitter, n: &CreateStatsStmt) 
     // Column expressions or names
     if !n.exprs.is_empty() {
         emit_comma_separated_list(e, &n.exprs, |node, e| {
-            // StatsElem nodes have name or expr
             if let Some(NodeEnum::StatsElem(stats_elem)) = &node.node {
-                if let Some(ref expr) = stats_elem.expr {
-                    super::emit_node(expr, e);
-                } else if !stats_elem.name.is_empty() {
-                    e.token(TokenKind::IDENT(stats_elem.name.clone()));
-                }
+                super::emit_stats_elem(e, stats_elem);
             }
         });
     }

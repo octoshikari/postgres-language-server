@@ -10,15 +10,12 @@ pub(super) fn emit_index_elem(e: &mut EventEmitter, n: &IndexElem) {
 
     // Either a column name or an expression
     if let Some(ref expr) = n.expr {
+        // Expressions in index definitions must be wrapped in parentheses
+        e.token(TokenKind::L_PAREN);
         super::emit_node(expr, e);
+        e.token(TokenKind::R_PAREN);
     } else if !n.name.is_empty() {
         e.token(TokenKind::IDENT(n.name.clone()));
-    }
-
-    // Optional opclass
-    if !n.opclass.is_empty() {
-        e.space();
-        super::node_list::emit_dot_separated_list(e, &n.opclass);
     }
 
     // Optional collation
@@ -27,6 +24,12 @@ pub(super) fn emit_index_elem(e: &mut EventEmitter, n: &IndexElem) {
         e.token(TokenKind::COLLATE_KW);
         e.space();
         super::node_list::emit_dot_separated_list(e, &n.collation);
+    }
+
+    // Optional opclass
+    if !n.opclass.is_empty() {
+        e.space();
+        super::node_list::emit_dot_separated_list(e, &n.opclass);
     }
 
     // Sort order (ASC/DESC)

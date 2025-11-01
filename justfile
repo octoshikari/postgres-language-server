@@ -163,16 +163,40 @@ agentic name:
 
 agentic-loop name:
     #!/usr/bin/env bash
-    echo "Starting agentic loop until error..."
+    set +e  # Don't exit on error
+    echo "Starting agentic loop - will retry on rate limits..."
+    echo "Stop keyword: ===AGENTIC_TASK_COMPLETE==="
     iteration=1
+    output_file=$(mktemp)
+    trap "rm -f $output_file" EXIT
+
     while true; do
         echo "$(date): Starting iteration $iteration..."
-        if just agentic {{name}}; then
+
+        # Run agentic and capture output
+        just agentic {{name}} 2>&1 | tee "$output_file"
+        exit_code=${PIPESTATUS[0]}
+
+        # Check for completion keyword in last 10 lines only
+        if tail -n 10 "$output_file" | grep -q "===AGENTIC_TASK_COMPLETE==="; then
+            echo "$(date): ✓ Task complete keyword detected - stopping loop"
+            break
+        fi
+
+        # Handle exit codes
+        if [ $exit_code -eq 0 ]; then
             echo "$(date): Iteration $iteration completed successfully!"
             iteration=$((iteration + 1))
+        elif [ $exit_code -eq 1 ]; then
+            echo "$(date): Rate limit hit (exit code 1) - waiting 3 hours before retry..."
+            sleep 10800  # 3 hours = 10800 seconds
+            echo "$(date): Resuming after 3-hour wait..."
         else
-            echo "$(date): Iteration $iteration failed - stopping loop"
+            echo "$(date): Unexpected error (exit code $exit_code) - stopping loop"
             break
         fi
     done
+
+    rm -f "$output_file"
+    echo "$(date): Agentic loop finished after $iteration iterations"
 

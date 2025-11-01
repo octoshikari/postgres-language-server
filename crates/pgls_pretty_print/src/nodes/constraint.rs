@@ -1,4 +1,7 @@
-use pgls_query::protobuf::{ConstrType, Constraint};
+use pgls_query::{
+    NodeEnum,
+    protobuf::{ConstrType, Constraint},
+};
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind};
@@ -180,7 +183,40 @@ pub(super) fn emit_constraint(e: &mut EventEmitter, n: &Constraint) {
             if !n.exclusions.is_empty() {
                 e.space();
                 e.token(TokenKind::L_PAREN);
-                emit_comma_separated_list(e, &n.exclusions, super::emit_node);
+
+                for (idx, exclusion) in n.exclusions.iter().enumerate() {
+                    if idx > 0 {
+                        e.token(TokenKind::COMMA);
+                        e.line(crate::emitter::LineType::SoftOrSpace);
+                    }
+
+                    let exclusion_list = assert_node_variant!(List, exclusion);
+                    debug_assert!(exclusion_list.items.len() >= 2);
+
+                    if let Some(index_elem) = exclusion_list.items.first() {
+                        super::emit_node(index_elem, e);
+                    }
+
+                    if let Some(operators) = exclusion_list.items.get(1) {
+                        e.space();
+                        e.token(TokenKind::WITH_KW);
+                        e.space();
+
+                        match operators.node.as_ref() {
+                            Some(pgls_query::NodeEnum::List(op_list)) => {
+                                for (op_idx, op) in op_list.items.iter().enumerate() {
+                                    if op_idx > 0 {
+                                        e.token(TokenKind::COMMA);
+                                        e.space();
+                                    }
+                                    emit_exclusion_operator(e, op);
+                                }
+                            }
+                            _ => emit_exclusion_operator(e, operators),
+                        }
+                    }
+                }
+
                 e.token(TokenKind::R_PAREN);
             }
 
@@ -296,6 +332,13 @@ pub(super) fn emit_constraint(e: &mut EventEmitter, n: &Constraint) {
     }
 
     e.group_end();
+}
+
+fn emit_exclusion_operator(e: &mut EventEmitter, node: &pgls_query::Node) {
+    match node.node.as_ref() {
+        Some(NodeEnum::String(s)) => e.token(TokenKind::IDENT(s.sval.clone())),
+        _ => super::emit_node(node, e),
+    }
 }
 
 fn emit_foreign_key_action(

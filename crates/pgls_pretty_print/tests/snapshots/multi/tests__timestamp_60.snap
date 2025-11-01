@@ -18,21 +18,21 @@ INSERT INTO timestamp_tbl VALUES ('tomorrow EST');
 INSERT INTO timestamp_tbl VALUES ('tomorrow zulu');
 
 SELECT
-  COUNT(*) AS "one"
+  COUNT(*) AS one
 FROM
   timestamp_tbl
 WHERE d1 =
   CAST('today' AS TIMESTAMP);
 
 SELECT
-  COUNT(*) AS "three"
+  COUNT(*) AS three
 FROM
   timestamp_tbl
 WHERE d1 =
   CAST('tomorrow' AS TIMESTAMP);
 
 SELECT
-  COUNT(*) AS "one"
+  COUNT(*) AS one
 FROM
   timestamp_tbl
 WHERE d1 =
@@ -57,15 +57,15 @@ INSERT INTO timestamp_tbl VALUES ('now');
 SELECT pg_sleep(0.1);
 
 SELECT
-  COUNT(*) AS "two"
+  COUNT(*) AS two
 FROM
   timestamp_tbl
 WHERE d1 =
   CAST('now' AS TIMESTAMP(2));
 
 SELECT
-  COUNT(d1) AS "three",
-  COUNT(DISTINCT d1) AS "two"
+  COUNT(d1) AS three,
+  COUNT(DISTINCT d1) AS two
 FROM
   timestamp_tbl;
 
@@ -81,7 +81,7 @@ INSERT INTO timestamp_tbl VALUES ('epoch');
 
 SELECT
   CAST('infinity' AS TIMESTAMP) =
-  CAST('+infinity' AS TIMESTAMP) AS "t";
+  CAST('+infinity' AS TIMESTAMP) AS t;
 
 INSERT INTO timestamp_tbl
 VALUES ('Mon Feb 10 17:32:01 1997 PST');
@@ -312,30 +312,30 @@ WHERE d1 >=
   CAST('1997-01-02' AS TIMESTAMP);
 
 SELECT
-  d1 - CAST('1997-01-02' AS TIMESTAMP) AS "diff"
+  d1 - CAST('1997-01-02' AS TIMESTAMP) AS diff
 FROM
   timestamp_tbl
 WHERE d1 BETWEEN '1902-01-01' AND '2038-01-01';
 
 SELECT
   date_trunc('week',
-  CAST('2004-02-29 15:44:17.71393' AS TIMESTAMP)) AS "week_trunc";
+  CAST('2004-02-29 15:44:17.71393' AS TIMESTAMP)) AS week_trunc;
 
 SELECT
   date_trunc('week',
-  CAST('infinity' AS TIMESTAMP)) AS "inf_trunc";
+  CAST('infinity' AS TIMESTAMP)) AS inf_trunc;
 
 SELECT
   date_trunc('timezone',
-  CAST('2004-02-29 15:44:17.71393' AS TIMESTAMP)) AS "notsupp_trunc";
+  CAST('2004-02-29 15:44:17.71393' AS TIMESTAMP)) AS notsupp_trunc;
 
 SELECT
   date_trunc('timezone',
-  CAST('infinity' AS TIMESTAMP)) AS "notsupp_inf_trunc";
+  CAST('infinity' AS TIMESTAMP)) AS notsupp_inf_trunc;
 
 SELECT
   date_trunc('ago',
-  CAST('infinity' AS TIMESTAMP)) AS "invalid_trunc";
+  CAST('infinity' AS TIMESTAMP)) AS invalid_trunc;
 
 SELECT
   str,
@@ -344,7 +344,7 @@ SELECT
   ts) =
   date_bin(CAST(interval AS INTERVAL),
   ts,
-  CAST('2001-01-01' AS TIMESTAMP)) AS "equal"
+  CAST('2001-01-01' AS TIMESTAMP)) AS equal
 FROM
   (VALUES ('week',
   '7 d'),
@@ -370,7 +370,7 @@ SELECT
   ts) =
   date_bin(CAST(interval AS INTERVAL),
   ts,
-  CAST('2000-01-01 BC' AS TIMESTAMP)) AS "equal"
+  CAST('2000-01-01 BC' AS TIMESTAMP)) AS equal
 FROM
   (VALUES ('week',
   '7 d'),
@@ -396,7 +396,7 @@ SELECT
   ts) =
   date_bin(CAST(interval AS INTERVAL),
   ts,
-  CAST('2020-03-02' AS TIMESTAMP)) AS "equal"
+  CAST('2020-03-02' AS TIMESTAMP)) AS equal
 FROM
   (VALUES ('week',
   '7 d'),
@@ -422,7 +422,7 @@ SELECT
   ts) =
   date_bin(CAST(interval AS INTERVAL),
   ts,
-  CAST('0055-06-17 BC' AS TIMESTAMP)) AS "equal"
+  CAST('0055-06-17 BC' AS TIMESTAMP)) AS equal
 FROM
   (VALUES ('week',
   '7 d'),
@@ -505,76 +505,76 @@ SELECT
   CAST('4000-01-01 BC' AS TIMESTAMP));
 
 SELECT
-  d1 - CAST('1997-01-02' AS TIMESTAMP) AS "diff"
+  d1 - CAST('1997-01-02' AS TIMESTAMP) AS diff
 FROM
   timestamp_tbl
 WHERE d1 BETWEEN CAST('1902-01-01' AS TIMESTAMP) AND CAST('2038-01-01' AS TIMESTAMP);
 
 SELECT
-  d1 AS "timestamp",
+  d1 AS timestamp,
   date_part('year',
-  d1) AS "year",
+  d1) AS year,
   date_part('month',
-  d1) AS "month",
+  d1) AS month,
   date_part('day',
-  d1) AS "day",
+  d1) AS day,
   date_part('hour',
-  d1) AS "hour",
+  d1) AS hour,
   date_part('minute',
-  d1) AS "minute",
+  d1) AS minute,
   date_part('second',
-  d1) AS "second"
+  d1) AS second
 FROM
   timestamp_tbl;
 
 SELECT
-  d1 AS "timestamp",
+  d1 AS timestamp,
   date_part('quarter',
-  d1) AS "quarter",
+  d1) AS quarter,
   date_part('msec',
-  d1) AS "msec",
+  d1) AS msec,
   date_part('usec',
-  d1) AS "usec"
+  d1) AS usec
 FROM
   timestamp_tbl;
 
 SELECT
-  d1 AS "timestamp",
+  d1 AS timestamp,
   date_part('isoyear',
-  d1) AS "isoyear",
+  d1) AS isoyear,
   date_part('week',
-  d1) AS "week",
+  d1) AS week,
   date_part('isodow',
-  d1) AS "isodow",
+  d1) AS isodow,
   date_part('dow',
-  d1) AS "dow",
+  d1) AS dow,
   date_part('doy',
-  d1) AS "doy"
+  d1) AS doy
 FROM
   timestamp_tbl;
 
 SELECT
-  d1 AS "timestamp",
+  d1 AS timestamp,
   date_part('decade',
-  d1) AS "decade",
+  d1) AS decade,
   date_part('century',
-  d1) AS "century",
+  d1) AS century,
   date_part('millennium',
-  d1) AS "millennium",
+  d1) AS millennium,
   round(date_part('julian',
-  d1)) AS "julian",
+  d1)) AS julian,
   date_part('epoch',
-  d1) AS "epoch"
+  d1) AS epoch
 FROM
   timestamp_tbl;
 
 SELECT
-  d1 AS "timestamp",
-  EXTRACT('microseconds' FROM d1) AS "microseconds",
-  EXTRACT('milliseconds' FROM d1) AS "milliseconds",
-  EXTRACT('seconds' FROM d1) AS "seconds",
-  round(EXTRACT('julian' FROM d1)) AS "julian",
-  EXTRACT('epoch' FROM d1) AS "epoch"
+  d1 AS timestamp,
+  EXTRACT('microseconds' FROM d1) AS microseconds,
+  EXTRACT('milliseconds' FROM d1) AS milliseconds,
+  EXTRACT('seconds' FROM d1) AS seconds,
+  round(EXTRACT('julian' FROM d1)) AS julian,
+  EXTRACT('epoch' FROM d1) AS epoch
 FROM
   timestamp_tbl;
 
@@ -589,10 +589,10 @@ SELECT
   EXTRACT('epoch' FROM CAST('5000-01-01 00:00:00' AS TIMESTAMP));
 
 SELECT
-  CAST('294276-12-31 23:59:59' AS TIMESTAMP) - CAST('1999-12-23 19:59:04.224193' AS TIMESTAMP) AS "ok";
+  CAST('294276-12-31 23:59:59' AS TIMESTAMP) - CAST('1999-12-23 19:59:04.224193' AS TIMESTAMP) AS ok;
 
 SELECT
-  CAST('294276-12-31 23:59:59' AS TIMESTAMP) - CAST('1999-12-23 19:59:04.224192' AS TIMESTAMP) AS "overflows";
+  CAST('294276-12-31 23:59:59' AS TIMESTAMP) - CAST('1999-12-23 19:59:04.224192' AS TIMESTAMP) AS overflows;
 
 SELECT
   to_char(d1,

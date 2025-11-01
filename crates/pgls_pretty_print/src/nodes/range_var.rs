@@ -8,6 +8,11 @@ use crate::{
 pub(super) fn emit_range_var(e: &mut EventEmitter, n: &RangeVar) {
     e.group_start(GroupKind::RangeVar);
 
+    if !n.inh {
+        e.token(TokenKind::ONLY_KW);
+        e.space();
+    }
+
     if !n.schemaname.is_empty() {
         e.token(TokenKind::IDENT(n.schemaname.clone()));
         e.token(TokenKind::DOT);

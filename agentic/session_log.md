@@ -1,10 +1,249 @@
 # Pretty Printer Session Log
 
-This file contains the complete history of work sessions on the Postgres SQL pretty printer. Sessions are listed in reverse chronological order (newest first).
-
 For current implementation status and guidance, see [pretty_printer.md](./pretty_printer.md).
 
 ## Session History
+
+---
+**Date**: 2025-11-06 (Session 79)
+**Nodes Implemented/Fixed**: `JsonAggConstructor`, `JsonExpr`, `JsonFormat`, `JsonOutput`, `JsonReturning`, `MergeSupportFunc`, `PartitionBoundSpec`, `PartitionRangeDatum`, `PlAssignStmt`, `PublicationTable`, `RawStmt`, `RtePermissionInfo`, `SinglePartitionSpec`, `SortGroupClause`, `StatsElem`
+**Progress**: 233/270 → 248/270
+**Tests**: `cargo check -p pgls_pretty_print`
+**Key Changes**:
+- Added emitters for outstanding SQL/JSON nodes and wired them into `mod.rs`, covering `JsonExpr` (PASSING, RETURNING, wrapper clauses) plus shared `JsonAggConstructor` tail helpers.
+- Registered planner placeholders for merge support, permission metadata, raw statements, and sort/group clauses to eliminate dispatcher fallbacks.
+- Implemented partition metadata nodes (`PartitionBoundSpec`, `PartitionRangeDatum`, `SinglePartitionSpec`) and publication table emission, bringing partition DDL coverage in line with Attach/Detach flows.
+
+**Learnings**:
+- `GroupKind` variants mirror protobuf casing exactly (`PlassignStmt`, `RtepermissionInfo`), so double-check capitalization when introducing planner emitters.
+- SQL/JSON emitters benefit from reusing shared helpers (`emit_json_returning_clause`) to keep RETURNING/FORMAT semantics consistent across constructors, expressions, and aggregates.
+
+**Next Steps**:
+- Add focused SQL/JSON fixtures (JSON_EXISTS/JSON_QUERY/JSON_VALUE with PASSING and RETURNING clauses) and review the resulting snapshots.
+- Capture a small partition DDL fixture exercising RANGE/LIST bounds to validate the new `PartitionBoundSpec`/`PartitionRangeDatum` emitters under formatting pressure.
+---
+
+---
+**Date**: 2025-11-05 (Session 78)
+**Nodes Implemented/Fixed**: `RangeTblEntry`, `RangeTblFunction`, `RangeTableFuncCol`, `TableSampleClause`, `TriggerTransition`, `RowMarkClause`, `WindowFuncRunCondition`, `JsonArgument`, `JsonBehavior`, `JsonConstructorExpr`, `JsonTableColumn`, `JsonTablePath`, `JsonTablePathSpec`, `JsonTablePathScan`, `JsonTableSiblingJoin`
+**Progress**: 218/270 → 233/270
+**Tests**: `cargo test -p pgls_pretty_print` *(snapshot review pending)*
+**Key Changes**:
+- Added planner placeholder emitters and registered them in `mod.rs`, retiring the dispatcher fallbacks for RangeTbl*, TableSampleClause, RowMarkClause, and TriggerTransition.
+- Promoted JSON helper emitters (argument/behavior/path/column) so JSON TABLE and constructor nodes format directly instead of relying on internal helpers.
+- Updated `pretty_printer.md` with the new node coverage, durable guidance for placeholders, and refreshed next steps.
+
+**Learnings**:
+- Prefer `TryFrom` over deprecated `Enum::from_i32` helpers when decoding protobuf enums like `RteKind` and `JsonConstructorType`.
+- Planner-only emitters should stick to quoted `kind#metadata` placeholders via `emit_identifier` so the output remains reparsable without catalog lookups.
+
+**Next Steps**:
+- Curate targeted fixtures for the new placeholders and process the resulting snapshots with `cargo insta review` to keep diffs focused.
+- Audit remaining `todo!("emit_node_enum" ...)` fallbacks and queue the next batch of node emitters.
+---
+
+---
+**Date**: 2025-11-04 (Session 77)
+**Nodes Implemented/Fixed**: `AlterTypeStmt`, `CallContext`, `CteCycleClause`, `CteSearchClause`, `InferenceElem`, `InlineCodeBlock`, `IntList`, `MergeAction`, `MergeWhenClause`, `OidList`, `OnConflictExpr`, `Query`, `TableFunc`
+**Progress**: 205/270 → 218/270
+**Tests**: `cargo check -p pgls_pretty_print`
+**Key Changes**:
+- Registered planner placeholders and list wrappers in `mod.rs` and added dedicated emitters so dispatcher fallbacks disappeared.
+- Formatted CTE SEARCH/CYCLE clauses and wired planner ON CONFLICT/MERGE nodes to reuse shared helpers.
+- Documented progress and helpers in `pretty_printer.md`, updating Completed Nodes and Durable Guidance.
+
+**Learnings**:
+- GroupKind variants mirror protobuf casing (e.g. `CtecycleClause`), so mind capitalization when opening groups.
+- Planner emitters should keep using `emit_identifier("name#...")` placeholders to stay reparsable.
+
+**Next Steps**:
+- Implement the remaining planner emitters (`RangeTblEntry`, `RangeTblFunction`, `RangeTableFuncCol`, `TableSampleClause`, `TriggerTransition`, `RowMarkClause`, `WindowFuncRunCondition`).
+- Expose JSON helper nodes (`JsonArgument`, `JsonBehavior`, `JsonConstructorExpr`, `JsonTableColumn`, `JsonTablePath*`) through the dispatcher.
+---
+
+
+---
+**Date**: 2025-10-31 (Session 76)
+**Nodes Implemented/Fixed**: `IntoClause`, `CollateExpr`, `SubscriptingRef`, `NextValueExpr`
+**Progress**: 201/270 → 205/270
+**Tests**: `cargo check -p pgls_pretty_print`
+**Key Changes**:
+- Added `emit_into_clause` covering relpersistence, reloptions, and ON COMMIT mapping, and reused it for `SELECT ... INTO` (`crates/pgls_pretty_print/src/nodes/into_clause.rs:1`, `crates/pgls_pretty_print/src/nodes/select_stmt.rs:103`).
+- Registered planner emitters for collations, array subscripts, and sequence placeholders to remove dispatcher fallbacks (`crates/pgls_pretty_print/src/nodes/collate_expr.rs:1`, `crates/pgls_pretty_print/src/nodes/subscripting_ref.rs:1`, `crates/pgls_pretty_print/src/nodes/next_value_expr.rs:1`, `crates/pgls_pretty_print/src/nodes/mod.rs:500`).
+
+**Learnings**:
+- `IntoClause::relpersistence` uses `'t'`/`'u'` for TEMP/UNLOGGED, and ON COMMIT arrives as an enum that must be mapped to keyword sequences.
+- Planner `SubscriptingRef` signals slice syntax through `reflowerindexpr`; emit a colon whenever that vector contains an entry to preserve `[:]` forms.
+
+**Next Steps**:
+- Continue wiring planner-only emitters for `TableFunc`, `OnConflictExpr`, `Query`, and `MergeAction` to shrink the dispatcher `todo!` set.
+- Capture fixtures that exercise SELECT INTO reloptions and ON COMMIT clauses to validate the new formatting.
+---
+
+---
+**Date**: 2025-10-31 (Session 75)
+**Nodes Implemented/Fixed**: `ArrayExpr`, `CaseTestExpr`, `Param`, `RangeTblRef`, `TargetEntry`, `Var`
+**Progress**: 195/270 → 201/270
+**Tests**: `cargo check -p pgls_pretty_print`
+**Key Changes**:
+- Added fallback emitters for planner jointree nodes (`Var`, `Param`, `RangeTblRef`, `TargetEntry`) so the dispatcher no longer hits the generic `todo!` for those variants (`crates/pgls_pretty_print/src/nodes/var.rs`, `param.rs`, `range_tbl_ref.rs`, `target_entry.rs`).
+- Implemented `emit_array_expr` to format planner array expressions using the same ARRAY[...] flow as parser-side literals (`crates/pgls_pretty_print/src/nodes/array_expr.rs`).
+- Introduced a minimal `CaseTestExpr` placeholder emitter to keep CASE planner rewrites from crashing formatter traversal (`crates/pgls_pretty_print/src/nodes/case_test_expr.rs`).
+
+**Learnings**:
+- Planner placeholders should stick to the existing `identifier#metadata` convention so future lookup logic can swap them out consistently.
+
+**Next Steps**:
+- Confirm whether the new planner placeholders survive a parse/format/parse loop or need forced quoting to satisfy the parser.
+- Continue chipping away at the remaining NodeEnum gaps (AlterTypeStmt, CollateExpr, IntoClause, etc.).
+---
+
+---
+**Date**: 2025-10-31 (Session 74)
+**Nodes Implemented/Fixed**: `FromExpr`
+**Progress**: 194/270 → 195/270
+**Tests**: `cargo test -p pgls_pretty_print test_single__long_select_0_60 -- --show-output` (fails snapshot; formatting change is expected)
+**Key Changes**:
+- Added `emit_from_expr` so planner jointrees format their FROM items and qualifiers with shared helpers (`crates/pgls_pretty_print/src/nodes/from_expr.rs:10`).
+- Registered the new emitter module and dispatch arm to avoid the generic `todo!` panic for `FromExpr` nodes (`crates/pgls_pretty_print/src/nodes/mod.rs:127`, `crates/pgls_pretty_print/src/nodes/mod.rs:672`).
+
+**Learnings**:
+- Keep `FromExpr` focused on iterating children and delegating clause indentation to `emit_clause_condition`; surrounding statements must supply the `FROM` keyword and indentation context.
+
+**Next Steps**:
+- Design a fallback strategy for planner-only join tree nodes like `RangeTblRef`/`Query` so we can emit something reparsable when they appear.
+- Audit remaining planner nodes (`Var`, `TargetEntry`, etc.) and add minimal emitters before they surface in snapshots.
+---
+
+---
+**Date**: 2025-10-31 (Session 73)
+**Nodes Implemented/Fixed**: `IndexElem`, `AlterTableCmd`, `RenameStmt`, `TableLikeClause`, `CreateStmt` line wrapping
+**Progress**: 194/270 → 194/270
+**Tests**: 199 passed; 248 failed (was 200 passed; 247 failed)
+**Key Changes**:
+- Fixed `IndexElem` to wrap expressions in parentheses—PostgreSQL requires `(d + e)` not `d + e` in index definitions (`crates/pgls_pretty_print/src/nodes/index_elem.rs:14`).
+- Fixed `AlterTableCmd::AtSetStatistics` to emit column numbers for index columns (`ALTER COLUMN 1` instead of just `ALTER COLUMN`) (`crates/pgls_pretty_print/src/nodes/alter_table_stmt.rs:350`).
+- Fixed `RenameStmt` to use actual relation field to determine object type instead of trusting potentially incorrect `relation_type` field—handles `ALTER TABLE ... RENAME CONSTRAINT` correctly even when protobuf sets wrong relation_type (`crates/pgls_pretty_print/src/nodes/rename_stmt.rs:25`).
+- Added `SoftOrSpace` break before "TO" in rename statements to allow long constraint names to wrap (`crates/pgls_pretty_print/src/nodes/rename_stmt.rs:286`).
+- Implemented `TableLikeClause` options bitmap parsing to emit `INCLUDING ALL`, `INCLUDING COMMENTS`, etc. (`crates/pgls_pretty_print/src/nodes/table_like_clause.rs:23`).
+- Added `SoftOrSpace` break before `INHERITS` clause in CREATE TABLE to allow wrapping (`crates/pgls_pretty_print/src/nodes/create_stmt.rs:150`).
+
+**Learnings**:
+- PostgreSQL parser sometimes sets unexpected values in protobuf fields (e.g., `relation_type: ObjectAccessMethod` for table constraints); always validate against actual data fields like `relation` when available.
+- Index expressions must always be wrapped in parentheses regardless of their complexity; the parser requires this syntax.
+- Column references in index-related ALTER commands use `num` field for numeric positions, not `name` field.
+- The `CREATE_TABLE_LIKE_ALL` bitmap value is `0x7FFFFFFF` (all 31 bits set), representing `INCLUDING ALL` shorthand.
+- Many emitters still need line breaking improvements—this is ongoing work as tests reveal line length violations.
+
+**Next Steps**:
+- Continue adding `SoftOrSpace` breaks throughout emitters to fix remaining line length violations.
+- Review snapshot diffs for altered formatting and accept valid changes.
+- Focus on getting more multi-statement tests passing by fixing remaining formatting issues.
+---
+
+---
+**Date**: 2025-11-05 (Session 72)
+**Nodes Implemented/Fixed**: `partition_cmd`, partition DDL line-wrapping, trigger referencing emission, multi-assign ROW fallback
+**Progress**: 193/270 → 194/270
+**Tests**: `cargo test -p pgls_pretty_print test_multi__insert_conflict_60 -- --show-output`
+**Key Changes**:
+- Added `emit_partition_cmd` with SoftOrSpace breaks and registered the node so ATTACH/DETACH PARTITION no longer fall through (`crates/pgls_pretty_print/src/nodes/partition_cmd.rs`, `crates/pgls_pretty_print/src/nodes/mod.rs#L360`).
+- Broke long partition DDL across clauses and allowed SELECT-style wrapping via SoftOrSpace in `create_stmt`, `partition_spec`, and `alter_table_stmt` (e.g. `crates/pgls_pretty_print/src/nodes/create_stmt.rs#L43`).
+- Taught `emit_range_var` to surface `ONLY` and ensured `CreateTrigStmt` emits timing/reference clauses with correct bitmask handling (`crates/pgls_pretty_print/src/nodes/range_var.rs#L9`, `crates/pgls_pretty_print/src/nodes/create_trig_stmt.rs#L17`).
+- Let `emit_multi_assign_clause` fall back to the source RowExpr when it carries a single `ROW(...)` argument so `(a, b, c) = ROW(excluded.*)` stays intact (`crates/pgls_pretty_print/src/nodes/res_target.rs#L77`).
+- Cleared `PartitionBoundSpec` locations in the test harness and refreshed the `insert_conflict_60` snapshot to lock in the new layout (`crates/pgls_pretty_print/tests/tests.rs#L319`, `crates/pgls_pretty_print/tests/snapshots/multi/tests__insert_conflict_60.snap`).
+
+**Learnings**:
+- Partition DDL needs breakpoints before `PARTITION OF`/`FOR VALUES`/`PARTITION BY` or the 60-column suite fails immediately; SoftOrSpace keeps single-line output for shorter names.
+- Trigger timing bits treat zero as AFTER—check INSTEAD first, then BEFORE, else leave it as AFTER to preserve `CreateTrigStmt::timing` on reparse.
+- MultiAssignRef clusters that resolve to a single `ROW(...)` argument should delegate to the RowExpr emitter; forcing tuple expansion breaks semantic parity.
+
+**Next Steps**:
+- Trim a focused partition attach/detach fixture so we don't rely on `insert_conflict_60` to guard these breakpoints.
+- Land a dedicated transaction `BEGIN` test that exercises isolation/read-only/deferrable modifiers to protect the new `TransactionStmt` formatting.
+---
+
+---
+**Date**: 2025-11-04 (Session 71)
+**Nodes Implemented/Fixed**: `transaction_stmt` options, `statement_splitter` BEGIN handling
+**Progress**: 193/270 → 193/270
+**Tests**: `cargo test -p pgls_statement_splitter`; `cargo test -p pgls_pretty_print test_single__update_multi_assign_0_60 -- --nocapture`; `cargo test -p pgls_pretty_print test_multi__update_multi_assign_60 -- --nocapture`; `cargo test -p pgls_pretty_print test_multi__insert_conflict_60 -- --show-output`
+**Key Changes**:
+- Added tuple-assignment fixtures to cover `MultiAssignRef` output (`crates/pgls_pretty_print/tests/data/single/update_multi_assign_0_60.sql`, `crates/pgls_pretty_print/tests/data/multi/update_multi_assign_60.sql`).
+- Taught the splitter to treat `BEGIN` with transaction modifiers as standalone statements so `insert_conflict_60` no longer stalls on `No root node found` (`crates/pgls_statement_splitter/src/splitter/common.rs:206`).
+- Reworked `emit_transaction_options` to output `ISOLATION LEVEL`, `READ ONLY/WRITE`, and `DEFERRABLE` syntax instead of raw GUC names (`crates/pgls_pretty_print/src/nodes/transaction_stmt.rs:9`).
+
+**Learnings**:
+- Transaction `DefElem` entries store isolation modes as strings and read/deferrable switches as booleans; mapping them to SQL keywords keeps reparse valid.
+- Treating `BEGIN` as a block unless the next token is a transaction keyword traps transactional DDL in the splitter; explicit guards fix the `No root node` panic without regressing PL/pgSQL blocks.
+
+**Next Steps**:
+- Introduce breakpoints in partition DDL emitters so `insert_conflict_60` respects the 60-column budget now that the harness reaches those statements.
+- Snapshot the new transaction option layout with a focused fixture to ensure future changes preserve the corrected surface syntax.
+---
+
+---
+**Date**: 2025-11-03 (Session 70)
+**Nodes Implemented/Fixed**: `multi_assign_ref`, `index_stmt` flags, `index_elem` collation order, `on_conflict_clause` wrapping, `constraint` exclusion ops, `emit_clause_condition`
+**Progress**: 192/270 → 193/270
+**Tests**: `cargo test -p pgls_pretty_print test_single__on_conflict_expr_0_60 -- --show-output`
+**Key Changes**:
+- Collapsed tuple assignments via `emit_set_clause_list` so `SET (a, b) = (...)` renders once per cluster (`crates/pgls_pretty_print/src/nodes/res_target.rs:41`).
+- Registered `MultiAssignRef` in the dispatcher with a defensive emitter to avoid fallback panics (`crates/pgls_pretty_print/src/nodes/mod.rs:518`, `crates/pgls_pretty_print/src/nodes/multi_assign_ref.rs:1`).
+- Taught `emit_clause_condition` and the ON CONFLICT path to break with `LineType::SoftOrSpace`, preventing 60-column overflow on long predicates (`crates/pgls_pretty_print/src/nodes/mod.rs:440`, `crates/pgls_pretty_print/src/nodes/on_conflict_clause.rs:10`).
+- Emitted full `CREATE [UNIQUE] INDEX` modifiers (UNIQUE, CONCURRENTLY, IF NOT EXISTS, NULLS NOT DISTINCT) with opclass/collation rendered in canonical order (`crates/pgls_pretty_print/src/nodes/index_stmt.rs:8`, `crates/pgls_pretty_print/src/nodes/index_elem.rs:18`).
+- Normalised exclusion constraints to print `WITH` operators without quoting symbolic names (`crates/pgls_pretty_print/src/nodes/constraint.rs:187`).
+- Cleared location fields for `OnConflictClause`/`InferClause` so AST equality no longer drifts on spacing tweaks (`crates/pgls_pretty_print/tests/tests.rs:382`).
+
+**Learnings**:
+- `MultiAssignRef` clusters reuse a shared `RowExpr`; format the tuple once using `ncolumns` and skip the trailing `ResTarget`s.
+- Let `emit_clause_condition` manage predicate wrapping; sprinkling manual spaces around `WHERE`/`HAVING` reintroduces 60-column violations.
+
+**Next Steps**:
+- Land slim fixtures that cover multi-column SET tuples and ON CONSTRAINT flows so the new layout is snapshot-protected.
+- Re-run a focused slice of `insert_conflict_60` to diagnose the lingering `No root node found` failures after the ON CONFLICT spacing changes.
+---
+
+---
+**Date**: 2025-11-02 (Session 69)
+**Nodes Implemented/Fixed**: `a_indices`, `a_indirection`, `do_stmt`, `a_expr` (ANY/ALL)
+**Progress**: 192/270 → 192/270
+**Tests**: `cargo test -p pgls_pretty_print test_multi__arrays_60 -- --show-output`
+**Key Changes**:
+- Guarded slice emission behind the protobuf `is_slice` flag so `col[1]` keeps its original shape while ranges still get a colon (`crates/pgls_pretty_print/src/nodes/a_indices.rs:13`).
+- Added parenthesis handling for subscripting non-trivial bases (casts, function calls, literals) to keep the formatter’s output parseable (`crates/pgls_pretty_print/src/nodes/a_indirection.rs:19`).
+- Forced `ANY`/`ALL` operands into parentheses to mirror Postgres syntax requirements and maintain AST parity (`crates/pgls_pretty_print/src/nodes/a_expr.rs:140`).
+- Emitted `DO` bodies before the optional `LANGUAGE` clause so re-parsed statements match the original def-element ordering (`crates/pgls_pretty_print/src/nodes/do_stmt.rs:56`).
+
+**Learnings**:
+- Single-index subscripts surface both bounds in the protobuf but only advertise slices through `is_slice`; emitting the colon unconditionally flips planner flags.
+- Subscripts on casts or special function calls fail to parse without explicit parentheses, even when the original SQL relied on implicit precedence.
+
+**Next Steps**:
+- Track down the remaining AST drift in `INSERT ... ON CONFLICT` fixtures where column subscripts inside conflict targets still reorder during formatting.
+- Iterate on `AIndirection` grouping to avoid redundant parens once a reliable set of “safe” base node kinds is established.
+---
+
+---
+**Date**: 2025-11-01 (Session 68)
+**Nodes Implemented/Fixed**: `rename_stmt`, `alter_owner_stmt`, `alter_object_schema_stmt`, new rename/owner fixtures
+**Progress**: 192/270 → 192/270
+**Tests**: `cargo test -p pgls_pretty_print test_single__rename_policy_0_80 -- --nocapture`; `cargo test -p pgls_pretty_print test_single__alter_owner_fdw_0_60 -- --nocapture`; `cargo test -p pgls_pretty_print test_single__rename_operator_class_0_80 -- --nocapture`; `cargo test -p pgls_pretty_print test_single__alter_owner_operator_family_0_80 -- --nocapture`
+**Key Changes**:
+- Replaced the rename dispatcher with typed enum handling and operator-family/class helpers (`crates/pgls_pretty_print/src/nodes/rename_stmt.rs:1-200`) so planner objects no longer fall back to `ALTER TABLE` and long statements can wrap via `LineType::SoftOrSpace`.
+- Tightened owner emission for non-table objects, including dot-separated names and optional `USING` clauses (`crates/pgls_pretty_print/src/nodes/alter_owner_stmt.rs:1-88`).
+- Extended schema moves to understand operator families/classes and share the same `USING` logic (`crates/pgls_pretty_print/src/nodes/alter_object_schema_stmt.rs:1-84`).
+- Allowed bare lowercase aliases in result targets by switching to `emit_identifier_maybe_quoted` (`crates/pgls_pretty_print/src/nodes/res_target.rs:1-70`).
+- Added focused fixtures plus snapshots covering policy/FDW/opfamily rename + owner scenarios and refreshed multi-suite baselines touched by the new formatting (`crates/pgls_pretty_print/tests/data/single/*rename_*.sql`, `tests/snapshots/**/*.snap`).
+
+**Learnings**:
+- `LineType::SoftOrSpace` should be preferred over manual `space()` when wrapping long rename/owner clauses; let the line event provide the whitespace to avoid double spaces.
+- Operator collections store the access method as the first list element; always peel that into a `USING` clause and pass the remainder through `emit_dot_separated_list`.
+
+**Next Steps**:
+- Sweep the full `cargo test -p pgls_pretty_print` multi-suite once more `LineType` breakpoints land, then prune redundant snapshot churn.
+- Audit remaining alter/rename emitters for other planner object types (e.g. casts, publications) to bring them in line with the new enum-driven dispatch.
+---
 
 ---
 **Date**: 2025-10-31 (Session 67)

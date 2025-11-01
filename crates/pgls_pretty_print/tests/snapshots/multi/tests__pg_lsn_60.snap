@@ -68,7 +68,7 @@ SELECT CAST('0/16AE7F7' AS PG_LSN) + CAST('NaN' AS NUMERIC);
 SELECT CAST('0/16AE7F7' AS PG_LSN) - CAST('NaN' AS NUMERIC);
 
 SELECT DISTINCT
-  CAST(i || '/' || j AS PG_LSN) AS "f"
+  CAST(i || '/' || j AS PG_LSN) AS f
 FROM
   generate_series(1,
   10) AS i,
@@ -85,7 +85,7 @@ WHERE i <=
 ORDER BY f;
 
 SELECT DISTINCT
-  CAST(i || '/' || j AS PG_LSN) AS "f"
+  CAST(i || '/' || j AS PG_LSN) AS f
 FROM
   generate_series(1,
   10) AS i,

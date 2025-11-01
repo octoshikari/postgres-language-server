@@ -35,32 +35,7 @@ pub(super) fn emit_publication_obj_spec(e: &mut EventEmitter, n: &PublicationObj
                 // Emit TABLE keyword for single table case
                 e.token(TokenKind::TABLE_KW);
                 e.space();
-
-                if let Some(ref relation) = pubtable.relation {
-                    super::emit_range_var(e, relation);
-                }
-
-                // Optional column list
-                if !pubtable.columns.is_empty() {
-                    e.space();
-                    e.token(TokenKind::L_PAREN);
-                    super::node_list::emit_comma_separated_list(
-                        e,
-                        &pubtable.columns,
-                        super::emit_node,
-                    );
-                    e.token(TokenKind::R_PAREN);
-                }
-
-                // Optional WHERE clause
-                if let Some(ref where_clause) = pubtable.where_clause {
-                    e.space();
-                    e.token(TokenKind::WHERE_KW);
-                    e.space();
-                    e.token(TokenKind::L_PAREN);
-                    super::emit_clause_condition(e, where_clause);
-                    e.token(TokenKind::R_PAREN);
-                }
+                super::emit_publication_table(e, pubtable);
             }
         }
     }

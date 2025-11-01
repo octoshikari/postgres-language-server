@@ -2,10 +2,7 @@ use pgls_query::protobuf::UpdateStmt;
 
 use crate::TokenKind;
 use crate::emitter::{EventEmitter, GroupKind, LineType};
-use crate::nodes::res_target::emit_set_clause;
-
-use super::node_list::emit_comma_separated_list;
-
+use crate::nodes::node_list::emit_comma_separated_list;
 pub(super) fn emit_update_stmt(e: &mut EventEmitter, n: &UpdateStmt) {
     emit_update_stmt_impl(e, n, true);
 }
@@ -33,9 +30,7 @@ fn emit_update_stmt_impl(e: &mut EventEmitter, n: &UpdateStmt, with_semicolon: b
         e.line(LineType::SoftOrSpace);
         e.token(TokenKind::SET_KW);
         e.space();
-        emit_comma_separated_list(e, &n.target_list, |n, e| {
-            emit_set_clause(e, assert_node_variant!(ResTarget, n))
-        });
+        super::res_target::emit_set_clause_list(e, &n.target_list);
     }
 
     if !n.from_clause.is_empty() {

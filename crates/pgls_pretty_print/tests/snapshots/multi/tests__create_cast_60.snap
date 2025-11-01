@@ -75,10 +75,10 @@ SELECT CAST(CAST(1234 AS INT) AS casttesttype);
 SELECT
   pg_describe_object(classid,
   objid,
-  objsubid) AS "obj",
+  objsubid) AS obj,
   pg_describe_object(refclassid,
   refobjid,
-  refobjsubid) AS "objref",
+  refobjsubid) AS objref,
   deptype
 FROM
   pg_depend

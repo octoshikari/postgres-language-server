@@ -102,25 +102,25 @@ COMMIT;
 
 BEGIN;
 
-SELECT txid_current() AS "committed";
+SELECT txid_current() AS committed;
 
 COMMIT;
 
 BEGIN;
 
-SELECT txid_current() AS "rolledback";
+SELECT txid_current() AS rolledback;
 
 ROLLBACK;
 
 BEGIN;
 
-SELECT txid_current() AS "inprogress";
+SELECT txid_current() AS inprogress;
 
-SELECT txid_status('committed') AS "committed";
+SELECT txid_status('committed') AS committed;
 
-SELECT txid_status('rolledback') AS "rolledback";
+SELECT txid_status('rolledback') AS rolledback;
 
-SELECT txid_status('inprogress') AS "inprogress";
+SELECT txid_status('inprogress') AS inprogress;
 
 SELECT txid_status(1);
 

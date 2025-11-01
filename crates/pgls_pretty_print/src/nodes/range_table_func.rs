@@ -34,42 +34,11 @@ pub(super) fn emit_range_table_func(e: &mut EventEmitter, n: &RangeTableFunc) {
         e.space();
         e.token(TokenKind::IDENT("COLUMNS".to_string()));
         e.space();
-        emit_comma_separated_list(e, &n.columns, |node, e| {
-            if let Some(NodeEnum::RangeTableFuncCol(col)) = &node.node {
-                e.token(TokenKind::IDENT(col.colname.clone()));
-
-                if col.for_ordinality {
-                    e.space();
-                    e.token(TokenKind::FOR_KW);
-                    e.space();
-                    e.token(TokenKind::IDENT("ORDINALITY".to_string()));
-                } else if let Some(ref type_name) = col.type_name {
-                    e.space();
-                    super::emit_type_name(e, type_name);
-
-                    // Column path expression
-                    if let Some(ref colexpr) = col.colexpr {
-                        e.space();
-                        e.token(TokenKind::IDENT("PATH".to_string()));
-                        e.space();
-                        super::emit_node(colexpr, e);
-                    }
-
-                    // Default expression
-                    if let Some(ref defexpr) = col.coldefexpr {
-                        e.space();
-                        e.token(TokenKind::DEFAULT_KW);
-                        e.space();
-                        super::emit_node(defexpr, e);
-                    }
-
-                    if col.is_not_null {
-                        e.space();
-                        e.token(TokenKind::NOT_KW);
-                        e.space();
-                        e.token(TokenKind::NULL_KW);
-                    }
-                }
+        emit_comma_separated_list(e, &n.columns, |node, emitter| {
+            if let Some(NodeEnum::RangeTableFuncCol(col)) = node.node.as_ref() {
+                super::range_table_func_col::emit_range_table_func_col(emitter, col);
+            } else {
+                super::emit_node(node, emitter);
             }
         });
     }

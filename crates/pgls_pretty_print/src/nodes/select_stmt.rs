@@ -101,12 +101,8 @@ fn emit_select_stmt_impl(e: &mut EventEmitter, n: &SelectStmt, with_semicolon: b
 
         // Emit INTO clause if present (SELECT ... INTO table_name)
         if let Some(ref into_clause) = n.into_clause {
-            e.space();
-            e.token(TokenKind::INTO_KW);
-            e.space();
-            if let Some(ref rel) = into_clause.rel {
-                super::emit_range_var(e, rel);
-            }
+            e.line(LineType::SoftOrSpace);
+            super::emit_into_clause(e, into_clause);
         }
 
         if !n.from_clause.is_empty() {

@@ -27,7 +27,7 @@ INSERT INTO box_tbl (f1) VALUES ('asdfasdf(ad');
 
 SELECT * FROM box_tbl;
 
-SELECT b.*, area(b.f1) AS "barea" FROM box_tbl AS b;
+SELECT b.*, area(b.f1) AS barea FROM box_tbl AS b;
 
 SELECT
   b.f1
@@ -112,7 +112,7 @@ FROM
   box_tbl AS b
 WHERE CAST('(1,1,3,3)' AS box) ~= b.f1;
 
-SELECT @@b1.f1 AS "p" FROM box_tbl AS b1;
+SELECT @@b1.f1 AS p FROM box_tbl AS b1;
 
 SELECT
   b1.*,
@@ -256,8 +256,8 @@ CREATE TABLE quad_box_tbl_ord_seq1 AS
   SELECT
     RANK()
     OVER (
-    ORDER BY b <-> CAST('123,456' AS point)) AS "n",
-    b <-> CAST('123,456' AS point) AS "dist",
+    ORDER BY b <-> CAST('123,456' AS point)) AS n,
+    b <-> CAST('123,456' AS point) AS dist,
     id
   FROM
     quad_box_tbl;
@@ -266,8 +266,8 @@ CREATE TABLE quad_box_tbl_ord_seq2 AS
   SELECT
     RANK()
     OVER (
-    ORDER BY b <-> CAST('123,456' AS point)) AS "n",
-    b <-> CAST('123,456' AS point) AS "dist",
+    ORDER BY b <-> CAST('123,456' AS point)) AS n,
+    b <-> CAST('123,456' AS point) AS dist,
     id
   FROM
     quad_box_tbl
@@ -364,8 +364,8 @@ SET enable_bitmapscan = off;
 SELECT
   RANK()
   OVER (
-  ORDER BY b <-> CAST('123,456' AS point)) AS "n",
-  b <-> CAST('123,456' AS point) AS "dist",
+  ORDER BY b <-> CAST('123,456' AS point)) AS n,
+  b <-> CAST('123,456' AS point) AS dist,
   id
 FROM
   quad_box_tbl;
@@ -374,8 +374,8 @@ CREATE TEMPORARY TABLE quad_box_tbl_ord_idx1 AS
   SELECT
     RANK()
     OVER (
-    ORDER BY b <-> CAST('123,456' AS point)) AS "n",
-    b <-> CAST('123,456' AS point) AS "dist",
+    ORDER BY b <-> CAST('123,456' AS point)) AS n,
+    b <-> CAST('123,456' AS point) AS dist,
     id
   FROM
     quad_box_tbl;
@@ -399,8 +399,8 @@ WHERE seq.id IS NULL OR
 SELECT
   RANK()
   OVER (
-  ORDER BY b <-> CAST('123,456' AS point)) AS "n",
-  b <-> CAST('123,456' AS point) AS "dist",
+  ORDER BY b <-> CAST('123,456' AS point)) AS n,
+  b <-> CAST('123,456' AS point) AS dist,
   id
 FROM
   quad_box_tbl
@@ -410,8 +410,8 @@ CREATE TEMPORARY TABLE quad_box_tbl_ord_idx2 AS
   SELECT
     RANK()
     OVER (
-    ORDER BY b <-> CAST('123,456' AS point)) AS "n",
-    b <-> CAST('123,456' AS point) AS "dist",
+    ORDER BY b <-> CAST('123,456' AS point)) AS n,
+    b <-> CAST('123,456' AS point) AS dist,
     id
   FROM
     quad_box_tbl

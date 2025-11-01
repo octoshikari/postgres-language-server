@@ -111,7 +111,7 @@ SELECT f.* FROM float4_tbl AS f WHERE f.f1 <= '1004.3';
 
 SELECT
   f.f1,
-  f.f1 * '-10' AS "x"
+  f.f1 * '-10' AS x
 FROM
   float4_tbl AS f
 WHERE f.f1 >
@@ -119,7 +119,7 @@ WHERE f.f1 >
 
 SELECT
   f.f1,
-  f.f1 + '-10' AS "x"
+  f.f1 + '-10' AS x
 FROM
   float4_tbl AS f
 WHERE f.f1 >
@@ -127,7 +127,7 @@ WHERE f.f1 >
 
 SELECT
   f.f1,
-  f.f1 / '-10' AS "x"
+  f.f1 / '-10' AS x
 FROM
   float4_tbl AS f
 WHERE f.f1 >
@@ -135,7 +135,7 @@ WHERE f.f1 >
 
 SELECT
   f.f1,
-  f.f1 - '-10' AS "x"
+  f.f1 - '-10' AS x
 FROM
   float4_tbl AS f
 WHERE f.f1 >
@@ -145,7 +145,7 @@ SELECT f.f1 / '0.0' FROM float4_tbl AS f;
 
 SELECT * FROM float4_tbl;
 
-SELECT f.f1, @f.f1 AS "abs_f1" FROM float4_tbl AS f;
+SELECT f.f1, @f.f1 AS abs_f1 FROM float4_tbl AS f;
 
 UPDATE float4_tbl
 SET f1 = float4_tbl.f1 * '-1'
@@ -260,11 +260,11 @@ WITH testdata (bits) AS (VALUES (X'00000001'),
 (X'007ffffe'),
 (X'007fffff'))
 SELECT
-  float4send(flt) AS "ibits",
+  float4send(flt) AS ibits,
   flt
 FROM
   (SELECT
-    CAST(CAST(CAST(bits AS INT) AS xfloat4) AS REAL) AS "flt"
+    CAST(CAST(CAST(bits AS INT) AS xfloat4) AS REAL) AS flt
   FROM
     testdata
   OFFSET 0) AS s;
@@ -531,15 +531,15 @@ WITH testdata (bits) AS (VALUES (X'00000000'),
 (X'3f9e0651'),
 (X'03d20cfe'))
 SELECT
-  float4send(flt) AS "ibits",
+  float4send(flt) AS ibits,
   flt,
-  CAST(CAST(flt AS TEXT) AS REAL) AS "r_flt",
-  float4send(CAST(CAST(flt AS TEXT) AS REAL)) AS "obits",
+  CAST(CAST(flt AS TEXT) AS REAL) AS r_flt,
+  float4send(CAST(CAST(flt AS TEXT) AS REAL)) AS obits,
   float4send(CAST(CAST(flt AS TEXT) AS REAL)) =
-  float4send(flt) AS "correct"
+  float4send(flt) AS correct
 FROM
   (SELECT
-    CAST(CAST(CAST(bits AS INT) AS xfloat4) AS REAL) AS "flt"
+    CAST(CAST(CAST(bits AS INT) AS xfloat4) AS REAL) AS flt
   FROM
     testdata
   OFFSET 0) AS s;

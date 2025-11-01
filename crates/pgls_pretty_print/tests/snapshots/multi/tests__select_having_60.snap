@@ -96,14 +96,14 @@ HAVING MIN(a) <
 
 SELECT a FROM test_having HAVING MIN(a) < MAX(a);
 
-SELECT 1 AS "one" FROM test_having HAVING a > 1;
+SELECT 1 AS one FROM test_having HAVING a > 1;
 
-SELECT 1 AS "one" FROM test_having HAVING 1 > 2;
+SELECT 1 AS one FROM test_having HAVING 1 > 2;
 
-SELECT 1 AS "one" FROM test_having HAVING 1 < 2;
+SELECT 1 AS one FROM test_having HAVING 1 < 2;
 
 SELECT
-  1 AS "one"
+  1 AS one
 FROM
   test_having
 WHERE 1 / a =

@@ -1,5 +1,7 @@
 use crate::TokenKind;
-use crate::emitter::{EventEmitter, GroupKind};
+use crate::emitter::{EventEmitter, GroupKind, LineType};
+
+use super::node_list::emit_dot_separated_list;
 use pgls_query::protobuf::{AlterObjectSchemaStmt, ObjectType};
 
 pub(super) fn emit_alter_object_schema_stmt(e: &mut EventEmitter, n: &AlterObjectSchemaStmt) {
@@ -15,6 +17,8 @@ pub(super) fn emit_alter_object_schema_stmt(e: &mut EventEmitter, n: &AlterObjec
         ObjectType::ObjectView => "VIEW",
         ObjectType::ObjectMatview => "MATERIALIZED VIEW",
         ObjectType::ObjectIndex => "INDEX",
+        ObjectType::ObjectOpclass => "OPERATOR CLASS",
+        ObjectType::ObjectOpfamily => "OPERATOR FAMILY",
         ObjectType::ObjectForeignTable => "FOREIGN TABLE",
         ObjectType::ObjectCollation => "COLLATION",
         ObjectType::ObjectConversion => "CONVERSION",
@@ -45,12 +49,17 @@ pub(super) fn emit_alter_object_schema_stmt(e: &mut EventEmitter, n: &AlterObjec
     if let Some(ref relation) = n.relation {
         super::emit_range_var(e, relation);
     } else if let Some(ref object) = n.object {
-        super::emit_node(object, e);
+        match n.object_type() {
+            ObjectType::ObjectOpclass | ObjectType::ObjectOpfamily => {
+                emit_operator_collection_object(e, object)
+            }
+            _ => super::emit_node(object, e),
+        }
     }
 
     // Emit new schema
     if !n.newschema.is_empty() {
-        e.space();
+        e.line(LineType::SoftOrSpace);
         e.token(TokenKind::SET_KW);
         e.space();
         e.token(TokenKind::IDENT("SCHEMA".to_string()));
@@ -61,4 +70,20 @@ pub(super) fn emit_alter_object_schema_stmt(e: &mut EventEmitter, n: &AlterObjec
     e.token(TokenKind::SEMICOLON);
 
     e.group_end();
+}
+
+fn emit_operator_collection_object(e: &mut EventEmitter, object: &pgls_query::Node) {
+    if let Some(pgls_query::NodeEnum::List(list)) = &object.node {
+        if list.items.len() >= 2 {
+            let (method_node, name_nodes) = list.items.split_first().unwrap();
+            emit_dot_separated_list(e, name_nodes);
+            e.space();
+            e.token(TokenKind::USING_KW);
+            e.space();
+            super::emit_node(method_node, e);
+            return;
+        }
+    }
+
+    super::emit_node(object, e);
 }

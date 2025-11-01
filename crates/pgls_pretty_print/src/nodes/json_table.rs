@@ -10,6 +10,7 @@ use pgls_query::{
         JsonTableColumnType, JsonTablePathSpec, JsonWrapper, TypeName,
     },
 };
+use std::convert::TryFrom;
 
 pub(super) fn emit_json_table(e: &mut EventEmitter, n: &JsonTable) {
     e.group_start(GroupKind::JsonTable);
@@ -80,7 +81,9 @@ pub(super) fn emit_json_table(e: &mut EventEmitter, n: &JsonTable) {
     e.group_end();
 }
 
-fn emit_json_table_path_spec(e: &mut EventEmitter, spec: &JsonTablePathSpec) {
+pub(super) fn emit_json_table_path_spec(e: &mut EventEmitter, spec: &JsonTablePathSpec) {
+    e.group_start(GroupKind::JsonTablePathSpec);
+
     if let Some(string_node) = spec.string.as_ref() {
         super::emit_node(string_node, e);
     }
@@ -91,9 +94,11 @@ fn emit_json_table_path_spec(e: &mut EventEmitter, spec: &JsonTablePathSpec) {
         e.space();
         super::emit_identifier_maybe_quoted(e, &spec.name);
     }
+
+    e.group_end();
 }
 
-fn emit_json_table_column(e: &mut EventEmitter, col: &JsonTableColumn) {
+pub(super) fn emit_json_table_column(e: &mut EventEmitter, col: &JsonTableColumn) {
     e.group_start(GroupKind::JsonTableColumn);
 
     match col.coltype() {
@@ -255,7 +260,9 @@ fn emit_inline_type_name(e: &mut EventEmitter, type_name: &TypeName) -> bool {
     true
 }
 
-fn emit_json_argument(e: &mut EventEmitter, argument: &JsonArgument) {
+pub(super) fn emit_json_argument(e: &mut EventEmitter, argument: &JsonArgument) {
+    e.group_start(GroupKind::JsonArgument);
+
     if let Some(value) = argument.val.as_ref() {
         super::emit_json_value_expr(e, value);
     }
@@ -266,10 +273,14 @@ fn emit_json_argument(e: &mut EventEmitter, argument: &JsonArgument) {
         e.space();
         super::emit_identifier_maybe_quoted(e, &argument.name);
     }
+
+    e.group_end();
 }
 
-fn emit_json_behavior(e: &mut EventEmitter, behavior: &JsonBehavior) {
-    match behavior.btype() {
+pub(super) fn emit_json_behavior(e: &mut EventEmitter, behavior: &JsonBehavior) {
+    e.group_start(GroupKind::JsonBehavior);
+
+    match JsonBehaviorType::try_from(behavior.btype).unwrap_or(JsonBehaviorType::Undefined) {
         JsonBehaviorType::JsonBehaviorNull => e.token(TokenKind::NULL_KW),
         JsonBehaviorType::JsonBehaviorError => e.token(TokenKind::IDENT("ERROR".to_string())),
         JsonBehaviorType::JsonBehaviorEmpty => e.token(TokenKind::IDENT("EMPTY".to_string())),
@@ -299,6 +310,13 @@ fn emit_json_behavior(e: &mut EventEmitter, behavior: &JsonBehavior) {
             debug_assert!(false, "Undefined JSON behavior encountered");
         }
     }
+
+    if behavior.coerce {
+        e.space();
+        super::emit_identifier_maybe_quoted(e, "coerce");
+    }
+
+    e.group_end();
 }
 
 enum JsonBehaviorClause {

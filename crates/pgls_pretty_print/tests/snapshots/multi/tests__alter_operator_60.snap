@@ -28,7 +28,7 @@ MERGES);
 SELECT
   pg_describe_object(refclassid,
   refobjid,
-  refobjsubid) AS "ref",
+  refobjsubid) AS ref,
   deptype
 FROM
   pg_depend
@@ -57,7 +57,7 @@ WHERE oprname =
 SELECT
   pg_describe_object(refclassid,
   refobjid,
-  refobjsubid) AS "ref",
+  refobjsubid) AS ref,
   deptype
 FROM
   pg_depend
@@ -88,7 +88,7 @@ WHERE oprname =
 SELECT
   pg_describe_object(refclassid,
   refobjid,
-  refobjsubid) AS "ref",
+  refobjsubid) AS ref,
   deptype
 FROM
   pg_depend
@@ -117,7 +117,7 @@ WHERE oprname =
 SELECT
   pg_describe_object(refclassid,
   refobjid,
-  refobjsubid) AS "ref",
+  refobjsubid) AS ref,
   deptype
 FROM
   pg_depend
@@ -146,7 +146,7 @@ WHERE oprname =
 SELECT
   pg_describe_object(refclassid,
   refobjid,
-  refobjsubid) AS "ref",
+  refobjsubid) AS ref,
   deptype
 FROM
   pg_depend
@@ -219,9 +219,9 @@ WHERE oprname =
 ALTER OPERATOR === (BOOLEAN, REAL) SET (commutator = ====);
 
 SELECT
-  op.oprname AS "operator_name",
-  com.oprname AS "commutator_name",
-  com.oprcode AS "commutator_func"
+  op.oprname AS operator_name,
+  com.oprname AS commutator_name,
+  com.oprcode AS commutator_func
 FROM
   pg_operator AS op
   INNER JOIN pg_operator AS com
@@ -241,9 +241,9 @@ ALTER OPERATOR === (BOOLEAN, REAL) SET (negator = ===);
 ALTER OPERATOR === (BOOLEAN, REAL) SET (negator = !====);
 
 SELECT
-  op.oprname AS "operator_name",
-  neg.oprname AS "negator_name",
-  neg.oprcode AS "negator_func"
+  op.oprname AS operator_name,
+  neg.oprname AS negator_name,
+  neg.oprcode AS negator_func
 FROM
   pg_operator AS op
   INNER JOIN pg_operator AS neg
@@ -271,10 +271,10 @@ SELECT
   oprcanhash,
   pg_describe_object(CAST('pg_operator' AS REGCLASS),
   oprcom,
-  0) AS "commutator",
+  0) AS commutator,
   pg_describe_object(CAST('pg_operator' AS REGCLASS),
   oprnegate,
-  0) AS "negator"
+  0) AS negator
 FROM
   pg_operator
 WHERE oprname =
@@ -309,10 +309,10 @@ SELECT
   oprcanhash,
   pg_describe_object(CAST('pg_operator' AS REGCLASS),
   oprcom,
-  0) AS "commutator",
+  0) AS commutator,
   pg_describe_object(CAST('pg_operator' AS REGCLASS),
   oprnegate,
-  0) AS "negator"
+  0) AS negator
 FROM
   pg_operator
 WHERE oprname =

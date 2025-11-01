@@ -53,16 +53,16 @@ pub(super) fn emit_do_stmt(e: &mut EventEmitter, n: &DoStmt) {
         }
     }
 
+    if let Some(code) = body {
+        e.space();
+        emit_dollar_quoted_str(e, &code);
+    }
+
     if let Some(lang) = language {
         e.space();
         emit_keyword(e, "LANGUAGE");
         e.space();
         emit_identifier_maybe_quoted(e, &lang);
-    }
-
-    if let Some(code) = body {
-        e.space();
-        emit_dollar_quoted_str(e, &code);
     }
 
     e.token(TokenKind::SEMICOLON);

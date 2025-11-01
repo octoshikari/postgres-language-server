@@ -15,8 +15,6 @@ pub(super) fn emit_json_array_constructor(e: &mut EventEmitter, n: &JsonArrayCon
     e.token(TokenKind::IDENT("JSON_ARRAY".to_string()));
     e.token(TokenKind::L_PAREN);
 
-    let mut has_content = false;
-
     if !n.exprs.is_empty() {
         super::node_list::emit_comma_separated_list(e, &n.exprs, |node, emitter| {
             if let Some(pgls_query::NodeEnum::JsonValueExpr(value)) = node.node.as_ref() {
@@ -25,23 +23,19 @@ pub(super) fn emit_json_array_constructor(e: &mut EventEmitter, n: &JsonArrayCon
                 super::emit_node(node, emitter);
             }
         });
-        has_content = true;
     }
 
     if n.absent_on_null && !n.exprs.is_empty() {
-        if has_content {
-            e.space();
-        }
         e.token(TokenKind::ABSENT_KW);
         e.space();
         e.token(TokenKind::ON_KW);
         e.space();
         e.token(TokenKind::NULL_KW);
-        has_content = true;
     }
 
     if let Some(ref output) = n.output {
-        emit_json_output(e, output, &mut has_content);
+        let mut guard = !n.exprs.is_empty();
+        emit_json_output(e, output, &mut guard);
     }
 
     e.token(TokenKind::R_PAREN);
@@ -95,16 +89,13 @@ pub(super) fn emit_json_array_agg(e: &mut EventEmitter, n: &JsonArrayAgg) {
     e.token(TokenKind::IDENT("JSON_ARRAYAGG".to_string()));
     e.token(TokenKind::L_PAREN);
 
-    let mut has_content = false;
-
     if let Some(ref arg) = n.arg {
         emit_json_value_expr(e, arg);
-        has_content = true;
     }
 
     if let Some(ref constructor) = n.constructor {
         if !constructor.agg_order.is_empty() {
-            if has_content {
+            if n.arg.is_some() {
                 e.space();
             }
             e.token(TokenKind::ORDER_KW);
@@ -116,7 +107,6 @@ pub(super) fn emit_json_array_agg(e: &mut EventEmitter, n: &JsonArrayAgg) {
                 &constructor.agg_order,
                 super::emit_node,
             );
-            has_content = true;
         }
     }
 

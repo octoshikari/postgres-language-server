@@ -50,7 +50,7 @@ pub(super) fn emit_create_stmt(e: &mut EventEmitter, n: &CreateStmt) {
 
     if is_partition_table {
         // PARTITION OF parent
-        e.space();
+        e.line(LineType::SoftOrSpace);
         e.token(TokenKind::PARTITION_KW);
         e.space();
         e.token(TokenKind::OF_KW);
@@ -63,7 +63,7 @@ pub(super) fn emit_create_stmt(e: &mut EventEmitter, n: &CreateStmt) {
         // Add constraints for partition tables
         let has_content = !n.table_elts.is_empty() || !n.constraints.is_empty();
         if has_content {
-            e.space();
+            e.line(LineType::SoftOrSpace);
             e.token(TokenKind::L_PAREN);
             e.indent_start();
             e.line(LineType::SoftOrSpace);
@@ -93,13 +93,13 @@ pub(super) fn emit_create_stmt(e: &mut EventEmitter, n: &CreateStmt) {
 
         // Add FOR VALUES clause
         if let Some(ref partbound) = n.partbound {
-            e.space();
+            e.line(LineType::SoftOrSpace);
             super::emit_partition_bound_spec(e, partbound);
         }
 
         // Add PARTITION BY for sub-partitioned tables
         if let Some(ref partspec) = n.partspec {
-            e.space();
+            e.line(LineType::SoftOrSpace);
             super::emit_partition_spec(e, partspec);
         }
     } else if is_typed_table {
@@ -147,7 +147,7 @@ pub(super) fn emit_create_stmt(e: &mut EventEmitter, n: &CreateStmt) {
 
         // Add INHERITS clause for regular inheritance
         if !n.inh_relations.is_empty() && !is_partition_table {
-            e.space();
+            e.line(LineType::SoftOrSpace);
             e.token(TokenKind::INHERITS_KW);
             e.space();
             e.token(TokenKind::L_PAREN);
@@ -157,7 +157,7 @@ pub(super) fn emit_create_stmt(e: &mut EventEmitter, n: &CreateStmt) {
 
         // Add PARTITION BY clause for regular partitioned tables
         if let Some(ref partspec) = n.partspec {
-            e.space();
+            e.line(LineType::SoftOrSpace);
             super::emit_partition_spec(e, partspec);
         }
     }

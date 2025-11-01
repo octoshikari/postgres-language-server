@@ -35,20 +35,20 @@ INSERT INTO circle_tbl VALUES ('(3,(1,2),3)');
 
 SELECT * FROM circle_tbl;
 
-SELECT center(f1) AS "center" FROM circle_tbl;
+SELECT center(f1) AS center FROM circle_tbl;
 
-SELECT radius(f1) AS "radius" FROM circle_tbl;
+SELECT radius(f1) AS radius FROM circle_tbl;
 
-SELECT diameter(f1) AS "diameter" FROM circle_tbl;
+SELECT diameter(f1) AS diameter FROM circle_tbl;
 
 SELECT f1 FROM circle_tbl WHERE radius(f1) < 5;
 
 SELECT f1 FROM circle_tbl WHERE diameter(f1) >= 10;
 
 SELECT
-  c1.f1 AS "one",
-  c2.f1 AS "two",
-  c1.f1 <-> c2.f1 AS "distance"
+  c1.f1 AS one,
+  c2.f1 AS two,
+  c1.f1 <-> c2.f1 AS distance
 FROM
   circle_tbl AS c1,
   circle_tbl AS c2

@@ -2,9 +2,9 @@ use crate::{
     TokenKind,
     emitter::{EventEmitter, GroupKind, LineType},
 };
-use pgls_query::protobuf::{CmdType, MergeMatchKind, MergeStmt, MergeWhenClause};
+use pgls_query::protobuf::MergeStmt;
 
-use super::emit_node;
+use super::{emit_node, merge_action::emit_merge_when_clause};
 
 pub(super) fn emit_merge_stmt(e: &mut EventEmitter, n: &MergeStmt) {
     emit_merge_stmt_impl(e, n, true);
@@ -65,116 +65,6 @@ fn emit_merge_stmt_impl(e: &mut EventEmitter, n: &MergeStmt, with_semicolon: boo
 
     if with_semicolon {
         e.token(TokenKind::SEMICOLON);
-    }
-
-    e.group_end();
-}
-
-fn emit_merge_when_clause(e: &mut EventEmitter, clause: &MergeWhenClause) {
-    e.group_start(GroupKind::MergeWhenClause);
-
-    e.token(TokenKind::WHEN_KW);
-    e.space();
-
-    match clause.match_kind() {
-        MergeMatchKind::MergeWhenMatched => {
-            e.token(TokenKind::MATCHED_KW);
-        }
-        MergeMatchKind::MergeWhenNotMatchedBySource => {
-            e.token(TokenKind::NOT_KW);
-            e.space();
-            e.token(TokenKind::MATCHED_KW);
-            e.space();
-            e.token(TokenKind::BY_KW);
-            e.space();
-            e.token(TokenKind::IDENT("SOURCE".to_string()));
-        }
-        MergeMatchKind::MergeWhenNotMatchedByTarget => {
-            e.token(TokenKind::NOT_KW);
-            e.space();
-            e.token(TokenKind::MATCHED_KW);
-            if clause.condition.is_none() {
-                e.space();
-                e.token(TokenKind::BY_KW);
-                e.space();
-                e.token(TokenKind::IDENT("TARGET".to_string()));
-            }
-        }
-        _ => {}
-    }
-
-    // AND condition
-    if let Some(ref cond) = clause.condition {
-        e.space();
-        e.token(TokenKind::AND_KW);
-        e.space();
-        emit_node(cond, e);
-    }
-
-    e.space();
-    e.token(TokenKind::THEN_KW);
-    e.space();
-
-    // Command (UPDATE, INSERT, DELETE, or DO NOTHING)
-    match clause.command_type() {
-        CmdType::CmdUpdate => {
-            e.token(TokenKind::UPDATE_KW);
-            e.space();
-            e.token(TokenKind::SET_KW);
-            e.space();
-            // Emit SET clauses
-            super::node_list::emit_comma_separated_list(e, &clause.target_list, |node, e| {
-                let res_target = assert_node_variant!(ResTarget, node);
-                super::res_target::emit_set_clause(e, res_target);
-            });
-        }
-        CmdType::CmdInsert => {
-            e.token(TokenKind::INSERT_KW);
-
-            // Column list (if target_list is not empty)
-            if !clause.target_list.is_empty() {
-                e.space();
-                e.token(TokenKind::L_PAREN);
-                super::node_list::emit_comma_separated_list(e, &clause.target_list, |node, e| {
-                    let res_target = assert_node_variant!(ResTarget, node);
-                    // Just emit the column name for INSERT column list
-                    if !res_target.name.is_empty() {
-                        e.token(TokenKind::IDENT(res_target.name.clone()));
-                    }
-                });
-                e.token(TokenKind::R_PAREN);
-            }
-
-            // VALUES clause
-            if !clause.values.is_empty() {
-                e.space();
-                e.token(TokenKind::VALUES_KW);
-                e.space();
-                e.token(TokenKind::L_PAREN);
-                super::node_list::emit_comma_separated_list(e, &clause.values, super::emit_node);
-                e.token(TokenKind::R_PAREN);
-            } else {
-                // DEFAULT VALUES
-                e.space();
-                e.token(TokenKind::DEFAULT_KW);
-                e.space();
-                e.token(TokenKind::VALUES_KW);
-            }
-        }
-        CmdType::CmdDelete => {
-            e.token(TokenKind::DELETE_KW);
-        }
-        CmdType::Undefined | CmdType::CmdUnknown => {
-            // DO NOTHING
-            e.token(TokenKind::DO_KW);
-            e.space();
-            e.token(TokenKind::IDENT("NOTHING".to_string()));
-        }
-        _ => {
-            e.token(TokenKind::DO_KW);
-            e.space();
-            e.token(TokenKind::IDENT("NOTHING".to_string()));
-        }
     }
 
     e.group_end();

@@ -1,7 +1,29 @@
-use crate::{TokenKind, emitter::EventEmitter};
+use crate::{
+    TokenKind,
+    emitter::{EventEmitter, GroupKind},
+};
 use pgls_query::protobuf::JsonAggConstructor;
 
 use super::json_value_expr::emit_json_output;
+
+pub(super) fn emit_json_agg_constructor(e: &mut EventEmitter, n: &JsonAggConstructor) {
+    e.group_start(GroupKind::JsonAggConstructor);
+
+    let mut has_content = false;
+
+    if !n.agg_order.is_empty() {
+        e.token(TokenKind::ORDER_KW);
+        e.space();
+        e.token(TokenKind::BY_KW);
+        e.space();
+        super::node_list::emit_comma_separated_list(e, &n.agg_order, super::emit_node);
+        has_content = true;
+    }
+
+    emit_json_agg_tail(e, n, has_content);
+
+    e.group_end();
+}
 
 pub(super) fn emit_json_agg_tail(
     e: &mut EventEmitter,

@@ -139,10 +139,13 @@ fn emit_aexpr_op_any(e: &mut EventEmitter, n: &AExpr) {
 
     e.token(TokenKind::ANY_KW);
     e.space();
+    e.token(TokenKind::L_PAREN);
 
     if let Some(ref rexpr) = n.rexpr {
         super::emit_node(rexpr, e);
     }
+
+    e.token(TokenKind::R_PAREN);
 }
 
 // expr op ALL (subquery)
@@ -163,10 +166,13 @@ fn emit_aexpr_op_all(e: &mut EventEmitter, n: &AExpr) {
 
     e.token(TokenKind::ALL_KW);
     e.space();
+    e.token(TokenKind::L_PAREN);
 
     if let Some(ref rexpr) = n.rexpr {
         super::emit_node(rexpr, e);
     }
+
+    e.token(TokenKind::R_PAREN);
 }
 
 // expr IS DISTINCT FROM expr2

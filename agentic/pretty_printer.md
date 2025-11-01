@@ -701,7 +701,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 }
 ```
 
-### Completed Nodes (192/270) - Last Updated 2025-10-20 Session 56
+### Completed Nodes (248/270) - Last Updated 2025-11-06 Session 79
 - [x] AArrayExpr (array literals ARRAY[...])
 - [x] AConst (with all variants: Integer, Float, Boolean, String, BitString)
 - [x] AExpr (partial - basic binary operators)
@@ -743,14 +743,18 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] AlterTableSpaceOptionsStmt (ALTER TABLESPACE with SET/RESET options)
 - [x] AlterTsconfigurationStmt (ALTER TEXT SEARCH CONFIGURATION with ADD/ALTER/DROP MAPPING)
 - [x] AlterTsdictionaryStmt (ALTER TEXT SEARCH DICTIONARY with options)
+- [x] AlterTypeStmt (ALTER TYPE with option lists for OWNER/SET variants)
 - [x] AlterUserMappingStmt (ALTER USER MAPPING FOR user SERVER server)
 - [x] ArrayCoerceExpr (array coercions that simply forward the inner expression)
+- [x] ArrayExpr (planner array literals emitted as ARRAY[...] using shared element handling)
 - [x] BitString
 - [x] Boolean
 - [x] BoolExpr (AND/OR/NOT; precedence-aware parentheses preservation to maintain AST shape)
 - [x] BooleanTest (IS TRUE/FALSE/UNKNOWN and negations)
+- [x] CallContext (planner call metadata placeholder; no surface SQL output)
 - [x] CallStmt (CALL procedure)
 - [x] CaseExpr (CASE WHEN ... THEN ... ELSE ... END)
+- [x] CaseTestExpr (planner CASE test placeholder emitted via case_test#type markers)
 - [x] CaseWhen (WHEN condition THEN result)
 - [x] CheckPointStmt (CHECKPOINT command)
 - [x] ClosePortalStmt (CLOSE cursor|ALL)
@@ -763,10 +767,13 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] ConstraintsSetStmt (SET CONSTRAINTS ALL|names DEFERRED|IMMEDIATE)
 - [x] CopyStmt (COPY table/query TO/FROM file with options)
 - [x] CollateClause (expr COLLATE collation_name, fixed to quote identifiers to preserve case)
+- [x] CollateExpr (planner COLLATE wrapper emitting `coll#oid` placeholder when catalog names are unavailable)
 - [x] ColumnDef (partial - column name, type, NOT NULL, DEFAULT, TODO: IDENTITY constraints, collation)
 - [x] ColumnRef
 - [x] CommonTableExpr (CTE definitions: name AS (query) for WITH clauses)
 - [x] CompositeTypeStmt (CREATE TYPE ... AS (...))
+- [x] CteCycleClause (WITH ... CYCLE clause with SET/USING targets)
+- [x] CteSearchClause (WITH ... SEARCH {BREADTH|DEPTH} FIRST BY ... SET ...)
 - [x] Constraint (all types: NOT NULL, DEFAULT, CHECK, PRIMARY KEY, UNIQUE, FOREIGN KEY, etc.)
 - [x] ConvertRowtypeExpr (row-type coercions that forward to their argument)
 - [x] CreateAmStmt (CREATE ACCESS METHOD name TYPE type HANDLER handler)
@@ -792,6 +799,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] CreateSchemaStmt (CREATE SCHEMA with AUTHORIZATION and nested statements)
 - [x] CreateSeqStmt (CREATE SEQUENCE)
 - [x] CreateStatsStmt (CREATE STATISTICS on columns from tables)
+- [x] StatsElem (CREATE STATISTICS column/expression entries)
 - [x] CreateStmt (partial - basic CREATE TABLE, TODO: partitions, typed tables)
 - [x] CreateSubscriptionStmt (CREATE SUBSCRIPTION for logical replication)
 - [x] CreateTableAsStmt (CREATE TABLE ... AS ... / CREATE MATERIALIZED VIEW ... AS ...)
@@ -819,6 +827,7 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] FieldSelect (composite field extraction wrapper that reuses the inner expression)
 - [x] FieldStore (composite field assignment wrapper that reuses the inner expression)
 - [x] Float
+- [x] FromExpr (jointree helper for planner queries that walks FROM items and qualifiers with clause-aware wrapping)
 - [x] FuncCall (comprehensive - basic function calls, special SQL standard functions with FROM/IN/PLACING syntax: EXTRACT, OVERLAY, POSITION, SUBSTRING, TRIM, TODO: WITHIN GROUP, FILTER)
 - [x] FuncExpr (planner function invocation routed through the deparse bridge with placeholder `func#oid(...)` fallback)
 - [x] FunctionParameter (CREATE FUNCTION parameters with mode keywords, identifiers, types, and DEFAULT clauses)
@@ -828,39 +837,77 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] GroupingSet (ROLLUP/CUBE/GROUPING SETS in GROUP BY clause)
 - [x] ImportForeignSchemaStmt (IMPORT FOREIGN SCHEMA ... FROM SERVER ... INTO ...)
 - [x] InferClause (ON CONFLICT target spec covering index columns or constraint references with optional WHERE predicate)
+- [x] InferenceElem (planner ON CONFLICT inference element wrapper for index expressions)
+- [x] InlineCodeBlock (inline DO block bodies rendered via dollar quoting)
+- [x] IntoClause (SELECT/CREATE TABLE AS target with TEMP/UNLOGGED flags, reloptions, tablespace, and ON COMMIT handling)
 - [x] IndexElem (index column with opclass, collation, ordering)
 - [x] IndexStmt (CREATE INDEX with USING, INCLUDE, WHERE, etc.)
 - [x] InsertStmt (WITH clause, column lists, OVERRIDING SYSTEM/USER VALUE, VALUES/SELECT/DEFAULT VALUES, ON CONFLICT, RETURNING)
 - [x] Integer
+- [x] IntList (integer list wrapper reused for planner metadata)
 - [x] JoinExpr (all join types: INNER, LEFT, RIGHT, FULL, CROSS, with ON/USING clauses)
 - [x] JsonFuncExpr (JSON_EXISTS, JSON_QUERY, JSON_VALUE functions - basic implementation)
 - [x] JsonIsPredicate (IS JSON [OBJECT|ARRAY|SCALAR] predicates)
 - [x] JsonParseExpr (JSON() function for parsing)
 - [x] JsonScalarExpr (JSON_SCALAR() function)
 - [x] JsonTable (JSON_TABLE() function with path, columns - basic implementation)
+- [x] JsonArgument (PASSING clause arguments now reuse standalone emitter)
+- [x] JsonBehavior (ON EMPTY/ON ERROR behavior keywords handled centrally)
+- [x] JsonAggConstructor (shared aggregation tail for JSON_OBJECTAGG/JSON_ARRAYAGG covering ORDER BY, RETURNING, FILTER, and OVER clauses)
+- [x] JsonExpr (SQL/JSON JSON_EXISTS/JSON_QUERY/JSON_VALUE emission with PASSING lists, wrappers, RETURNING, and ON EMPTY/ON ERROR handling)
+- [x] JsonFormat (FORMAT/ENCODING clause helper for SQL/JSON output specs)
+- [x] JsonOutput (RETURNING helper that emits type names plus optional format metadata)
+- [x] JsonReturning (planner RETURNING metadata placeholder that keeps SQL/JSON expressions reparsable without catalog lookups)
+- [x] JsonConstructorExpr (JSON_OBJECT/JSON_ARRAY constructors with RETURNING metadata placeholders)
+- [x] JsonTableColumn (COLUMNS clause entries, including nested and wrapper/quotes controls)
+- [x] JsonTablePath (placeholder for named JSON_TABLE path references)
+- [x] JsonTablePathSpec (shared path specification with optional aliasing)
+- [x] JsonTablePathScan (planner path scan placeholder with child plan emission)
+- [x] JsonTableSiblingJoin (planner sibling join placeholder emitting child plans)
 - [x] List (wrapper for comma-separated lists)
 - [x] ListenStmt (LISTEN channel)
 - [x] LoadStmt (LOAD 'library')
 - [x] LockStmt (LOCK TABLE with lock modes)
 - [x] LockingClause (SELECT ... FOR UPDATE/SHARE with OF targets and NOWAIT/SKIP LOCKED)
 - [x] MergeStmt (MERGE INTO with WHEN MATCHED/NOT MATCHED clauses, supports UPDATE/INSERT/DELETE/DO NOTHING, WITH clause supported)
+- [x] MergeAction (planner MERGE action placeholder tagged by match/command)
+- [x] MergeWhenClause (WHEN branches shared across planner/parser MERGE flows)
+- [x] MergeSupportFunc (planner merge support function placeholder emitting mergesupport#oid identifiers)
 - [x] MinMaxExpr (GREATEST/LEAST functions)
+- [x] MultiAssignRef (tuple-set assignments for UPDATE/ON CONFLICT `SET (...) = (...)` sequences)
 - [x] NamedArgExpr (named arguments: name := value)
+- [x] NextValueExpr (planner `nextval` placeholder emitted as `nextval#seqid` when sequence name is unavailable)
 - [x] NotifyStmt (NOTIFY channel with optional payload)
 - [x] NullTest (IS NULL / IS NOT NULL)
 - [x] NullIfExpr (planner NULLIF variant forwarded through deparse to reconstruct function form)
 - [x] ObjectWithArgs (function/operator names with argument types)
+- [x] OidList (OID list wrapper reused for planner metadata)
 - [x] OnConflictClause (ON CONFLICT DO NOTHING/DO UPDATE with target inference and optional WHERE clause)
+- [x] OnConflictExpr (planner ON CONFLICT expression fallback with placeholder columns)
 - [x] OpExpr (planner operator expression reconstructed via deparse to recover operator symbol)
+- [x] Param (planner parameters emitted as param#kind:id placeholders)
 - [x] ParamRef (prepared statement parameters $1, $2, etc.)
+- [x] PlAssignStmt (PL/pgSQL assignment placeholder emitting `name := SELECT ...` when a backing query is present)
 - [x] PartitionElem (column/expression in PARTITION BY clause with optional COLLATE and opclass)
+- [x] PartitionCmd (ATTACH/DETACH PARTITION helper emitting FOR VALUES and CONCURRENTLY)
+- [x] PartitionBoundSpec (FOR VALUES clause variants for RANGE/LIST/HASH partitions)
+- [x] PartitionRangeDatum (MINVALUE/MAXVALUE/value helpers reused by partition bounds)
 - [x] PartitionSpec (PARTITION BY RANGE/LIST/HASH with partition parameters)
+- [x] SinglePartitionSpec (marker node for standalone PARTITION specifications)
 - [x] PrepareStmt (PREPARE statement)
 - [x] PublicationObjSpec (helper for CREATE/ALTER PUBLICATION object specifications)
+- [x] PublicationTable (single-table publication entries with optional column lists and WHERE filters)
+- [x] Query (planner Query node placeholder keyed by command type/source)
+- [x] RawStmt (raw statement wrapper forwarding to the contained statement node)
 - [x] RangeFunction (function calls in FROM clause, supports LATERAL, ROWS FROM, WITH ORDINALITY)
 - [x] RangeSubselect (subquery in FROM clause, supports LATERAL)
 - [x] RangeTableFunc (XMLTABLE() function with path and columns)
 - [x] RangeTableSample (TABLESAMPLE with sampling method and REPEATABLE)
+- [x] RangeTableFuncCol (XMLTABLE column definitions share planner/parser implementation)
+- [x] RangeTblEntry (planner range table entries with kind-specific placeholders and child emission)
+- [x] RangeTblFunction (planner RTE_FUNCTION entries with column list placeholders)
+- [x] RangeTblRef (planner jointree references rendered as rte#index placeholders)
+- [x] RtePermissionInfo (planner permission metadata placeholder emitting rteperm#relid plus column bitmap stats)
 - [x] RangeVar (schema.table with optional alias support)
 - [x] ReassignOwnedStmt (REASSIGN OWNED BY ... TO ...)
 - [x] RefreshMatViewStmt (REFRESH MATERIALIZED VIEW)
@@ -869,8 +916,10 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] RenameStmt (ALTER ... RENAME TO ..., fixed to use rename_type field)
 - [x] ReplicaIdentityStmt (REPLICA IDENTITY DEFAULT/FULL/NOTHING/USING INDEX)
 - [x] ResTarget (partial - SELECT and UPDATE SET contexts)
+- [x] TargetEntry (planner target wrapper forwarding expression plus optional alias)
 - [x] RoleSpec (CURRENT_USER, SESSION_USER, CURRENT_ROLE, PUBLIC, role names)
 - [x] RowCompareExpr (row-wise comparisons with tuple operators)
+- [x] RowMarkClause (FOR lock clauses with wait policy placeholders)
 - [x] RowExpr (ROW(...) or implicit row constructors)
 - [x] RuleStmt (CREATE RULE ... AS ON ... TO ... DO ...)
 - [x] ScalarArrayOpExpr (expr op ANY/ALL (array) constructs, converts to IN clause format)
@@ -879,25 +928,32 @@ pub(super) fn emit_select_stmt(e: &mut EventEmitter, n: &SelectStmt) {
 - [x] SetOperationStmt (UNION/INTERSECT/EXCEPT with ALL support)
 - [x] SetToDefault (DEFAULT keyword)
 - [x] SortBy (ORDER BY expressions with ASC/DESC, NULLS FIRST/LAST, USING operator)
+- [x] SortGroupClause (planner sort/group clause placeholder carrying operator OIDs and null ordering flags)
 - [x] SqlValueFunction (CURRENT_DATE, CURRENT_TIME, CURRENT_TIMESTAMP, CURRENT_USER, etc.)
 - [x] String (identifier and literal contexts)
 - [x] SubLink (all sublink types: EXISTS, ANY, ALL, scalar subqueries, ARRAY)
 - [x] SubPlan (planner subquery wrapper routed through deparse, falling back to its test expression)
+- [x] SubscriptingRef (planner array subscripting with slice-aware `lower:upper` formatting and safe base parenthesisation)
 - [x] AlternativeSubPlan (planner alternative subplan wrapper emitting first choice when deparse recovers nothing)
+- [x] TableFunc (planner table function fallback for XMLTABLE/JSON_TABLE execution nodes)
+- [x] TableSampleClause (planner TABLESAMPLE clause placeholder with handler OID args)
 - [x] TableLikeClause (LIKE table_name for CREATE TABLE)
 - [x] TruncateStmt (TRUNCATE table [RESTART IDENTITY] [CASCADE])
+- [x] TriggerTransition (planner transition table placeholder for trigger execution)
 - [x] TypeCast (CAST(expr AS type))
 - [x] TypeName (canonicalises built-in names, decodes INTERVAL range/precision modifiers, handles array bounds)
 - [x] UnlistenStmt (UNLISTEN channel)
 - [x] UpdateStmt (UPDATE ... SET ... [FROM ...] [WHERE ...] [RETURNING ...] with WITH clause support)
 - [x] VacuumRelation (table and columns for VACUUM)
 - [x] VacuumStmt (partial - VACUUM/ANALYZE, basic implementation)
+- [x] Var (planner Var nodes rendered as var#no^level.att placeholders)
 - [x] VariableSetStmt (partial - SET variable = value, TODO: RESET, other variants)
 - [x] VariableShowStmt (SHOW variable)
 - [x] ViewStmt (CREATE [OR REPLACE] [TEMP] VIEW ... WITH (options) AS ... [WITH CHECK OPTION])
 - [x] WindowDef (window specifications with frame clauses, offsets, and exclusion handling)
 - [x] WindowClause (WINDOW clause definitions delegating to WindowDef formatting)
 - [x] WindowFunc (planner window function nodes delegated through the deparse bridge with safety fallback)
+- [x] WindowFuncRunCondition (planner run condition placeholder emitting comparison argument)
 - [x] WithClause (WITH [RECURSIVE] for Common Table Expressions)
 - [x] WithCheckOption (planner check option node emitted via deparse or raw qualifier when necessary)
 - [x] XmlExpr (XMLELEMENT, XMLCONCAT, XMLCOMMENT, XMLFOREST, XMLPI, XMLROOT functions)
@@ -936,22 +992,44 @@ Keep this section focused on durable guidance. When you add new insights, summar
 
 **Layout and Formatting**:
 - Insert a `LineType::SoftOrSpace` breakpoint between join inputs and their qualifiers so long `ON` predicates can wrap without violating the target width while short joins stay single-line.
+- Use `LineType::SoftOrSpace` before clause keywords such as `RENAME`, `OWNER`, and `SET SCHEMA` so long rename/owner statements wrap cleanly; rely on the line event for whitespace to avoid double spaces.
+- Always wrap `ANY`/`ALL` right-hand operands in parentheses so the parser recognises them as subqueries or array expressions.
 - Render symbolic operator names (composed purely of punctuation) without quoting and force a space before parentheses so DROP/ALTER statements remain parseable.
 - Drop `LineType::SoftOrSpace` before optional DML clauses so compact statements stay single-line while long lists can wrap cleanly.
 - Drop `LineType::SoftOrSpace` before `OVER` clauses and each window spec segment so inline window functions can wrap without blowing per-line limits while still re-parsing to the same AST.
 - Preserve explicit parentheses in arithmetic expressions by wrapping child `AExpr` nodes whenever their operator precedence is lower than the parent or a left-associative parent holds a right-nested operand; otherwise constructs like `100 * 3 + (vs.i - 1) * 3` lose grouping and fail AST equality.
+- Let `emit_clause_condition` drive wrapping for WHERE/HAVING predicates by emitting a `SoftOrSpace` break plus indentation; this keeps long filters under the line budget without sprinkling manual spaces.
+- `FromExpr` emitters should stick to list helpers for FROM items and rely on `emit_clause_condition` for qualifiers—the surrounding statement is responsible for injecting the `FROM` keyword.
 - Wrap `BoolExpr` children whose precedence is lower than their parent (e.g. OR under AND, AND/OR under NOT) so expressions like `(a OR b) AND c` retain explicit parentheses and keep the original AST structure.
 - Use `emit_clause_condition` to indent boolean clause bodies (`WHERE`, `HAVING`, planner filters) so wrapped predicates align under their keywords instead of hugging the left margin.
+- Emit CTE SEARCH/CYCLE clauses using `LineType::SoftOrSpace` so they stay attached to the CTE block while breaking cleanly when alias lists grow.
+- Introduce `LineType::SoftOrSpace` breaks before `PARTITION OF`, `FOR VALUES`, `PARTITION BY`, and `ATTACH/DETACH PARTITION` clauses so long partition DDL respects 60-character budgets without sacrificing single-line output when space allows.
 
 **Node-Specific Patterns**:
+- Respect `AIndices::is_slice`; emit the colon only when the slice flag is set so single-element subscripts (e.g. `col[1]`) retain their original structure.
+- Parenthesise AIndirection bases that are not plain `ColumnRef`, `ParamRef`, or nested indirections whenever subscripts are present so casts, function calls, and literals remain parseable when indexed.
+- Emit `DO` bodies before the optional `LANGUAGE` clause to preserve `DefElem` ordering in the resulting AST.
 - Respect `CoercionForm` when emitting row constructors; implicit casts must stay bare tuples or the planner-visible `row_format` flag changes.
 - When emitting CTE materialization hints, match on `CteMaterialize::Always`/`::Never` to emit the hint; default CTEs should not emit any materialization keyword.
 - Map `SelectStmt::limit_option` to `FETCH ... WITH TIES` when it resolves to `LimitOption::WithTies` so the re-parsed AST retains the original limit semantics.
 - When wrapping a `SelectStmt` inside outer statements (e.g. VIEW, COPY), emit it via `emit_select_stmt_no_semicolon` so trailing clauses can follow before the final semicolon.
+- Planner `SubscriptingRef` nodes expose slice syntax via `reflowerindexpr`; emit a colon whenever that slot exists (even if the bound is NULL) so constructs like `arr[:upper]` and `arr[lower:]` retain their shape.
+- Planner `CollateExpr` only carries a collation OID; emit `coll#oid` placeholders and treat `coll_oid == 0` as `COLLATE DEFAULT` so round-trips stay valid without catalog lookups.
+- `IntoClause::relpersistence` uses `'t'`/`'u'` for TEMP/UNLOGGED; decode `OnCommitAction` into `PRESERVE ROWS`, `DELETE ROWS`, or `DROP` and reuse the options helper for `WITH (...)` lists.
 - Decode window frame bitmasks to render RANGE/ROWS/GROUPS with the correct UNBOUNDED/CURRENT/OFFSET bounds and guard PRECEDING/FOLLOWING against missing offsets.
 - Ordered-set aggregates must render `WITHIN GROUP (ORDER BY ...)` outside the argument list and emit `FILTER (WHERE ...)` ahead of any `OVER` clause so planner fallbacks reuse the same surface layout.
 - For `MergeStmt`, only append `BY TARGET` when the clause has no predicate (the `DO NOTHING` branch); conditional branches should stay as bare `WHEN NOT MATCHED` so we don't rewrite user intent.
+- Collapse `MultiAssignRef` clusters by reading `ncolumns` and formatting `(col1, col2, ...) = (expr1, expr2, ...)` once, then skip the trailing ResTargets to avoid duplicate output; if the source row is a single `ROW(...)` expression (e.g. `ROW(excluded.*)`), emit it directly instead of forcing an expanded tuple so the AST and semantics stay aligned.
+- Treat `BEGIN` followed by transaction modifiers (`TRANSACTION`, isolation keywords, READ/WRITE, DEFERRABLE flags) as a standalone statement in the splitter; only procedural `BEGIN … END` blocks should bump the nesting depth.
+- Map `transaction_*` defelems to idiomatic SQL (`ISOLATION LEVEL`, `READ ONLY`/`READ WRITE`, `DEFERRABLE`/`NOT DEFERRABLE`) when emitting `TransactionStmt` options so the formatted output reparses successfully.
 - When a binary comparison must wrap, keep the operator attached to the left expression and indent the right-hand side behind a `LineType::SoftOrSpace` break. This avoids the renderer splitting each token onto its own line once the surrounding group has already broken.
+- Planner-only emitters should stick to quoted placeholders like `rte#kind` or `jsonpathscan[...]` via `emit_identifier` so the renderer keeps non-surface nodes reparsable without catalog lookups.
+
+- Decode trigger timing bitmasks before emitting keywords: check `INSTEAD` bits first, treat `BEFORE` as the explicit flag, and fall back to `AFTER` when no timing bits are set so reparse preserves the original `CreateTrigStmt::timing`.
+- Index expressions in `IndexElem` must always be wrapped in parentheses—PostgreSQL syntax requires `CREATE INDEX ... ON table ((expression))` not `CREATE INDEX ... ON table (expression)`.
+- For index-related ALTER TABLE commands (e.g., `ALTER INDEX ... ALTER COLUMN 1 SET STATISTICS`), column references use the `num` field for numeric positions, not the `name` field.
+- `TableLikeClause` options are stored as a bitmap where `0x7FFFFFFF` (all 31 bits set) represents `INCLUDING ALL`; individual bits correspond to INCLUDING DEFAULTS (1<<0), INCLUDING CONSTRAINTS (1<<1), INCLUDING IDENTITY (1<<2), etc.
+- When protobuf fields like `relation_type` contain unexpected values (e.g., `ObjectAccessMethod` for a table constraint), validate against actual data fields like `relation.relname` to determine the correct object type—the protobuf enum can be misleading.
 
 **Planner Nodes (CRITICAL - Read Carefully)**:
 - **NEVER create synthetic nodes or wrap nodes in SELECT statements for deparse round-trips**. This violates the architecture and breaks AST preservation.
@@ -962,6 +1040,7 @@ Keep this section focused on durable guidance. When you add new insights, summar
 - `DistinctExpr` can emit `IS DISTINCT FROM` since the syntax is known; `NullIfExpr` can emit `NULLIF(a, b)` for the same reason.
 - Planner nodes indicate the pretty printer was given optimizer output rather than parser output - the fallback representations are acceptable.
 - When duplicating window frame logic between `WindowClause` and `WindowDef`, **copy and adapt the code directly** rather than creating synthetic nodes or calling helper functions that expect different node types.
+- When a placeholder string includes punctuation (`op#`, `var#`, etc.), emit it via `emit_identifier` so the fallback stays valid SQL and reparses cleanly.
 
 ### Logging Future Work
 - Capture new learnings as concise bullets here and keep detailed session history in commit messages or external notes.
@@ -999,7 +1078,7 @@ just format
 just test
 
 # Run specific crate tests
-cargo test -p pgt_pretty_print
+cargo test -p pgls_pretty_print
 
 # Update test snapshots
 cargo insta review
@@ -1009,12 +1088,29 @@ just lint
 
 # Check if ready to commit
 just ready
+
+# Run agentic task
+just agentic pretty_printer
 ```
 
 ## Next Steps
 
-1. Investigate why `ResTarget` aliases are still quoted even when lowercase-only, and adjust the identifier helper if we can emit bare aliases without breaking AST equality.
-2. Audit rename/owner emitters so non-table object types (FDWs, conversions, operator families) carry their specific keywords and reshape lists like `USING` clauses without falling back to `ALTER TABLE`.
+1. Capture focused SQL/JSON fixtures (JSON_EXISTS/JSON_QUERY/JSON_VALUE with PASSING, RETURNING, wrappers) to validate the new `JsonExpr` and aggregation emitters.
+2. Add a compact partition DDL fixture that exercises RANGE/LIST bounds to lock in `PartitionBoundSpec` and `PartitionRangeDatum` output.
+3. Curate fixtures for the new planner placeholders (`MergeSupportFunc`, `RtePermissionInfo`, `SortGroupClause`, `PlAssignStmt`) and accept snapshots via `cargo insta review`.
+4. Re-run the audit for remaining `todo!("emit_node_enum" ...)` fallbacks to confirm the outstanding node list for the next implementation batch.
+
+## ⚠️ CRITICAL: When to Signal Completion
+
+**When ALL of the following are true:**
+- ✅ All ~270 AST nodes are implemented (check "Completed Nodes" section)
+- ✅ All tests are passing (`cargo test -p pgls_pretty_print` shows 0 failures)
+- ✅ There is absolutely nothing left to do
+- ✅ The codebase is ready for final review
+
+**Output this exact keyword on its own line:** `===AGENTIC_TASK_COMPLETE===`
+
+This signals that the implementation is 100% finished.
 
 ## Summary: Key Points
 

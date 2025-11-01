@@ -1,6 +1,6 @@
 use crate::{
     TokenKind,
-    emitter::{EventEmitter, GroupKind},
+    emitter::{EventEmitter, GroupKind, LineType},
 };
 use pgls_query::protobuf::{
     AlterTableCmd, AlterTableStmt, AlterTableType, DropBehavior, ObjectType,
@@ -49,16 +49,21 @@ pub(super) fn emit_alter_table_stmt(e: &mut EventEmitter, n: &AlterTableStmt) {
 
     // Emit commands
     if !n.cmds.is_empty() {
+        e.indent_start();
+        e.line(LineType::SoftOrSpace);
+
         for (i, cmd_node) in n.cmds.iter().enumerate() {
             if i > 0 {
                 e.token(TokenKind::COMMA);
+                e.line(LineType::SoftOrSpace);
             }
-            e.space();
 
             // Extract AlterTableCmd from Node
             let cmd = assert_node_variant!(AlterTableCmd, cmd_node);
             emit_alter_table_cmd(e, cmd);
         }
+
+        e.indent_end();
     }
 
     e.token(TokenKind::SEMICOLON);
@@ -342,6 +347,10 @@ pub(super) fn emit_alter_table_cmd(e: &mut EventEmitter, cmd: &AlterTableCmd) {
             if !cmd.name.is_empty() {
                 e.space();
                 e.token(TokenKind::IDENT(cmd.name.clone()));
+            } else if cmd.num != 0 {
+                // Column specified by number (for indexes)
+                e.space();
+                e.token(TokenKind::IDENT(cmd.num.to_string()));
             }
             e.space();
             e.token(TokenKind::SET_KW);
@@ -486,7 +495,7 @@ pub(super) fn emit_alter_table_cmd(e: &mut EventEmitter, cmd: &AlterTableCmd) {
             e.space();
             e.token(TokenKind::PARTITION_KW);
             if let Some(ref def) = cmd.def {
-                e.space();
+                e.line(LineType::SoftOrSpace);
                 emit_node(def, e); // PartitionCmd node
             }
         }
@@ -495,7 +504,7 @@ pub(super) fn emit_alter_table_cmd(e: &mut EventEmitter, cmd: &AlterTableCmd) {
             e.space();
             e.token(TokenKind::PARTITION_KW);
             if let Some(ref def) = cmd.def {
-                e.space();
+                e.line(LineType::SoftOrSpace);
                 emit_node(def, e); // PartitionCmd node
             }
         }

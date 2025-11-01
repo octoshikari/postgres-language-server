@@ -40,7 +40,7 @@ ORDER BY string4 USING <,
 
 SELECT DISTINCT ON (
   1)
-  floor(random()) AS "r",
+  floor(random()) AS r,
   f1
 FROM
   int4_tbl

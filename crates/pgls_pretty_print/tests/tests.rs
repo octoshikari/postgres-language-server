@@ -326,6 +326,9 @@ fn clear_location(node: &mut pgls_query::NodeEnum) {
             pgls_query::NodeMut::PartitionElem(n) => {
                 (*n).location = 0;
             }
+            pgls_query::NodeMut::PartitionBoundSpec(n) => {
+                (*n).location = 0;
+            }
             pgls_query::NodeMut::SqlvalueFunction(n) => {
                 (*n).location = 0;
             }
@@ -378,6 +381,15 @@ fn clear_location(node: &mut pgls_query::NodeEnum) {
                 if let Some(format) = (*n).format.as_mut() {
                     format.location = 0;
                 }
+            }
+            pgls_query::NodeMut::OnConflictClause(n) => {
+                (*n).location = 0;
+                if let Some(infer) = (*n).infer.as_mut() {
+                    infer.location = 0;
+                }
+            }
+            pgls_query::NodeMut::InferClause(n) => {
+                (*n).location = 0;
             }
             pgls_query::NodeMut::TypeName(n) => {
                 (*n).location = 0;

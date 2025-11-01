@@ -1,12 +1,14 @@
-use pgls_query::protobuf::{TransactionStmt, TransactionStmtKind};
+use pgls_query::{
+    NodeEnum,
+    protobuf::{DefElem, TransactionStmt, TransactionStmtKind, a_const},
+};
 
 use crate::{
     TokenKind,
-    emitter::{EventEmitter, GroupKind},
-    nodes::node_list::emit_comma_separated_list,
+    emitter::{EventEmitter, GroupKind, LineType},
 };
 
-use super::string::{emit_identifier_maybe_quoted, emit_single_quoted_str};
+use super::string::{emit_identifier_maybe_quoted, emit_keyword, emit_single_quoted_str};
 
 pub(super) fn emit_transaction_stmt(e: &mut EventEmitter, n: &TransactionStmt) {
     e.group_start(GroupKind::TransactionStmt);
@@ -104,8 +106,90 @@ pub(super) fn emit_transaction_stmt(e: &mut EventEmitter, n: &TransactionStmt) {
 }
 
 fn emit_transaction_options(e: &mut EventEmitter, n: &TransactionStmt) {
-    if !n.options.is_empty() {
-        e.space();
-        emit_comma_separated_list(e, &n.options, super::emit_node);
+    if n.options.is_empty() {
+        return;
+    }
+
+    e.space();
+
+    for (idx, option) in n.options.iter().enumerate() {
+        if idx > 0 {
+            e.line(LineType::SoftOrSpace);
+        }
+
+        let def_elem = assert_node_variant!(DefElem, option);
+        emit_transaction_option(e, def_elem);
+    }
+}
+
+fn emit_transaction_option(e: &mut EventEmitter, def: &DefElem) {
+    match def.defname.as_str() {
+        "transaction_isolation" => {
+            e.token(TokenKind::ISOLATION_KW);
+            e.space();
+            e.token(TokenKind::LEVEL_KW);
+
+            if let Some(level) = def_elem_string(def) {
+                e.space();
+                emit_keyword_sequence(e, level);
+            }
+        }
+        "transaction_read_only" => {
+            if let Some(flag) = def_elem_bool(def) {
+                e.token(TokenKind::READ_KW);
+                e.space();
+                if flag {
+                    e.token(TokenKind::ONLY_KW);
+                } else {
+                    e.token(TokenKind::WRITE_KW);
+                }
+            }
+        }
+        "transaction_deferrable" => {
+            if let Some(flag) = def_elem_bool(def) {
+                if flag {
+                    e.token(TokenKind::DEFERRABLE_KW);
+                } else {
+                    e.token(TokenKind::NOT_KW);
+                    e.space();
+                    e.token(TokenKind::DEFERRABLE_KW);
+                }
+            }
+        }
+        _ => {
+            super::def_elem::emit_def_elem(e, def);
+        }
+    }
+}
+
+fn def_elem_string<'a>(def: &'a DefElem) -> Option<&'a str> {
+    let arg = def.arg.as_ref()?;
+    match arg.node.as_ref()? {
+        NodeEnum::AConst(a_const) => match a_const.val.as_ref()? {
+            a_const::Val::Sval(s) => Some(s.sval.as_str()),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+fn def_elem_bool(def: &DefElem) -> Option<bool> {
+    let arg = def.arg.as_ref()?;
+    match arg.node.as_ref()? {
+        NodeEnum::AConst(a_const) => match a_const.val.as_ref()? {
+            a_const::Val::Boolval(v) => Some(v.boolval),
+            a_const::Val::Ival(i) => Some(i.ival != 0),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+fn emit_keyword_sequence(e: &mut EventEmitter, value: &str) {
+    for (idx, part) in value.split_whitespace().enumerate() {
+        if idx > 0 {
+            e.space();
+        }
+        emit_keyword(e, &part.to_uppercase());
     }
 }

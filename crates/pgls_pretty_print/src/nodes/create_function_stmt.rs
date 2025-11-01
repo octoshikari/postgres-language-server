@@ -56,7 +56,7 @@ pub(super) fn emit_create_function_stmt(e: &mut EventEmitter, n: &CreateFunction
 
     // Return type (only for functions, not procedures)
     if !table_params.is_empty() {
-        e.space();
+        e.line(LineType::SoftOrSpace);
         e.token(TokenKind::RETURNS_KW);
         e.space();
         e.token(TokenKind::TABLE_KW);
@@ -70,7 +70,7 @@ pub(super) fn emit_create_function_stmt(e: &mut EventEmitter, n: &CreateFunction
         e.token(TokenKind::R_PAREN);
     } else if !n.is_procedure {
         if let Some(ref return_type) = n.return_type {
-            e.space();
+            e.line(LineType::SoftOrSpace);
             e.token(TokenKind::RETURNS_KW);
             e.space();
             super::emit_type_name(e, return_type);
@@ -80,7 +80,7 @@ pub(super) fn emit_create_function_stmt(e: &mut EventEmitter, n: &CreateFunction
     // Options
     for option in &n.options {
         if let Some(pgls_query::NodeEnum::DefElem(def_elem)) = &option.node {
-            e.space();
+            e.line(LineType::SoftOrSpace);
             format_function_option(e, def_elem);
         }
     }

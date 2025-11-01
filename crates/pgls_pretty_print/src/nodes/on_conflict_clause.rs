@@ -2,13 +2,13 @@ use pgls_query::protobuf::{OnConflictAction, OnConflictClause};
 
 use crate::{
     TokenKind,
-    emitter::{EventEmitter, GroupKind},
+    emitter::{EventEmitter, GroupKind, LineType},
 };
 
-use super::{node_list::emit_comma_separated_list, res_target::emit_set_clause};
+use super::res_target::emit_set_clause_list;
 
 pub(super) fn emit_on_conflict_clause(e: &mut EventEmitter, n: &OnConflictClause) {
-    e.space();
+    e.line(LineType::SoftOrSpace);
     e.group_start(GroupKind::OnConflictClause);
 
     e.token(TokenKind::ON_KW);
@@ -29,20 +29,18 @@ pub(super) fn emit_on_conflict_clause(e: &mut EventEmitter, n: &OnConflictClause
             e.token(TokenKind::NOTHING_KW);
         }
         OnConflictAction::OnconflictUpdate => {
-            e.space();
+            e.line(LineType::SoftOrSpace);
             e.token(TokenKind::UPDATE_KW);
-            e.space();
+            e.line(LineType::SoftOrSpace);
             e.token(TokenKind::SET_KW);
 
             if !n.target_list.is_empty() {
                 e.space();
-                emit_comma_separated_list(e, &n.target_list, |node, emitter| {
-                    emit_set_clause(emitter, assert_node_variant!(ResTarget, node))
-                });
+                emit_set_clause_list(e, &n.target_list);
             }
 
             if let Some(ref where_clause) = n.where_clause {
-                e.space();
+                e.line(crate::emitter::LineType::SoftOrSpace);
                 e.token(TokenKind::WHERE_KW);
                 super::emit_clause_condition(e, where_clause);
             }

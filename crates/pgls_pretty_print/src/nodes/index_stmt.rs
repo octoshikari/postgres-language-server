@@ -12,9 +12,26 @@ pub(super) fn emit_index_stmt(e: &mut EventEmitter, n: &IndexStmt) {
     e.token(TokenKind::CREATE_KW);
     e.space();
 
-    // TODO: Handle UNIQUE, CONCURRENTLY flags (not in protobuf?)
+    if n.unique {
+        e.token(TokenKind::UNIQUE_KW);
+        e.line(crate::emitter::LineType::SoftOrSpace);
+    }
 
     e.token(TokenKind::INDEX_KW);
+
+    if n.concurrent {
+        e.line(crate::emitter::LineType::SoftOrSpace);
+        e.token(TokenKind::CONCURRENTLY_KW);
+    }
+
+    if n.if_not_exists {
+        e.line(crate::emitter::LineType::SoftOrSpace);
+        e.token(TokenKind::IF_KW);
+        e.space();
+        e.token(TokenKind::NOT_KW);
+        e.space();
+        e.token(TokenKind::EXISTS_KW);
+    }
 
     // Index name
     if !n.idxname.is_empty() {
@@ -44,6 +61,15 @@ pub(super) fn emit_index_stmt(e: &mut EventEmitter, n: &IndexStmt) {
         e.token(TokenKind::L_PAREN);
         emit_comma_separated_list(e, &n.index_params, super::emit_node);
         e.token(TokenKind::R_PAREN);
+    }
+
+    if n.nulls_not_distinct {
+        e.line(crate::emitter::LineType::SoftOrSpace);
+        e.token(TokenKind::NULLS_KW);
+        e.space();
+        e.token(TokenKind::NOT_KW);
+        e.space();
+        e.token(TokenKind::DISTINCT_KW);
     }
 
     // INCLUDE columns

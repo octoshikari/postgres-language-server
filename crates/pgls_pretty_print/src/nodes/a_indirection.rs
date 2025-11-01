@@ -11,7 +11,22 @@ pub(super) fn emit_a_indirection(e: &mut EventEmitter, n: &AIndirection) {
     // Emit the base expression
     // Some expressions need parentheses when used with indirection (e.g., ROW(...))
     let needs_parens = if let Some(ref arg) = n.arg {
+        let has_indices = n
+            .indirection
+            .iter()
+            .any(|node| matches!(node.node.as_ref(), Some(pgls_query::NodeEnum::AIndices(_))));
+
+        let safe_without_parens = matches!(
+            arg.node.as_ref(),
+            Some(
+                pgls_query::NodeEnum::ColumnRef(_)
+                    | pgls_query::NodeEnum::ParamRef(_)
+                    | pgls_query::NodeEnum::AIndirection(_)
+            )
+        );
+
         matches!(arg.node.as_ref(), Some(pgls_query::NodeEnum::RowExpr(_)))
+            || (has_indices && !safe_without_parens)
     } else {
         false
     };

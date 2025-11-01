@@ -1,7 +1,7 @@
 use pgls_query::protobuf::{CommonTableExpr, CteMaterialize};
 
 use crate::TokenKind;
-use crate::emitter::{EventEmitter, GroupKind};
+use crate::emitter::{EventEmitter, GroupKind, LineType};
 
 use super::merge_stmt::emit_merge_stmt_no_semicolon;
 use super::node_list::emit_comma_separated_list;
@@ -63,8 +63,15 @@ pub(super) fn emit_common_table_expr(e: &mut EventEmitter, n: &CommonTableExpr) 
 
     e.token(TokenKind::R_PAREN);
 
-    // TODO: SEARCH clause (PostgreSQL 14+)
-    // TODO: CYCLE clause (PostgreSQL 14+)
+    if let Some(ref search) = n.search_clause {
+        e.line(LineType::SoftOrSpace);
+        super::emit_ctesearch_clause(e, search);
+    }
+
+    if let Some(ref cycle) = n.cycle_clause {
+        e.line(LineType::SoftOrSpace);
+        super::emit_ctecycle_clause(e, cycle);
+    }
 
     e.group_end();
 }

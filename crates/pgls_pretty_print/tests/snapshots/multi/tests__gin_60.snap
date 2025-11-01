@@ -28,9 +28,7 @@ FROM
   generate_series(1,
   1000) AS g;
 
-SELECT
-  gin_clean_pending_list('gin_test_idx') >
-  10 AS "many";
+SELECT gin_clean_pending_list('gin_test_idx') > 10 AS many;
 
 INSERT INTO gin_test_tbl
 SELECT
@@ -81,14 +79,14 @@ SET gin_fuzzy_search_limit = 1000;
 
 SELECT
   COUNT(*) >
-  0 AS "ok"
+  0 AS ok
 FROM
   gin_test_tbl
 WHERE i @> ARRAY[1];
 
 SELECT
   COUNT(*) >
-  0 AS "ok"
+  0 AS ok
 FROM
   gin_test_tbl
 WHERE i @> ARRAY[1];
@@ -175,7 +173,7 @@ SELECT
   js -> 0 -> 'Plan' -> 'Plans' -> 0 -> 'Actual Rows' AS "return by index",
   js -> 0 -> 'Plan' -> 'Rows Removed by Index Recheck' AS "removed by recheck",
   res_index =
-  res_heap AS "match"
+  res_heap AS match
 FROM
   (VALUES (' i @> ''{}'' '),
   (' j @> ''{}'' '),

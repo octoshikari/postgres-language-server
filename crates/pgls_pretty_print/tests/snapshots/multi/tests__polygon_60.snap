@@ -78,8 +78,8 @@ CREATE TEMPORARY TABLE quad_poly_tbl_ord_seq2 AS
   SELECT
     RANK()
     OVER (
-    ORDER BY p <-> CAST('123,456' AS point)) AS "n",
-    p <-> CAST('123,456' AS point) AS "dist",
+    ORDER BY p <-> CAST('123,456' AS point)) AS n,
+    p <-> CAST('123,456' AS point) AS dist,
     id
   FROM
     quad_poly_tbl
@@ -242,8 +242,8 @@ SET enable_bitmapscan = off;
 SELECT
   RANK()
   OVER (
-  ORDER BY p <-> CAST('123,456' AS point)) AS "n",
-  p <-> CAST('123,456' AS point) AS "dist",
+  ORDER BY p <-> CAST('123,456' AS point)) AS n,
+  p <-> CAST('123,456' AS point) AS dist,
   id
 FROM
   quad_poly_tbl
@@ -253,8 +253,8 @@ CREATE TEMPORARY TABLE quad_poly_tbl_ord_idx2 AS
   SELECT
     RANK()
     OVER (
-    ORDER BY p <-> CAST('123,456' AS point)) AS "n",
-    p <-> CAST('123,456' AS point) AS "dist",
+    ORDER BY p <-> CAST('123,456' AS point)) AS n,
+    p <-> CAST('123,456' AS point) AS dist,
     id
   FROM
     quad_poly_tbl

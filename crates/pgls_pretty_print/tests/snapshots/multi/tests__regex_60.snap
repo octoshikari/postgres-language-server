@@ -1,31 +1,31 @@
 ---
-source: crates/pgt_pretty_print/tests/tests.rs
-input_file: crates/pgt_pretty_print/tests/data/multi/regex_60.sql
+source: crates/pgls_pretty_print/tests/tests.rs
+input_file: crates/pgls_pretty_print/tests/data/multi/regex_60.sql
 snapshot_kind: text
 ---
 SET standard_conforming_strings = on;
 
-SELECT 'bbbbb' ~ '^([bc])\1*$' AS "t";
+SELECT 'bbbbb' ~ '^([bc])\1*$' AS t;
 
-SELECT 'ccc' ~ '^([bc])\1*$' AS "t";
+SELECT 'ccc' ~ '^([bc])\1*$' AS t;
 
-SELECT 'xxx' ~ '^([bc])\1*$' AS "f";
+SELECT 'xxx' ~ '^([bc])\1*$' AS f;
 
-SELECT 'bbc' ~ '^([bc])\1*$' AS "f";
+SELECT 'bbc' ~ '^([bc])\1*$' AS f;
 
-SELECT 'b' ~ '^([bc])\1*$' AS "t";
+SELECT 'b' ~ '^([bc])\1*$' AS t;
 
-SELECT 'abc abc abc' ~ '^(\w+)( \1)+$' AS "t";
+SELECT 'abc abc abc' ~ '^(\w+)( \1)+$' AS t;
 
-SELECT 'abc abd abc' ~ '^(\w+)( \1)+$' AS "f";
+SELECT 'abc abd abc' ~ '^(\w+)( \1)+$' AS f;
 
-SELECT 'abc abc abd' ~ '^(\w+)( \1)+$' AS "f";
+SELECT 'abc abc abd' ~ '^(\w+)( \1)+$' AS f;
 
-SELECT 'abc abc abc' ~ '^(.+)( \1)+$' AS "t";
+SELECT 'abc abc abc' ~ '^(.+)( \1)+$' AS t;
 
-SELECT 'abc abd abc' ~ '^(.+)( \1)+$' AS "f";
+SELECT 'abc abd abc' ~ '^(.+)( \1)+$' AS f;
 
-SELECT 'abc abc abd' ~ '^(.+)( \1)+$' AS "f";
+SELECT 'abc abc abd' ~ '^(.+)( \1)+$' AS f;
 
 SELECT
   SUBSTRING('asd TO foo' FROM ' TO (([a-z0-9._]+|"([^"]+|"")+")+)');
@@ -156,7 +156,7 @@ SELECT 'x' ~ 'x|(?:\M)+';
 
 SELECT 'x' ~ repeat('x*y*z*', 1000);
 
-SELECT 'Programmer' ~ '(\w).*?\1' AS "t";
+SELECT 'Programmer' ~ '(\w).*?\1' AS t;
 
 SELECT regexp_matches('Programmer', '(\w)(.*?\1)', 'g');
 
@@ -193,15 +193,15 @@ SELECT 'a' ~ '()*\1';
 
 SELECT 'a' ~ '()+\1';
 
-SELECT 'xxx' ~ '(.){0}(\1)' AS "f";
+SELECT 'xxx' ~ '(.){0}(\1)' AS f;
 
-SELECT 'xxx' ~ '((.)){0}(\2)' AS "f";
+SELECT 'xxx' ~ '((.)){0}(\2)' AS f;
 
-SELECT 'xyz' ~ '((.)){0}(\2){0}' AS "t";
+SELECT 'xyz' ~ '((.)){0}(\2){0}' AS t;
 
-SELECT 'abcdef' ~ '^(.)\1|\1.' AS "f";
+SELECT 'abcdef' ~ '^(.)\1|\1.' AS f;
 
-SELECT 'abadef' ~ '^((.)\2|..)\2' AS "f";
+SELECT 'abadef' ~ '^((.)\2|..)\2' AS f;
 
 SELECT regexp_match('xy', '.|...');
 
