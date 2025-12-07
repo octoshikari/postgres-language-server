@@ -21,9 +21,11 @@ pub struct TypecheckConfiguration {
 
 impl Default for TypecheckConfiguration {
     fn default() -> Self {
+        let mut search_path = StringSet::default();
+        search_path.extend(["public".to_string()]);
         Self {
             enabled: true,
-            search_path: ["public".to_string()].into_iter().collect(),
+            search_path,
         }
     }
 }

@@ -15,14 +15,14 @@ rust-version = "1.86.0"
 [workspace.dependencies]
 # supporting crates unrelated to postgres
 anyhow                   = "1.0.92"
-# biome crates - match upstream versions (without = pins to allow semver resolution)
-biome_deserialize        = "0.6.0"
-biome_deserialize_macros = "0.6.0"
-biome_js_factory         = "0.5.7"
-biome_js_formatter       = "0.5.7"
-biome_js_syntax          = "0.5.7"
-biome_rowan              = "0.5.7"
-biome_string_case        = "0.5.8"
+# biome crates - all pinned to exact 0.5.7 versions to ensure compatible biome_rowan
+biome_deserialize        = "=0.5.7"
+biome_deserialize_macros = "=0.5.7"
+biome_js_factory         = "=0.5.7"
+biome_js_formatter       = "=0.5.7"
+biome_js_syntax          = "=0.5.7"
+biome_rowan              = "=0.5.7"
+biome_string_case        = "=0.5.7"
 bpaf                     = { version = "0.9.15", features = ["derive"] }
 criterion                = "0.5"
 crossbeam                = "0.8.4"

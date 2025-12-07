@@ -371,34 +371,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b4443260d505148169f5fb35634c2a60d8489882f8c9c3f1db8b7cf0cb57632"
 dependencies = [
  "biome_console",
- "biome_deserialize_macros 0.5.7",
+ "biome_deserialize_macros",
  "biome_diagnostics",
  "biome_json_parser",
  "biome_json_syntax",
  "biome_rowan",
  "bitflags 2.6.0",
  "indexmap 1.9.3",
+ "schemars",
  "serde",
  "serde_json",
  "tracing",
-]
-
-[[package]]
-name = "biome_deserialize"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6f619dc8ca0595ed8850d729ebc71722d4233aba68c5aec7d9993a53e59f3fe"
-dependencies = [
- "biome_console",
- "biome_deserialize_macros 0.6.0",
- "biome_diagnostics",
- "biome_json_parser",
- "biome_json_syntax",
- "biome_rowan",
- "bitflags 2.6.0",
- "indexmap 2.7.0",
- "schemars",
- "serde",
 ]
 
 [[package]]
@@ -408,19 +391,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fc1244cc5f0cc267bd26b601e9ccd6851c6a4d395bba07e27c2de641dc84479"
 dependencies = [
  "convert_case",
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "biome_deserialize_macros"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07c12826fff87ac09f63bbacf8bdf5225dfdf890da04d426f758cbcacf068e3e"
-dependencies = [
- "biome_string_case",
  "proc-macro-error",
  "proc-macro2",
  "quote",
@@ -477,8 +447,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d351a9dc49ae024220a83c44329ab14a9e66887a7ca51fc7ae875e9e56f626c"
 dependencies = [
  "biome_console",
- "biome_deserialize 0.5.7",
- "biome_deserialize_macros 0.5.7",
+ "biome_deserialize",
+ "biome_deserialize_macros",
  "biome_diagnostics",
  "biome_rowan",
  "cfg-if",
@@ -507,8 +477,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8bc1f8b67a8fa45555a7a9ea1004eca73c159b7f1941050311d35e312cff3bb8"
 dependencies = [
  "biome_console",
- "biome_deserialize 0.5.7",
- "biome_deserialize_macros 0.5.7",
+ "biome_deserialize",
+ "biome_deserialize_macros",
  "biome_diagnostics_categories",
  "biome_formatter",
  "biome_js_factory",
@@ -613,9 +583,9 @@ dependencies = [
 
 [[package]]
 name = "biome_string_case"
-version = "0.5.8"
+version = "0.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5868798da491b19a5b27a0bad5d8727e1e65060fa2dac360b382df00ff520774"
+checksum = "c28b4d0e08c2f13f1c9e0df4e7a8f9bfa03ef3803713d1bcd5110578cc5c67be"
 
 [[package]]
 name = "biome_text_edit"
@@ -2561,8 +2531,8 @@ dependencies = [
 name = "pgls_analyse"
 version = "0.0.0"
 dependencies = [
- "biome_deserialize 0.6.0",
- "biome_deserialize_macros 0.6.0",
+ "biome_deserialize",
+ "biome_deserialize_macros",
  "enumflags2",
  "pgls_console",
  "pgls_diagnostics",
@@ -2598,8 +2568,8 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "assert_cmd",
- "biome_deserialize 0.6.0",
- "biome_deserialize_macros 0.6.0",
+ "biome_deserialize",
+ "biome_deserialize_macros",
  "bpaf",
  "crossbeam",
  "dashmap 5.5.3",
@@ -2656,8 +2626,8 @@ dependencies = [
 name = "pgls_configuration"
 version = "0.0.0"
 dependencies = [
- "biome_deserialize 0.6.0",
- "biome_deserialize_macros 0.6.0",
+ "biome_deserialize",
+ "biome_deserialize_macros",
  "bpaf",
  "indexmap 2.7.0",
  "oxc_resolver",
@@ -2802,7 +2772,7 @@ name = "pgls_lsp"
 version = "0.0.0"
 dependencies = [
  "anyhow",
- "biome_deserialize 0.6.0",
+ "biome_deserialize",
  "futures",
  "pgls_analyse",
  "pgls_completions",
@@ -3055,7 +3025,7 @@ dependencies = [
 name = "pgls_workspace"
 version = "0.0.0"
 dependencies = [
- "biome_deserialize 0.6.0",
+ "biome_deserialize",
  "biome_js_factory",
  "biome_js_syntax",
  "biome_rowan",
