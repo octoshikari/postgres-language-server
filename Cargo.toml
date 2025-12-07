@@ -20,8 +20,8 @@ biome_deserialize_macros = "0.6.0"
 biome_js_factory         = "0.5.7"
 biome_js_formatter       = "0.5.7"
 biome_js_syntax          = "0.5.7"
-biome_rowan              = "0.5.7"
-biome_string_case        = "0.5.8"
+biome_rowan              = "=0.5.7"
+biome_string_case        = "=0.5.7"
 bpaf                     = { version = "0.9.15", features = ["derive"] }
 criterion                = "0.5"
 crossbeam                = "0.8.4"
@@ -48,7 +48,8 @@ convert_case             = "0.6.0"
 prost                    = "0.13.5"
 prost-reflect            = "0.15.3"
 protox                   = "0.8.0"
-sqlx                     = { version = "0.8.2", features = ["runtime-tokio", "runtime-async-std", "postgres", "json"] }
+# Using sqlx 0.9 alpha - libsqlite3-sys >=0.30.0, <0.36.0 is compatible with rusqlite 0.37's 0.35.0
+sqlx = { version = "0.9.0-alpha.1", default-features = false, features = ["runtime-tokio", "postgres", "json", "macros"] }
 syn                      = { version = "1.0.109", features = ["full"] }
 termcolor                = "1.4.1"
 test-log                 = "0.2.17"
