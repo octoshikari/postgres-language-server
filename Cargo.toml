@@ -48,7 +48,7 @@ convert_case             = "0.6.0"
 prost                    = "0.13.5"
 prost-reflect            = "0.15.3"
 protox                   = "0.8.0"
-sqlx                     = { version = "0.8.2", features = ["runtime-tokio", "runtime-async-std", "postgres", "json"] }
+sqlx                     = { version = "0.8.6", features = ["runtime-tokio", "runtime-async-std", "postgres", "json"] }
 syn                      = { version = "1.0.109", features = ["full"] }
 termcolor                = "1.4.1"
 test-log                 = "0.2.17"
