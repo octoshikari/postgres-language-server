@@ -24,7 +24,7 @@ use pgls_fs::{ConfigName, PgLSPath};
 use pgls_typecheck::{IdentifierType, TypecheckParams, TypedIdentifier};
 use pgls_workspace_macros::ignored_path;
 use schema_cache_manager::SchemaCacheManager;
-use sqlx::{Executor, PgPool};
+use sqlx::{AssertSqlSafe, Executor, PgPool};
 use tracing::{debug, info};
 
 use crate::{
@@ -428,7 +428,7 @@ impl Workspace for WorkspaceServer {
             });
         };
 
-        let result = run_async(async move { pool.execute(sqlx::query(&content)).await })??;
+        let result = run_async(async move { pool.execute(sqlx::query(AssertSqlSafe(content))).await })??;
 
         Ok(ExecuteStatementResult {
             message: format!(

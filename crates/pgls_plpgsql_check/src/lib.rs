@@ -6,7 +6,7 @@ use pgls_query::protobuf::CreateFunctionStmt;
 use regex::Regex;
 use serde::Deserialize;
 pub use sqlx::postgres::PgSeverity;
-use sqlx::{Acquire, PgPool, Postgres, Transaction};
+use sqlx::{Acquire, AssertSqlSafe, PgPool, Postgres, Row, Transaction};
 
 #[derive(Debug)]
 pub struct PlPgSqlCheckParams<'a> {
@@ -172,7 +172,7 @@ pub async fn check_plpgsql(
     };
 
     // create the function - this should always succeed
-    sqlx::query(&sql_with_replace).execute(&mut *tx).await?;
+    sqlx::raw_sql(AssertSqlSafe(sql_with_replace)).execute(&mut *tx).await?;
 
     // run plpgsql_check and collect results with their relations
     let results_with_relations: Vec<(String, Option<String>)> = if is_trigger {
@@ -184,12 +184,13 @@ pub async fn check_plpgsql(
             {
                 let relation = format!("{}.{}", trigger.table_schema, trigger.table_name);
 
-                let result: Option<String> = sqlx::query_scalar(&format!(
+                let query = format!(
                     "select plpgsql_check_function('{fn_identifier}', '{relation}', format := 'json')"
-                ))
-                .fetch_optional(&mut *tx)
-                .await?
-                .flatten();
+                );
+                let result: Option<String> = sqlx::raw_sql(AssertSqlSafe(query))
+                    .fetch_optional(&mut *tx)
+                    .await?
+                    .and_then(|row| row.try_get::<Option<String>, _>(0).ok().flatten());
 
                 if let Some(result) = result {
                     results.push((result, Some(relation)));
@@ -199,12 +200,13 @@ pub async fn check_plpgsql(
 
         results
     } else {
-        let result: Option<String> = sqlx::query_scalar(&format!(
+        let query = format!(
             "select plpgsql_check_function('{fn_identifier}', format := 'json')"
-        ))
-        .fetch_optional(&mut *tx)
-        .await?
-        .flatten();
+        );
+        let result: Option<String> = sqlx::raw_sql(AssertSqlSafe(query))
+            .fetch_optional(&mut *tx)
+            .await?
+            .and_then(|row| row.try_get::<Option<String>, _>(0).ok().flatten());
 
         if let Some(result) = result {
             vec![(result, None)]

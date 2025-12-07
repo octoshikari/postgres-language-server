@@ -8,7 +8,7 @@ use itertools::Itertools;
 use pgls_schema_cache::SchemaCache;
 use sqlx::postgres::PgDatabaseError;
 pub use sqlx::postgres::PgSeverity;
-use sqlx::{Executor, PgPool};
+use sqlx::{AssertSqlSafe, Executor, PgPool, SqlSafeStr};
 use typed_identifier::apply_identifiers;
 pub use typed_identifier::{IdentifierReplacement, IdentifierType, TypedIdentifier};
 
@@ -65,11 +65,12 @@ pub async fn check_sql(
         }
 
         let search_path_query = format!("SET search_path TO {};", search_path_schemas.join(", "));
-        conn.execute(&*search_path_query).await?;
+        sqlx::raw_sql(AssertSqlSafe(search_path_query)).execute(&mut *conn).await?;
     }
 
+    let sql = typed_replacement.text_replacement().text();
     let res = conn
-        .prepare(typed_replacement.text_replacement().text())
+        .prepare(AssertSqlSafe(sql).into_sql_str())
         .await;
 
     match res {
